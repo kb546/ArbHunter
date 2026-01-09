@@ -1,0 +1,216 @@
+'use client';
+
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Briefcase, Package, Tag, Check } from 'lucide-react';
+import type { CampaignData, CampaignType } from '@/types/creative-studio';
+
+interface CampaignSetupCardProps {
+  onCampaignSetup: (campaign: CampaignData) => void;
+  initialCampaign?: CampaignData | null;
+  brandName: string;
+}
+
+export function CampaignSetupCard({ onCampaignSetup, initialCampaign, brandName }: CampaignSetupCardProps) {
+  const [campaignName, setCampaignName] = useState(initialCampaign?.name || '');
+  const [campaignType, setCampaignType] = useState<CampaignType>(initialCampaign?.type || 'recruitment');
+  const [niche, setNiche] = useState(initialCampaign?.niche || '');
+  const [geo, setGeo] = useState(initialCampaign?.geo || '');
+  const [targetAudience, setTargetAudience] = useState(initialCampaign?.targetAudience || '');
+  const [keyMessage, setKeyMessage] = useState(initialCampaign?.keyMessage || '');
+  const [isCompleted, setIsCompleted] = useState(!!initialCampaign);
+
+  const campaignTypes: { value: CampaignType; label: string; icon: any; description: string }[] = [
+    {
+      value: 'recruitment',
+      label: 'Job Recruitment',
+      icon: Briefcase,
+      description: 'Hiring ads for service industry',
+    },
+    {
+      value: 'product',
+      label: 'Product or Service',
+      icon: Package,
+      description: 'Promote products or services',
+    },
+    {
+      value: 'sale',
+      label: 'Sale or Promotion',
+      icon: Tag,
+      description: 'Discount offers & limited-time deals',
+    },
+  ];
+
+  const handleSave = () => {
+    if (!campaignName || !niche || !geo) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const campaign: CampaignData = {
+      name: campaignName,
+      type: campaignType,
+      niche,
+      geo,
+      targetAudience,
+      keyMessage,
+    };
+
+    onCampaignSetup(campaign);
+    setIsCompleted(true);
+  };
+
+  return (
+    <Card className="p-8 shadow-sm border border-gray-200">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-sm font-semibold">
+              2
+            </span>
+            Campaign Details
+          </h2>
+          <p className="text-sm text-gray-600 mt-1 ml-10">
+            Tell us what you're advertising for {brandName}
+          </p>
+        </div>
+        {isCompleted && (
+          <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+            <Check className="h-5 w-5" />
+            Completed
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-6">
+        {/* Campaign Name */}
+        <div>
+          <Label htmlFor="campaignName" className="text-sm font-medium text-gray-700 mb-2 block">
+            Campaign Name *
+          </Label>
+          <Input
+            id="campaignName"
+            value={campaignName}
+            onChange={(e) => setCampaignName(e.target.value)}
+            placeholder={`e.g., ${brandName} Recruitment - ${geo || 'US'}`}
+            className="h-11"
+          />
+        </div>
+
+        {/* Campaign Type */}
+        <div>
+          <Label className="text-sm font-medium text-gray-700 mb-3 block">
+            What are you advertising? *
+          </Label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {campaignTypes.map((type) => (
+              <button
+                key={type.value}
+                onClick={() => setCampaignType(type.value)}
+                className={`p-4 border-2 rounded-xl text-left transition-all ${
+                  campaignType === type.value
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <type.icon className={`h-6 w-6 mb-2 ${
+                  campaignType === type.value ? 'text-indigo-600' : 'text-gray-400'
+                }`} />
+                <p className="font-semibold text-sm text-gray-900">{type.label}</p>
+                <p className="text-xs text-gray-600 mt-1">{type.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Niche & Geo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="niche" className="text-sm font-medium text-gray-700 mb-2 block">
+              Niche / Industry *
+            </Label>
+            <Input
+              id="niche"
+              value={niche}
+              onChange={(e) => setNiche(e.target.value)}
+              placeholder="e.g., Fast Food, Delivery Drivers"
+              className="h-11"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="geo" className="text-sm font-medium text-gray-700 mb-2 block">
+              Geographic Market *
+            </Label>
+            <Select value={geo} onValueChange={setGeo}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Select market" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="US">🇺🇸 United States</SelectItem>
+                <SelectItem value="UK">🇬🇧 United Kingdom</SelectItem>
+                <SelectItem value="CA">🇨🇦 Canada</SelectItem>
+                <SelectItem value="AU">🇦🇺 Australia</SelectItem>
+                <SelectItem value="ZA">🇿🇦 South Africa</SelectItem>
+                <SelectItem value="PH">🇵🇭 Philippines</SelectItem>
+                <SelectItem value="IN">🇮🇳 India</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Target Audience */}
+        <div>
+          <Label htmlFor="targetAudience" className="text-sm font-medium text-gray-700 mb-2 block">
+            Target Audience
+          </Label>
+          <Textarea
+            id="targetAudience"
+            value={targetAudience}
+            onChange={(e) => setTargetAudience(e.target.value)}
+            placeholder="e.g., 18-35, job seekers, hourly workers looking for flexible hours"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Describe who you're trying to reach (age, interests, needs)
+          </p>
+        </div>
+
+        {/* Key Message */}
+        <div>
+          <Label htmlFor="keyMessage" className="text-sm font-medium text-gray-700 mb-2 block">
+            Key Message (Optional)
+          </Label>
+          <Input
+            id="keyMessage"
+            value={keyMessage}
+            onChange={(e) => setKeyMessage(e.target.value)}
+            placeholder="e.g., Weekly pay, flexible hours, start this week"
+            className="h-11"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Main benefits or selling points to highlight
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 flex justify-end">
+        <Button
+          onClick={handleSave}
+          disabled={!campaignName || !niche || !geo}
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 h-11"
+        >
+          {isCompleted ? 'Update Campaign' : 'Save Campaign'}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+
