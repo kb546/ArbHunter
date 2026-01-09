@@ -10,7 +10,7 @@ const plans = [
     name: 'Starter',
     price: '$29',
     cadence: '/mo',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '',
+    planKey: 'starter',
     features: ['50 discoveries/month', '100 creatives/month', 'No watermarks', 'All creative presets'],
     highlight: true,
   },
@@ -19,7 +19,7 @@ const plans = [
     name: 'Pro',
     price: '$79',
     cadence: '/mo',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '',
+    planKey: 'pro',
     features: ['200 discoveries/month', '500 creatives/month', 'Priority generation', 'CSV export (next)'],
     highlight: false,
   },
@@ -28,7 +28,7 @@ const plans = [
     name: 'Agency',
     price: '$199',
     cadence: '/mo',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY || '',
+    planKey: 'agency',
     features: ['Unlimited discoveries', '2,000 creatives/month', 'Priority support', 'Team features (next)'],
     highlight: false,
   },
@@ -79,9 +79,9 @@ export default function PricingPage() {
               </ul>
 
               <div className="mt-6 space-y-2">
-                <CheckoutButton priceId={p.priceId} planName={p.name} />
+                <CheckoutButton plan={p.planKey} planName={p.name} />
                 <p className="text-xs text-gray-500">
-                  Requires env var: <code className="font-mono">NEXT_PUBLIC_STRIPE_PRICE_{p.name.toUpperCase()}</code>
+                  Billing powered by Paddle (MoR). Taxes/VAT handled automatically.
                 </p>
               </div>
             </Card>
@@ -96,20 +96,16 @@ export default function PricingPage() {
   );
 }
 
-function CheckoutButton({ priceId, planName }: { priceId: string; planName: string }) {
+function CheckoutButton({ plan, planName }: { plan: 'starter' | 'pro' | 'agency'; planName: string }) {
   return (
     <Button
       type="button"
       className="w-full"
       onClick={async () => {
-        if (!priceId) {
-          alert(`Missing NEXT_PUBLIC_STRIPE_PRICE_* env var for ${planName}. Add it to .env.local with your Stripe Price ID.`);
-          return;
-        }
-        const res = await fetch('/api/checkout', {
+        const res = await fetch('/api/paddle/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ priceId }),
+          body: JSON.stringify({ plan }),
         });
         const data = await res.json();
         if (!res.ok) {
