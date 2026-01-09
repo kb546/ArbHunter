@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
-import {
-  createCheckoutTransaction,
-  getFirstActiveRecurringPriceIdForProduct,
-} from '@/lib/paddle';
+import { createCheckoutTransaction, getFirstActiveRecurringPriceIdForProduct } from '@/lib/paddle';
 
 type Plan = 'starter' | 'pro' | 'agency';
 type Body = { plan: Plan };
@@ -43,7 +40,7 @@ export async function POST(req: Request) {
       cancelUrl: `${appUrl}/pricing?checkout=cancel`,
     });
 
-    return NextResponse.json({ url: checkout.url });
+    return NextResponse.json({ url: checkout.url, transactionId: checkout.transactionId });
   } catch (error: any) {
     console.error('Paddle checkout error:', error);
     return NextResponse.json({ error: error.message || 'Checkout failed' }, { status: 500 });

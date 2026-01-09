@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { openPaddleCheckout } from '@/lib/paddle-client';
 
 const plans = [
   {
@@ -102,17 +103,44 @@ function CheckoutButton({ plan, planName }: { plan: 'starter' | 'pro' | 'agency'
       type="button"
       className="w-full"
       onClick={async () => {
-        const res = await fetch('/api/paddle/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error || 'Checkout failed');
-          return;
+        try {
+          const res = await fetch('/api/paddle/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan }),
+          });
+          const data = await res.json();
+          console.log('[PADDLE] /api/paddle/checkout response:', { status: res.status, data });
+
+          if (!res.ok) {
+            if (res.status === 401) {
+              window.location.href = `/auth/login?next=${encodeURIComponent('/pricing')}`;
+              return;
+            }
+            throw new Error(data.error || `Checkout failed (HTTP ${res.status})`);
+          }
+
+          // Preferred: open overlay checkout via Paddle.js using transactionId.
+          if (data.transactionId) {
+            console.log('[PADDLE] Opening overlay checkout with transactionId:', data.transactionId);
+            await openPaddleCheckout(data.transactionId);
+            return;
+          }
+
+          // IMPORTANT: do NOT redirect fallback while debugging; force overlay flow.
+          throw new Error(
+            `Checkout response missing transactionId. Got keys: ${Object.keys(data || {}).join(', ') || '(none)'}`
+          );
+        } catch (err: any) {
+          console.error('Upgrade error:', err);
+          alert(
+            `Upgrade failed: ${err?.message || String(err)}\n\n` +
+              `Debug tips:\n` +
+              `- Ensure NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is set for the *Production* environment in Vercel\n` +
+              `- Ensure NEXT_PUBLIC_PADDLE_ENV=sandbox\n` +
+              `- Hard refresh (Cmd+Shift+R)`
+          );
         }
-        window.location.href = data.url;
       }}
     >
       Upgrade to {planName}

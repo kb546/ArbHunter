@@ -7,6 +7,7 @@ import { ResultsTable } from '@/components/ResultsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Discovery } from '@/types';
 import { toast } from 'sonner';
+import { openPaddleCheckout } from '@/lib/paddle-client';
 
 export default function Home() {
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -16,6 +17,30 @@ export default function Home() {
   // Fetch existing discoveries on mount
   useEffect(() => {
     fetchDiscoveries();
+  }, []);
+
+  // If Paddle redirects back with ?_ptxn=txn_..., open overlay checkout automatically.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const txn = url.searchParams.get('_ptxn');
+    if (!txn) return;
+
+    (async () => {
+      try {
+        console.log('[PADDLE] Detected _ptxn in URL, attempting to open overlay checkout:', txn);
+        await openPaddleCheckout(txn);
+        // Remove the param to avoid reopening on refresh
+        url.searchParams.delete('_ptxn');
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) {
+        console.error('Failed to open Paddle checkout from _ptxn:', e);
+        toast.error('Billing error: could not open Paddle checkout', {
+          description:
+            (e as any)?.message ||
+            'Most common cause: NEXT_PUBLIC_PADDLE_CLIENT_TOKEN missing in Vercel Production env vars.',
+        });
+      }
+    })();
   }, []);
 
   const fetchDiscoveries = async () => {
