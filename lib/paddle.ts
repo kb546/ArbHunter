@@ -83,8 +83,15 @@ export async function createCheckoutTransaction(params: {
 }
 
 export function verifyPaddleWebhookSignature(rawBody: string, signatureHeader: string, secret: string) {
-  // Header format: ts=1671552777;h1=...
-  const parts = signatureHeader.split(';').map((p) => p.trim());
+  // Paddle Billing notifications include a `Paddle-Signature` header.
+  // Common formats seen:
+  // - "ts=1671552777;h1=<hex>"
+  // - "ts=1671552777,h1=<hex>" (commas)
+  // We parse both separators and tolerate extra fields.
+  const parts = signatureHeader
+    .split(/[;,]/)
+    .map((p) => p.trim())
+    .filter(Boolean);
   const kv: Record<string, string> = {};
   for (const part of parts) {
     const [k, v] = part.split('=');
@@ -94,20 +101,30 @@ export function verifyPaddleWebhookSignature(rawBody: string, signatureHeader: s
   const h1 = kv.h1;
   if (!ts || !h1) return { ok: false as const, reason: 'Missing ts or h1' };
 
-  const signedPayload = `${ts}:${rawBody}`;
-  const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
-
-  const a = Buffer.from(expected, 'hex');
-  const b = Buffer.from(h1, 'hex');
-  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
-  if (!ok) return { ok: false as const, reason: 'Signature mismatch' };
-
-  // Replay protection: 5 minutes tolerance (more forgiving than SDK default 5s; better for serverless)
+  // Replay protection: tolerate clock skew + serverless retries.
+  // NOTE: Some platforms send ms timestamps; normalize if needed.
   const now = Math.floor(Date.now() / 1000);
-  const tsNum = Number(ts);
+  let tsNum = Number(ts);
   if (!Number.isFinite(tsNum)) return { ok: false as const, reason: 'Invalid ts' };
+  if (tsNum > 1e12) tsNum = Math.floor(tsNum / 1000); // ms -> s
   const age = Math.abs(now - tsNum);
-  if (age > 60 * 5) return { ok: false as const, reason: 'Timestamp too old' };
+  if (age > 60 * 30) return { ok: false as const, reason: `Timestamp too old (age=${age}s)` };
+
+  const signedPayload = `${String(tsNum)}:${rawBody}`;
+  const expectedHex = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+
+  // Paddle's `h1` is typically hex. If it's not hex, try base64 as a fallback.
+  const isHex = /^[0-9a-f]+$/i.test(h1) && h1.length % 2 === 0;
+  const provided = isHex ? Buffer.from(h1, 'hex') : Buffer.from(h1, 'base64');
+  const expected = Buffer.from(expectedHex, 'hex');
+
+  const ok = provided.length === expected.length && crypto.timingSafeEqual(provided, expected);
+  if (!ok) {
+    return {
+      ok: false as const,
+      reason: `Signature mismatch (ts=${tsNum}, encoding=${isHex ? 'hex' : 'base64'})`,
+    };
+  }
 
   return { ok: true as const };
 }

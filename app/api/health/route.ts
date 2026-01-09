@@ -11,6 +11,7 @@ export async function GET() {
       configured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
       url_present: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       key_present: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      service_role_present: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     },
     
     // AI Providers
@@ -24,6 +25,18 @@ export async function GET() {
     data_apis: {
       google_trends: !!process.env.GOOGLE_TRENDS_API_KEY,
       apify: !!process.env.APIFY_API_KEY,
+    },
+
+    // Billing
+    billing: {
+      paddle_env: process.env.PADDLE_ENV || null,
+      paddle_api_key_present: !!process.env.PADDLE_API_KEY,
+      paddle_webhook_secret_present: !!process.env.PADDLE_WEBHOOK_SECRET,
+      paddle_products_present: !!(
+        process.env.PADDLE_PRODUCT_STARTER &&
+        process.env.PADDLE_PRODUCT_PRO &&
+        process.env.PADDLE_PRODUCT_AGENCY
+      ),
     },
   };
 
