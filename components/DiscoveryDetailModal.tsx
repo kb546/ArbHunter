@@ -75,11 +75,11 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1.25rem)] sm:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <DialogTitle className="text-2xl flex items-center gap-3">
+              <DialogTitle className="text-xl sm:text-2xl flex items-center gap-3">
                 <ScoreIndicator score={discovery.margin_score} size="lg" />
                 <span>{discovery.niche}</span>
               </DialogTitle>
@@ -109,7 +109,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="analysis" className="space-y-6 mt-4">
+          <TabsContent value="analysis" className="space-y-5 mt-4">
           {/* Score Breakdown */}
           <Card>
             <CardHeader>

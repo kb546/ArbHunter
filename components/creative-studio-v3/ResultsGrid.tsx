@@ -228,18 +228,18 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
               </div>
 
               {/* Details */}
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <div className="p-5 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
                   {selectedCreative.headline}
                 </h3>
                 {selectedCreative.subheadline && (
-                  <p className="text-gray-700 mb-6">{selectedCreative.subheadline}</p>
+                  <p className="text-sm text-gray-700 mb-5 leading-relaxed">{selectedCreative.subheadline}</p>
                 )}
 
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Predicted CTR</p>
-                    <p className="text-3xl font-bold text-indigo-600">
+                    <p className="text-2xl sm:text-3xl font-semibold text-[color:var(--primary)]">
                       {selectedCreative.predictedCTR.toFixed(1)}%
                     </p>
                   </div>
@@ -263,15 +263,15 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
                     <p className="text-sm font-medium text-gray-600 mb-2">Model Used</p>
                     <Badge>
                       {selectedCreative.model === 'gemini-2.5-flash-image'
-                        ? '⚡ Nano Banana (Fast)'
-                        : '💎 Nano Banana Pro'}
+                        ? 'Nano Banana (Fast)'
+                        : 'Nano Banana Pro'}
                     </Badge>
                   </div>
                 </div>
 
-                <div className="mt-8 flex gap-3">
+                <div className="mt-6 flex flex-col sm:flex-row gap-2">
                   <Button
-                    className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600"
+                    className="flex-1"
                     onClick={() => handleDownload(selectedCreative)}
                   >
                     <Download className="h-4 w-4 mr-2" />

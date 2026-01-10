@@ -205,8 +205,8 @@ export function CampaignDetailClient(props: {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="p-5">
+    <div className="space-y-5">
+      <Card className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="font-semibold text-gray-900">Variations</div>
           <div className="text-sm text-gray-600">{variations.length} linked variants</div>
@@ -226,7 +226,7 @@ export function CampaignDetailClient(props: {
               const creativeState = creativeCache[v.creative_id]?.state || 'idle';
               return (
                 <div key={v.id} className="rounded-lg border bg-white p-4">
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="w-full lg:w-40">
                       {creativeState === 'loaded' ? (
                         <img
@@ -273,7 +273,12 @@ export function CampaignDetailClient(props: {
                       <div className="text-sm text-gray-700">{cp?.primary_text || '—'}</div>
 
                       <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                        <Button variant="outline" onClick={() => markWinner(v.id)} disabled={Boolean(busyById[v.id])}>
+                        <Button
+                          variant="outline"
+                          className="sm:w-auto"
+                          onClick={() => markWinner(v.id)}
+                          disabled={Boolean(busyById[v.id])}
+                        >
                           Set as winner
                         </Button>
                         <div className="flex-1">
@@ -314,14 +319,14 @@ export function CampaignDetailClient(props: {
         </div>
       </div>
 
-      <Card className="p-5">
+      <Card className="p-4 sm:p-5">
         <div className="font-semibold text-gray-900">Creatives</div>
         <div className="text-sm text-gray-600 mt-2">
           Previews are loaded on-demand per variation to keep campaign pages fast.
         </div>
       </Card>
 
-      <Card className="p-5">
+      <Card className="p-4 sm:p-5">
         <div className="font-semibold text-gray-900">Copies</div>
         {copies.length === 0 ? (
           <div className="text-sm text-gray-600 mt-2">No copies yet.</div>
