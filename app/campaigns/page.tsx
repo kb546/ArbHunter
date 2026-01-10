@@ -24,7 +24,7 @@ export default async function CampaignsPage() {
         description="Your saved campaigns (creatives and exports live here)."
         right={
           <Button asChild variant="outline">
-            <Link href="/">New campaign from discovery</Link>
+            <Link href="/discovery">New campaign from discovery</Link>
           </Button>
         }
       />
@@ -36,7 +36,7 @@ export default async function CampaignsPage() {
           </div>
           <div className="mt-4">
             <Button asChild>
-              <Link href="/">Run a discovery</Link>
+              <Link href="/discovery">Run a discovery</Link>
             </Button>
           </div>
         </Card>

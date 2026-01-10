@@ -269,7 +269,7 @@ function CreativeStudioContent() {
         description="Generate 2 test ads for your discovery."
         right={
           <Button asChild variant="outline">
-            <Link href="/">Back to Discovery</Link>
+            <Link href="/discovery">Back to Discovery</Link>
           </Button>
         }
       />

@@ -17,7 +17,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="h-4 w-4" /> },
-  { href: '/', label: 'Discovery', icon: <Home className="h-4 w-4" /> },
+  { href: '/discovery', label: 'Discovery', icon: <Home className="h-4 w-4" /> },
   { href: '/creative-studio', label: 'Creative Studio', icon: <Sparkles className="h-4 w-4" /> },
   { href: '/campaigns', label: 'Campaigns', icon: <FolderKanban className="h-4 w-4" /> },
   { href: '/account/billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
@@ -26,7 +26,7 @@ const NAV: NavItem[] = [
 
 function pageTitle(pathname: string) {
   if (pathname.startsWith('/dashboard')) return 'Dashboard';
-  if (pathname === '/') return 'Discovery';
+  if (pathname.startsWith('/discovery')) return 'Discovery';
   if (pathname.startsWith('/creative-studio')) return 'Creative Studio';
   if (pathname.startsWith('/campaigns')) return 'Campaigns';
   if (pathname.startsWith('/account/billing')) return 'Billing';
@@ -38,7 +38,7 @@ function pageTitle(pathname: string) {
 
 function breadcrumbs(pathname: string) {
   const items: Array<{ label: string; href?: string }> = [{ label: 'ArbHunter', href: '/dashboard' }];
-  if (pathname === '/') items.push({ label: 'Discovery' });
+  if (pathname.startsWith('/discovery')) items.push({ label: 'Discovery' });
   else if (pathname.startsWith('/dashboard')) items.push({ label: 'Dashboard' });
   else if (pathname.startsWith('/creative-studio')) items.push({ label: 'Creative Studio' });
   else if (pathname.startsWith('/campaigns')) items.push({ label: 'Campaigns' });
@@ -53,7 +53,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const hideChrome = pathname.startsWith('/auth');
+  const hideChrome = pathname.startsWith('/auth') || pathname === '/';
   const title = useMemo(() => pageTitle(pathname), [pathname]);
   const crumbs = useMemo(() => breadcrumbs(pathname), [pathname]);
 
@@ -85,7 +85,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-72 bg-[color:var(--sidebar)] border-r p-4">
             <div className="flex items-center justify-between">
-              <Link href="/" className="font-semibold tracking-tight">
+              <Link href="/dashboard" className="font-semibold tracking-tight">
                 ArbHunter
               </Link>
               <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>

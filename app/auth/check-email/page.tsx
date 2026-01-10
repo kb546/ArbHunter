@@ -6,7 +6,7 @@ export default async function CheckEmailPage({
   searchParams: Promise<{ email?: string; next?: string }>;
 }) {
   const { email, next } = await searchParams;
-  const nextPath = next && next.startsWith('/') ? next : '/';
+  const nextPath = next && next.startsWith('/') ? next : '/discovery';
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
@@ -26,7 +26,7 @@ export default async function CheckEmailPage({
             href="/"
             className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
           >
-            Home
+            Marketing
           </Link>
         </div>
       </div>

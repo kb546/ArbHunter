@@ -1,0 +1,38 @@
+ArbHunter — Ad Arbitrage Intelligence (LLMs index)
+
+Product
+- Web app for ad arbitrage operators (media buyers, publishers, arbitrage teams).
+- Core workflow: discover opportunities → generate creatives → organize into campaigns.
+
+Core capabilities
+1) Opportunity Sniffer (Discovery)
+- Find profitable GEO + niche combinations for Facebook-to-AdSense arbitrage.
+- Outputs: margin score, trend velocity, competition signals, related keywords.
+- Route: /discovery (authenticated).
+
+2) Creative Studio
+- Generate 2 A/B creatives quickly (V3) or 5–20 batch creatives with multi-agent orchestration.
+- Includes policy-aware prompting + QC loop (generate → assess → optional regenerate).
+- Route: /creative-studio (authenticated).
+
+3) Campaigns
+- Save and manage generated creatives/copy as variations.
+- Features: mark winner, favorites, tags, exports.
+- Route: /campaigns (authenticated).
+
+Billing & access
+- Hard-gated authentication (Supabase Auth).
+- Subscription + trials via Paddle (Merchant of Record).
+- Monthly usage limits by plan (discoveries/month + creatives/month).
+- Pricing route: /pricing (public).
+
+APIs (selected)
+- POST /api/discover
+- POST /api/v3/generate-creatives
+- POST /api/v3/generate-batch
+- POST /api/paddle/checkout
+- POST /api/webhooks/paddle
+
+Positioning
+- “Hunt” for profit margins: high-velocity intelligence for GEO spreads, creatives, and yield.
+

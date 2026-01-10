@@ -26,7 +26,7 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-4">
             <Button asChild className="w-full">
-              <Link href="/">Go to Discovery</Link>
+              <Link href="/discovery">Go to Discovery</Link>
             </Button>
           </div>
         </Card>

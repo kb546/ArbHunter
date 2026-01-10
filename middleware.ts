@@ -4,6 +4,7 @@ const AUTH_COOKIE = 'sb-access-token';
 
 function isProtectedPath(pathname: string) {
   if (pathname.startsWith('/dashboard')) return true;
+  if (pathname.startsWith('/discovery')) return true;
   if (pathname.startsWith('/campaigns')) return true;
   if (pathname.startsWith('/creative-studio')) return true;
   if (pathname.startsWith('/account')) return true;
@@ -36,6 +37,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/campaigns/:path*', '/creative-studio/:path*', '/account/:path*', '/api/:path*'],
+  matcher: ['/dashboard/:path*', '/discovery/:path*', '/campaigns/:path*', '/creative-studio/:path*', '/account/:path*', '/api/:path*'],
 };
 
