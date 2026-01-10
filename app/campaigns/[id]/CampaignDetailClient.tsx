@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,11 +42,29 @@ export function CampaignDetailClient(props: {
   }>;
   campaignId: string;
 }) {
-  const { creatives, copies, variations, campaignId } = props;
+  const { creatives, copies, campaignId } = props;
+  const [variations, setVariations] = React.useState(props.variations);
+  const [busyById, setBusyById] = React.useState<Record<string, boolean>>({});
+  const [tagDraftById, setTagDraftById] = React.useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const v of props.variations) init[v.id] = (v.tags || []).join(', ');
+    return init;
+  });
+
   const creativeById = new Map(creatives.map((c) => [c.id, c]));
   const copyById = new Map(copies.map((c) => [c.id, c]));
 
   async function markWinner(variationId: string) {
+    if (busyById[variationId]) return;
+    setBusyById((m) => ({ ...m, [variationId]: true }));
+    // Optimistic update
+    setVariations((prev) =>
+      prev.map((v) =>
+        v.id === variationId
+          ? { ...v, status: 'winner', predicted_winner: true, is_favorite: true }
+          : { ...v, status: 'loser', predicted_winner: false }
+      )
+    );
     try {
       const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
         method: 'PATCH',
@@ -54,14 +73,27 @@ export function CampaignDetailClient(props: {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
-      toast.success('Winner saved', { description: 'Refreshing…' });
-      window.location.reload();
+      if (Array.isArray(data.variations)) setVariations(data.variations);
+      toast.success('Winner saved');
     } catch (e: any) {
+      // Revert to server truth
+      try {
+        const res = await fetch(`/api/campaigns/${campaignId}/variations`);
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && Array.isArray(data.variations)) setVariations(data.variations);
+      } catch {
+        // ignore
+      }
       toast.error('Failed to mark winner', { description: e?.message || String(e) });
+    } finally {
+      setBusyById((m) => ({ ...m, [variationId]: false }));
     }
   }
 
   async function toggleFavorite(variationId: string, is_favorite: boolean) {
+    if (busyById[variationId]) return;
+    setBusyById((m) => ({ ...m, [variationId]: true }));
+    setVariations((prev) => prev.map((v) => (v.id === variationId ? { ...v, is_favorite } : v)));
     try {
       const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
         method: 'PATCH',
@@ -70,18 +102,26 @@ export function CampaignDetailClient(props: {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
-      window.location.reload();
+      if (data.variation?.id) {
+        setVariations((prev) => prev.map((v) => (v.id === data.variation.id ? data.variation : v)));
+      }
     } catch (e: any) {
+      // Revert
+      setVariations((prev) => prev.map((v) => (v.id === variationId ? { ...v, is_favorite: !is_favorite } : v)));
       toast.error('Failed to update favorite', { description: e?.message || String(e) });
+    } finally {
+      setBusyById((m) => ({ ...m, [variationId]: false }));
     }
   }
 
   async function setTags(variationId: string, tagsCsv: string) {
+    if (busyById[variationId]) return;
     const tags = tagsCsv
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
     try {
+      setBusyById((m) => ({ ...m, [variationId]: true }));
       const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -89,10 +129,14 @@ export function CampaignDetailClient(props: {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
+      if (data.variation?.id) {
+        setVariations((prev) => prev.map((v) => (v.id === data.variation.id ? data.variation : v)));
+      }
       toast.success('Tags saved');
-      window.location.reload();
     } catch (e: any) {
       toast.error('Failed to save tags', { description: e?.message || String(e) });
+    } finally {
+      setBusyById((m) => ({ ...m, [variationId]: false }));
     }
   }
 
@@ -169,6 +213,7 @@ export function CampaignDetailClient(props: {
                           type="button"
                           className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
                           onClick={() => toggleFavorite(v.id, !v.is_favorite)}
+                          disabled={Boolean(busyById[v.id])}
                         >
                           <Star className={`h-4 w-4 ${v.is_favorite ? 'fill-yellow-400 text-yellow-500' : 'text-gray-400'}`} />
                           Favorite
@@ -179,19 +224,21 @@ export function CampaignDetailClient(props: {
                       <div className="text-sm text-gray-700">{cp?.primary_text || '—'}</div>
 
                       <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                        <Button variant="outline" onClick={() => markWinner(v.id)}>
+                        <Button variant="outline" onClick={() => markWinner(v.id)} disabled={Boolean(busyById[v.id])}>
                           Mark winner
                         </Button>
                         <div className="flex-1">
                           <Input
-                            defaultValue={(v.tags || []).join(', ')}
+                            value={tagDraftById[v.id] ?? ''}
                             placeholder="Tags (comma separated)"
+                            onChange={(e) => setTagDraftById((m) => ({ ...m, [v.id]: e.target.value }))}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
                                 setTags(v.id, (e.target as HTMLInputElement).value);
                               }
                             }}
+                            disabled={Boolean(busyById[v.id])}
                           />
                           <div className="text-xs text-gray-500 mt-1">Press Enter to save tags.</div>
                         </div>

@@ -151,7 +151,7 @@ export async function assessQuality(request: QualityControlRequest): Promise<Qua
     return generateHeuristicScores(request);
   }
 
-  const { niche, geo, campaignType, strategies, copies, designs } = request;
+  const { niche, geo, campaignType, strategies, copies, designs, imageUrls } = request;
 
   console.log(`\n✅ Agent 5: Quality Control`);
   console.log(`   Assessing ${strategies.length} ad variations`);
@@ -192,6 +192,9 @@ VISUAL DESIGN:
 - Composition: ${designs[idx]?.composition.rule || 'N/A'}
 - Lighting: ${designs[idx]?.lighting.description || 'N/A'}
 - Mood: ${designs[idx]?.mood || 'N/A'}
+
+IMAGE:
+${imageUrls?.[idx] ? `- An image for this variation is provided below (Variation ${idx + 1}).` : '- No image provided.'}
 `).join('\n')}
 
 YOUR TASK:
@@ -227,11 +230,26 @@ OUTPUT: Complete JSON assessment of all ${strategies.length} variations with A/B
 `;
 
   try {
+    const userContent: any =
+      Array.isArray(imageUrls) && imageUrls.length > 0
+        ? ([
+            { type: 'text', text: userPrompt },
+            ...strategies.flatMap((s, idx) => {
+              const url = imageUrls[idx];
+              if (!url) return [{ type: 'text', text: `\n(No image for ${s.id})\n` }];
+              return [
+                { type: 'text', text: `\nImage for ${s.id} (Variation ${idx + 1}):\n` },
+                { type: 'image_url', image_url: { url } },
+              ];
+            }),
+          ] as any)
+        : userPrompt;
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: QUALITY_CONTROL_PERSONA },
-        { role: 'user', content: userPrompt },
+        { role: 'user', content: userContent },
       ],
       temperature: 0.5,
       max_tokens: 4000,

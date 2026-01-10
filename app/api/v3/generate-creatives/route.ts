@@ -16,6 +16,7 @@ import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { runCreativeQcOnce, buildQcFixNotes } from '@/services/creative-qc-loop.service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -112,12 +113,14 @@ export async function POST(request: NextRequest) {
     console.log('\n📝 Generated Prompt:');
     console.log(prompt.substring(0, 300) + '...\n');
 
-    // Generate images
+    // Generate images (+ QC regenerate safety net)
     console.log(`🚀 Generating ${variations} variations with ${selectedModel} model...`);
     const startTime = Date.now();
 
     // Monthly usage limit (creatives)
-    const usageCheck = await ensureWithinLimit('creative', Number(variations) || 0);
+    const qcMaxAttempts = 2; // 1 initial + 1 regenerate if needed
+    const maxPossibleGenerations = (Number(variations) || 0) * qcMaxAttempts;
+    const usageCheck = await ensureWithinLimit('creative', maxPossibleGenerations);
     if (!usageCheck.ok) {
       return NextResponse.json(
         { error: 'Monthly creative limit reached', plan: usageCheck.plan, limit: usageCheck.limit, used: usageCheck.used },
@@ -125,7 +128,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const generatedImages = await batchGenerate(prompt, variations, selectedModel);
+    let generatedImages = await batchGenerate(prompt, variations, selectedModel);
+    let qcAttempts = 1;
+    let qcFixNotes: string[] = [];
+    let qcAssessments: any[] | null = null;
+    let qcBestId: string | null = null;
+    const qcThresholds = { overallMin: 78, brandMin: 70, visualMin: 75, textMin: 70 };
 
     const totalTime = Date.now() - startTime;
     const totalCost = generatedImages.reduce((sum, img) => sum + img.cost, 0);
@@ -135,31 +143,92 @@ export async function POST(request: NextRequest) {
     console.log(`   Total cost: $${totalCost.toFixed(4)}`);
     console.log(`   Per ad: $${(totalCost / variations).toFixed(4)}`);
 
-    // Build response with AI-generated copy
-    const creatives: GeneratedCreativeV3[] = generatedImages.map((img, idx) => {
+    function buildCreativesFrom(images: any[], promptUsed: string): GeneratedCreativeV3[] {
       // Generate variation-specific copy
       const headlines = generateHeadlines(niche, detectedBrand?.name, campaignType);
       const subheadlines = generateSubheadlines(niche, campaignType, targetAudience);
       const ctas = generateCTAs(campaignType);
 
-      // Calculate quality scores (simplified for now)
-      const baseScore = img.model === 'gemini-3-pro-image-preview' ? 90 : 85;
-      const brandBonus = detectedBrand ? 5 : 0;
-      const variance = Math.random() * 3;
-
-      return {
+      return images.map((img, idx) => ({
         id: `creative-${Date.now()}-${idx}`,
         imageUrl: img.imageUrl,
         headline: headlines[idx % headlines.length],
         subheadline: subheadlines[idx % subheadlines.length],
         cta: ctas[idx % ctas.length],
-        predictedCTR: parseFloat((6 + Math.random() * 4 + (brandBonus / 5)).toFixed(1)), // 6-10%
-        visualScore: Math.round(baseScore + brandBonus + variance),
-        brandScore: Math.round(baseScore + brandBonus + variance - 2),
-        textScore: Math.round(baseScore + brandBonus + variance + 1),
+        predictedCTR: 0,
+        visualScore: 0,
+        brandScore: 0,
+        textScore: 0,
         model: img.model,
-        prompt,
+        prompt: promptUsed,
         generatedAt: new Date().toISOString(),
+      }));
+    }
+
+    // Build response with AI-generated copy (scores filled by QC)
+    let creatives: GeneratedCreativeV3[] = buildCreativesFrom(generatedImages, prompt);
+
+    // Run QC (with real image pixels), and regenerate once if below thresholds.
+    try {
+      const qc1 = await runCreativeQcOnce({
+        niche,
+        geo,
+        campaignType: campaignType as any,
+        imageUrls: creatives.map((c) => c.imageUrl),
+        headlines: creatives.map((c) => c.headline),
+        subheadlines: creatives.map((c) => c.subheadline || ''),
+        ctas: creatives.map((c) => c.cta || ''),
+        thresholds: qcThresholds,
+      });
+
+      qcAssessments = qc1.qc.assessments as any;
+      qcBestId = qc1.qc.bestVariationId as any;
+      qcFixNotes = buildQcFixNotes(qcAssessments || []);
+
+      if (!qc1.allOk && qcFixNotes.length > 0) {
+        qcAttempts = 2;
+        const improvedPrompt = `${prompt}\n\nQC FIX REQUIREMENTS:\n- ${qcFixNotes.join('\n- ')}\n\nSTRICT: fix all issues above; avoid irrelevant props; keep brand accurate; keep layout clean.`;
+        generatedImages = await batchGenerate(improvedPrompt, variations, selectedModel);
+        creatives = buildCreativesFrom(generatedImages, improvedPrompt);
+
+        const qc2 = await runCreativeQcOnce({
+          niche,
+          geo,
+          campaignType: campaignType as any,
+          imageUrls: creatives.map((c) => c.imageUrl),
+          headlines: creatives.map((c) => c.headline),
+          subheadlines: creatives.map((c) => c.subheadline || ''),
+          ctas: creatives.map((c) => c.cta || ''),
+          thresholds: qcThresholds,
+        });
+        qcAssessments = qc2.qc.assessments as any;
+        qcBestId = qc2.qc.bestVariationId as any;
+      }
+    } catch (e) {
+      console.warn('QC loop failed (continuing without QC):', e);
+    }
+
+    // Apply QC scores (fallback to reasonable heuristics if QC unavailable)
+    const byVarId = new Map((qcAssessments || []).map((a: any) => [a.id, a]));
+    creatives = creatives.map((c, idx) => {
+      const a = byVarId.get(`variation-${idx + 1}`);
+      if (a) {
+        return {
+          ...c,
+          predictedCTR: Number(a.predictedCTR) || 0,
+          visualScore: Number(a.visualScore) || 0,
+          brandScore: Number(a.brandScore) || 0,
+          textScore: Number(a.textScore) || 0,
+        };
+      }
+      const base = c.model === 'gemini-3-pro-image-preview' ? 86 : 82;
+      const brandBonus = detectedBrand ? 4 : 0;
+      return {
+        ...c,
+        predictedCTR: parseFloat((3 + Math.random() * 2).toFixed(1)),
+        visualScore: base + brandBonus,
+        brandScore: base + brandBonus - 2,
+        textScore: base + brandBonus - 1,
       };
     });
 
@@ -242,8 +311,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Record usage (best-effort)
-    await recordUsage('creative', creatives.length);
+    // Record usage (best-effort). Count *actual* generations (QC may have regenerated once).
+    const actualGeneratedCount = (Number(variations) || 0) * qcAttempts;
+    await recordUsage('creative', actualGeneratedCount);
 
     return NextResponse.json({
       success: true,
@@ -265,6 +335,11 @@ export async function POST(request: NextRequest) {
         variations,
         modelUsed: selectedModel,
         marginScore,
+        qc: {
+          attempts: qcAttempts,
+          thresholds: qcThresholds,
+          bestVariationId: qcBestId,
+        },
       },
     });
   } catch (error: any) {

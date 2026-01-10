@@ -52,6 +52,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">{campaign.name}</h1>
           <div className="text-sm text-gray-600 mt-1">
             {campaign.geo} • {campaign.niche} • Status: {String(campaign.status || 'draft').toUpperCase()}
+            {campaign.winner_variation_id ? <span className="ml-2">• Winner selected</span> : null}
           </div>
         </div>
         <div className="flex gap-2">

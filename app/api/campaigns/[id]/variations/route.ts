@@ -59,7 +59,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq('id', winnerId);
       if (winErr) return NextResponse.json({ error: winErr.message }, { status: 500 });
 
-      return NextResponse.json({ success: true });
+      // Persist on campaign (used for exports/defaults later)
+      await supabase
+        .from('campaigns')
+        .update({ winner_variation_id: winnerId, winner_selected_at: new Date().toISOString(), status: 'active' })
+        .eq('id', campaignId);
+
+      const { data: variations, error: vErr } = await supabase
+        .from('campaign_variations')
+        .select('*')
+        .eq('campaign_id', campaignId)
+        .order('created_at', { ascending: true });
+      if (vErr) return NextResponse.json({ error: vErr.message }, { status: 500 });
+
+      return NextResponse.json({ success: true, variations: variations || [] });
     }
 
     if (body.action === 'toggle_favorite') {
@@ -69,7 +82,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq('campaign_id', campaignId)
         .eq('id', body.variationId);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ success: true });
+      const { data: variation } = await supabase
+        .from('campaign_variations')
+        .select('*')
+        .eq('campaign_id', campaignId)
+        .eq('id', body.variationId)
+        .maybeSingle();
+      return NextResponse.json({ success: true, variation: variation || null });
     }
 
     if (body.action === 'set_tags') {
@@ -80,7 +99,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq('campaign_id', campaignId)
         .eq('id', body.variationId);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ success: true });
+      const { data: variation } = await supabase
+        .from('campaign_variations')
+        .select('*')
+        .eq('campaign_id', campaignId)
+        .eq('id', body.variationId)
+        .maybeSingle();
+      return NextResponse.json({ success: true, variation: variation || null });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
