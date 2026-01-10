@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
-import { BarChart3, CreditCard, Home, Menu, Sparkles, X } from 'lucide-react';
+import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -15,28 +15,66 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="h-4 w-4" /> },
   { href: '/', label: 'Discovery', icon: <Home className="h-4 w-4" /> },
   { href: '/creative-studio', label: 'Creative Studio', icon: <Sparkles className="h-4 w-4" /> },
+  { href: '/campaigns', label: 'Campaigns', icon: <FolderKanban className="h-4 w-4" /> },
   { href: '/account/billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
+  { href: '/account/settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
 ];
 
 function pageTitle(pathname: string) {
+  if (pathname.startsWith('/dashboard')) return 'Dashboard';
   if (pathname === '/') return 'Discovery';
   if (pathname.startsWith('/creative-studio')) return 'Creative Studio';
+  if (pathname.startsWith('/campaigns')) return 'Campaigns';
   if (pathname.startsWith('/account/billing')) return 'Billing';
+  if (pathname.startsWith('/account/settings')) return 'Settings';
   if (pathname.startsWith('/pricing')) return 'Pricing';
   if (pathname.startsWith('/admin/webhooks/paddle')) return 'Paddle Webhooks';
   return 'ArbHunter';
 }
 
+function breadcrumbs(pathname: string) {
+  const items: Array<{ label: string; href?: string }> = [{ label: 'ArbHunter', href: '/dashboard' }];
+  if (pathname === '/') items.push({ label: 'Discovery' });
+  else if (pathname.startsWith('/dashboard')) items.push({ label: 'Dashboard' });
+  else if (pathname.startsWith('/creative-studio')) items.push({ label: 'Creative Studio' });
+  else if (pathname.startsWith('/campaigns')) items.push({ label: 'Campaigns' });
+  else if (pathname.startsWith('/account/billing')) items.push({ label: 'Account', href: '/account/settings' }, { label: 'Billing' });
+  else if (pathname.startsWith('/account/settings')) items.push({ label: 'Account', href: '/account/settings' }, { label: 'Settings' });
+  else items.push({ label: pageTitle(pathname) });
+  return items;
+}
+
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [q, setQ] = useState('');
 
   const hideChrome = pathname.startsWith('/auth');
   const title = useMemo(() => pageTitle(pathname), [pathname]);
+  const crumbs = useMemo(() => breadcrumbs(pathname), [pathname]);
 
   if (hideChrome) return <>{children}</>;
+
+  function onSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const query = q.trim().toLowerCase();
+    if (!query) return;
+
+    // Simple jump search (Stripe-ish, but lightweight):
+    if (query.includes('discover')) return router.push('/');
+    if (query.includes('creative')) return router.push('/creative-studio');
+    if (query.includes('bill') || query.includes('plan')) return router.push('/account/billing');
+    if (query.includes('setting') || query.includes('account')) return router.push('/account/settings');
+    if (query.includes('campaign')) return router.push('/campaigns');
+    if (query.includes('dash')) return router.push('/dashboard');
+
+    // Default: go to discovery
+    router.push('/');
+  }
 
   return (
     <div className="min-h-screen bg-[color:var(--background)]">
@@ -100,7 +138,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <aside className="hidden lg:block w-64 border-r bg-[color:var(--sidebar)]">
           <div className="h-16 px-5 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-[color:var(--primary)]/10 flex items-center justify-center">
                 <BarChart3 className="h-4 w-4 text-[color:var(--primary)]" />
               </div>
@@ -139,10 +177,34 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
           {/* Desktop topbar */}
           <div className="hidden lg:block sticky top-0 z-40 border-b bg-[color:var(--card)]/90 backdrop-blur">
             <div className="h-16 px-8 flex items-center justify-between">
-              <div className="font-semibold text-gray-900">{title}</div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                {crumbs.map((c, idx) => (
+                  <span key={`${c.label}-${idx}`} className="flex items-center gap-2">
+                    {idx > 0 ? <span className="text-gray-300">/</span> : null}
+                    {c.href ? (
+                      <Link className="hover:text-gray-900 transition-colors" href={c.href}>
+                        {c.label}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold text-gray-900">{c.label}</span>
+                    )}
+                  </span>
+                ))}
+              </div>
               <div className="flex items-center gap-2">
+                <form onSubmit={onSearchSubmit} className="hidden xl:block">
+                  <div className="relative">
+                    <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      placeholder="Search (jump to: discovery, creative, billing...)"
+                      className="h-9 w-[360px] rounded-md border bg-white pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-[color:var(--primary)]/30"
+                    />
+                  </div>
+                </form>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/account/billing">Account</Link>
+                  <Link href="/account/settings">Account</Link>
                 </Button>
               </div>
             </div>

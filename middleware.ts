@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 const AUTH_COOKIE = 'sb-access-token';
 
 function isProtectedPath(pathname: string) {
+  if (pathname.startsWith('/dashboard')) return true;
+  if (pathname.startsWith('/campaigns')) return true;
   if (pathname.startsWith('/creative-studio')) return true;
   if (pathname.startsWith('/account')) return true;
   // Protect cost-incurring and user-data endpoints
@@ -11,6 +13,7 @@ function isProtectedPath(pathname: string) {
   if (pathname.startsWith('/api/discoveries')) return true;
   if (pathname.startsWith('/api/campaigns')) return true;
   if (pathname.startsWith('/api/usage')) return true;
+  if (pathname.startsWith('/api/auth/logout')) return true;
   return false;
 }
 
@@ -33,6 +36,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/creative-studio/:path*', '/account/:path*', '/api/:path*'],
+  matcher: ['/dashboard/:path*', '/campaigns/:path*', '/creative-studio/:path*', '/account/:path*', '/api/:path*'],
 };
 
