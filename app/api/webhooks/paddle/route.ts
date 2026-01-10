@@ -34,10 +34,52 @@ export async function POST(req: Request) {
   const signature = req.headers.get('paddle-signature') || req.headers.get('Paddle-Signature');
   const rawBody = await req.text();
 
+  // Best-effort log even when verification fails (helps debugging).
+  async function logUnverified(params: {
+    status: 'error' | 'ignored';
+    httpStatus: number;
+    verifyOk: boolean;
+    verifyReason: string | null;
+    processError?: string | null;
+  }) {
+    try {
+      const supabase = getServiceSupabase();
+      let eventType: string | null = null;
+      let eventId: string | null = null;
+      try {
+        const parsed = JSON.parse(rawBody);
+        eventType = parsed?.event_type || parsed?.type || null;
+        eventId = parsed?.event_id || parsed?.id || null;
+      } catch {
+        // ignore
+      }
+      await supabase.from('webhook_events').insert({
+        provider: 'paddle',
+        event_type: eventType || '(unverified)',
+        event_id: eventId,
+        status: params.status,
+        http_status: params.httpStatus,
+        signature_present: Boolean(signature),
+        verified: params.verifyOk,
+        verify_reason: params.verifyReason,
+        process_error: params.processError ?? null,
+      });
+    } catch (e) {
+      console.warn('Paddle webhook: failed to insert unverified webhook_events log', e);
+    }
+  }
+
   if (!secret || !signature) {
     console.error('Paddle webhook: missing signature/secret', {
       hasSecret: Boolean(secret),
       hasSignature: Boolean(signature),
+    });
+    await logUnverified({
+      status: 'error',
+      httpStatus: 400,
+      verifyOk: false,
+      verifyReason: 'Missing signature/secret',
+      processError: null,
     });
     return NextResponse.json({ error: 'Missing Paddle signature/secret' }, { status: 400 });
   }
@@ -45,6 +87,13 @@ export async function POST(req: Request) {
   const verified = verifyPaddleWebhookSignature(rawBody, signature, secret);
   if (!verified.ok) {
     console.error('Paddle webhook: signature verification failed', { reason: verified.reason });
+    await logUnverified({
+      status: 'error',
+      httpStatus: 400,
+      verifyOk: false,
+      verifyReason: verified.reason,
+      processError: null,
+    });
     return NextResponse.json({ error: `Invalid signature: ${verified.reason}` }, { status: 400 });
   }
 

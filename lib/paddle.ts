@@ -110,7 +110,9 @@ export function verifyPaddleWebhookSignature(rawBody: string, signatureHeader: s
   const age = Math.abs(now - tsNum);
   if (age > 60 * 30) return { ok: false as const, reason: `Timestamp too old (age=${age}s)` };
 
-  const signedPayload = `${String(tsNum)}:${rawBody}`;
+  // IMPORTANT: Signature must be computed using the exact `ts` value from the header,
+  // not a normalized timestamp. (We only normalize for replay/age checks.)
+  const signedPayload = `${ts}:${rawBody}`;
   const expectedHex = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
 
   // Paddle's `h1` is typically hex. If it's not hex, try base64 as a fallback.
