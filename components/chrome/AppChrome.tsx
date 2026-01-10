@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
+import { CommandPalette } from '@/components/chrome/CommandPalette';
 import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
 
 type NavItem = {
@@ -51,7 +52,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [q, setQ] = useState('');
 
   const hideChrome = pathname.startsWith('/auth');
   const title = useMemo(() => pageTitle(pathname), [pathname]);
@@ -59,25 +59,11 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
 
   if (hideChrome) return <>{children}</>;
 
-  function onSearchSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const query = q.trim().toLowerCase();
-    if (!query) return;
-
-    // Simple jump search (Stripe-ish, but lightweight):
-    if (query.includes('discover')) return router.push('/');
-    if (query.includes('creative')) return router.push('/creative-studio');
-    if (query.includes('bill') || query.includes('plan')) return router.push('/account/billing');
-    if (query.includes('setting') || query.includes('account')) return router.push('/account/settings');
-    if (query.includes('campaign')) return router.push('/campaigns');
-    if (query.includes('dash')) return router.push('/dashboard');
-
-    // Default: go to discovery
-    router.push('/');
-  }
+  // Search is now handled by CommandPalette (⌘K)
 
   return (
     <div className="min-h-screen bg-[color:var(--background)]">
+      <CommandPalette />
       {/* Mobile topbar */}
       <div className="lg:hidden sticky top-0 z-50 border-b bg-[color:var(--card)]/90 backdrop-blur">
         <div className="h-14 px-4 flex items-center justify-between">
@@ -192,17 +178,18 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <form onSubmit={onSearchSubmit} className="hidden xl:block">
-                  <div className="relative">
-                    <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                      placeholder="Search (jump to: discovery, creative, billing...)"
-                      className="h-9 w-[360px] rounded-md border bg-white pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-[color:var(--primary)]/30"
-                    />
-                  </div>
-                </form>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Trigger via synthetic keypress keeps behavior aligned with global handler
+                    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+                  }}
+                  className="hidden xl:flex items-center gap-2 h-9 w-[360px] rounded-md border bg-white px-3 text-sm text-gray-500 hover:text-gray-700"
+                >
+                  <Search className="h-4 w-4 text-gray-400" />
+                  <span className="flex-1 text-left">Search…</span>
+                  <span className="text-xs text-gray-400">⌘K</span>
+                </button>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/account/settings">Account</Link>
                 </Button>
