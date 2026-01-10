@@ -5,6 +5,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { GeminiModel } from '@/types/creative-studio';
+import type { CampaignType } from '@/services/campaign-type-detector.service';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -184,12 +185,13 @@ function extractImageFromResponse(response: any): { mimeType: string; data: stri
 export function buildGeminiPrompt(params: {
   brandName: string;
   brandColors: { primary: string; secondary: string };
-  campaignType: 'recruitment' | 'product' | 'sale';
+  campaignType: CampaignType;
   niche: string;
   geo: string;
   targetAudience?: string;
   keyMessage?: string;
   size: 'square' | 'portrait' | 'landscape';
+  variationHint?: string; // optional, used to enforce diversity between variations
 }): string {
   const {
     brandName,
@@ -200,6 +202,7 @@ export function buildGeminiPrompt(params: {
     targetAudience,
     keyMessage,
     size,
+    variationHint,
   } = params;
 
   // Size mapping
@@ -209,9 +212,18 @@ export function buildGeminiPrompt(params: {
     landscape: '1920x1080 landscape (16:9)',
   };
 
-  // Campaign-specific templates
+  const base = `IMPORTANT QUALITY RULES:
+- Make the creative highly relevant to: "${niche}" (${geo})
+- Do NOT include random/unrelated props or confusing objects.
+- Do NOT default to uniforms/aprons/hangers unless the campaign is explicitly about hiring/jobs.
+- Avoid purple/blue default branding when brand colors are unknown. Prefer clean neutral backgrounds and a single accent color.
+- Text must be readable and minimal (mobile-first). Keep it simple.`;
+
+  const hint = variationHint ? `\n\nVARIATION DIRECTION:\n${variationHint}\n` : '';
+
+  // Campaign-specific templates (expanded beyond recruitment/product/sale)
   const templates = {
-    recruitment: `Professional recruitment advertisement for ${brandName}.
+    recruitment: `Professional hiring advertisement for ${brandName}.
 
 CANVAS: ${sizeSpecs[size]}
 
@@ -219,27 +231,233 @@ BRAND:
 - Brand Name: ${brandName}
 - Primary Color: ${brandColors.primary}
 - Secondary Color: ${brandColors.secondary}
-- Industry: ${niche}
+- Hiring Topic: ${niche}
 - Market: ${geo}
 
 LAYOUT:
-- Background: Bright white (#FFFFFF) or very light ${brandColors.primary}, clean studio lighting
-- Top 20%: Bold headline "${brandName.toUpperCase()} IS HIRING NOW" in ${brandColors.primary}
-- Center 50%: ${brandName} branded product or uniform on natural wooden hanger, perfectly centered
-- Bottom 20%: Call-to-action button in ${brandColors.secondary} with "APPLY TODAY" text
+- Background: clean and modern (neutral), not cluttered
+- Use one strong hero visual that matches the hiring context (storefront, in-store team, employees at work, friendly manager, etc.)
+- Avoid confusing objects; avoid generic stock-like scenes
+- Keep brand feeling accurate (colors, vibe)
 
 ${keyMessage ? `KEY BENEFITS:\n${keyMessage}\n` : ''}
 
 STYLE:
-- Studio product photography
-- Apple-inspired minimalism
-- High-key lighting, NO shadows
-- 8K clarity, professional
-- Brand logo visible (${brandName})
+- High-quality, realistic, modern ad creative
+- Clean typography and clear hierarchy
+- Professional lighting and composition
+- No weird artifacts
+- If a logo appears, keep it subtle and realistic (do not invent complex marks)
 
 AUDIENCE: ${targetAudience || 'Job seekers'}
 
-DELIVERABLE: A scroll-stopping, brand-focused recruitment ad.`,
+${base}${hint}
+
+DELIVERABLE: A scroll-stopping hiring ad.`,
+
+    free_sample: `High-converting free sample advertisement for ${brandName}.
+
+CANVAS: ${sizeSpecs[size]}
+
+BRAND:
+- Brand Name: ${brandName}
+- Primary Color: ${brandColors.primary}
+- Secondary Color: ${brandColors.secondary}
+- Offer: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Make the product/sample the clear hero (packaging, bottle, box, kit)
+- Show "FREE SAMPLE" clearly (simple text, no spammy style)
+- Use clean background and a single accent
+- Avoid uniforms/aprons/hiring cues
+
+STYLE:
+- Premium product photography or clean lifestyle shot
+- Minimal, readable text
+- No clutter
+
+AUDIENCE: ${targetAudience || 'People interested in free samples'}
+
+${base}${hint}
+
+DELIVERABLE: A clean, trustworthy free sample ad.`,
+
+    credit_card: `High-converting credit card offer advertisement for ${brandName}.
+
+CANVAS: ${sizeSpecs[size]}
+
+BRAND:
+- Brand Name: ${brandName}
+- Market: ${geo}
+- Offer: ${niche}
+
+LAYOUT:
+- Clean, premium, trustworthy
+- Use abstract finance visuals (cards, subtle patterns) but avoid fake logos
+- No hiring/uniform visuals
+
+AUDIENCE: ${targetAudience || 'Applicants'}
+
+${base}${hint}
+
+DELIVERABLE: A compliant-looking, trustworthy credit offer ad.`,
+
+    government_program: `Clear informational advertisement for a government program.
+
+CANVAS: ${sizeSpecs[size]}
+
+TOPIC:
+- Program: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Informational, calm, trustworthy
+- Avoid sensational imagery
+- No uniforms/aprons/hiring visuals
+
+AUDIENCE: ${targetAudience || 'Eligible applicants'}
+
+${base}${hint}
+
+DELIVERABLE: A clean informational ad.`,
+
+    education: `High-converting education advertisement.
+
+CANVAS: ${sizeSpecs[size]}
+
+TOPIC:
+- Education offer: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Clean, optimistic, trustworthy
+- Use education visuals (books, laptop, graduation cap) without clutter
+
+AUDIENCE: ${targetAudience || 'Learners'}
+
+${base}${hint}
+
+DELIVERABLE: A clean education ad.`,
+
+    lead_gen: `High-converting lead generation advertisement.
+
+CANVAS: ${sizeSpecs[size]}
+
+TOPIC:
+- Offer: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Trust-first, simple, clear CTA
+- Avoid uniforms/aprons/hiring cues unless the niche is a job
+
+AUDIENCE: ${targetAudience || 'Prospects'}
+
+${base}${hint}
+
+DELIVERABLE: A clean lead gen ad.`,
+
+    trial_offer: `High-converting free trial advertisement.
+
+CANVAS: ${sizeSpecs[size]}
+
+TOPIC:
+- Trial offer: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Modern SaaS-style or product-style (depending on niche)
+- Trustworthy, simple, minimal text
+
+AUDIENCE: ${targetAudience || 'Prospects'}
+
+${base}${hint}
+
+DELIVERABLE: A clean trial ad.`,
+
+    sweepstakes: `High-converting giveaway / sweepstakes advertisement.
+
+CANVAS: ${sizeSpecs[size]}
+
+TOPIC:
+- Sweepstakes: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Exciting but not spammy
+- Prize-focused visuals (gift card, product box) with clean typography
+
+AUDIENCE: ${targetAudience || 'Entrants'}
+
+${base}${hint}
+
+DELIVERABLE: A clean giveaway ad.`,
+
+    discount_sale: `Bold sale/promotion advertisement for ${brandName}.
+
+CANVAS: ${sizeSpecs[size]}
+
+BRAND:
+- Brand Name: ${brandName}
+- Primary Color: ${brandColors.primary}
+- Secondary Color: ${brandColors.secondary}
+- Promotion: ${niche}
+- Market: ${geo}
+
+LAYOUT:
+- Background: High-contrast, attention-grabbing, but clean
+- Clear offer and CTA
+
+${keyMessage ? `OFFER DETAILS:\n${keyMessage}\n` : ''}
+
+STYLE:
+- Bold, impactful
+- Clear urgency
+
+AUDIENCE: ${targetAudience || 'Deal seekers'}
+
+${base}${hint}
+
+DELIVERABLE: A high-CTR sale ad.`,
+
+    product_launch: `Premium product launch advertisement for ${brandName}.
+
+CANVAS: ${sizeSpecs[size]}
+
+BRAND:
+- Brand Name: ${brandName}
+- Market: ${geo}
+- Launch: ${niche}
+
+LAYOUT:
+- Premium, clean, product-first
+- Avoid uniforms/aprons/hiring cues
+
+AUDIENCE: ${targetAudience || 'Customers'}
+
+${base}${hint}
+
+DELIVERABLE: A premium launch ad.`,
+
+    delivery_gig: `High-converting delivery/gig recruitment advertisement.
+
+CANVAS: ${sizeSpecs[size]}
+
+BRAND:
+- Brand Name: ${brandName}
+- Market: ${geo}
+- Offer: ${niche}
+
+LAYOUT:
+- Show delivery context (vehicle, app screen, courier outdoors) but keep it clean
+- Avoid random uniforms unless clearly delivery-related
+
+AUDIENCE: ${targetAudience || 'Drivers / couriers'}
+
+${base}${hint}
+
+DELIVERABLE: A gig recruitment ad.`,
 
     product: `Professional product advertisement for ${brandName}.
 
@@ -270,41 +488,18 @@ STYLE:
 
 AUDIENCE: ${targetAudience || 'Target customers'}
 
+${base}${hint}
+
 DELIVERABLE: High-converting product ad.`,
 
-    sale: `Bold sale/promotion advertisement for ${brandName}.
-
-CANVAS: ${sizeSpecs[size]}
-
-BRAND:
-- Brand Name: ${brandName}
-- Primary Color: ${brandColors.primary}
-- Secondary Color: ${brandColors.secondary}
-- Promotion: ${niche}
-- Market: ${geo}
-
-LAYOUT:
-- Background: High-contrast, attention-grabbing
-- Large SALE badge/banner in ${brandColors.primary}
-- Discount percentage if applicable (e.g., "50% OFF")
-- Product visual or branded element
-- Urgent CTA: "SHOP NOW", "LIMITED TIME" in ${brandColors.secondary}
-
-${keyMessage ? `OFFER DETAILS:\n${keyMessage}\n` : ''}
-
-STYLE:
-- Bold, impactful
-- High contrast
-- Clear urgency
-- Brand logo visible
-- Scroll-stopping
-
-AUDIENCE: ${targetAudience || 'Bargain hunters, deal seekers'}
-
-DELIVERABLE: Urgent, high-CTR sale ad.`,
+    // Legacy alias: keep supporting "sale"
+    sale: undefined as any,
   };
 
-  return templates[campaignType];
+  // Map legacy "sale" to discount_sale (keeps existing callers working)
+  const normalized = (campaignType === ('sale' as any) ? 'discount_sale' : campaignType) as CampaignType;
+  const t = (templates as any)[normalized] || templates.product;
+  return t;
 }
 
 // ============================================================================

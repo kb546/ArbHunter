@@ -488,9 +488,9 @@ export const CREATIVE_PRESETS: Record<CreativePreset, CreativePresetConfig> = {
   // ──────────────────────────────────────────────────────────────────────────
   'data-driven': {
     id: 'data-driven',
-    name: 'Data Driven',
-    description: 'Professional, credible, data-focused. Best for B2B, financial, enterprise.',
-    inspiration: 'Microsoft, IBM, LinkedIn',
+    name: 'Platform Compliant',
+    description: 'Clean, conservative direction optimized to reduce policy risk on Meta/Google/TikTok. Best when you want fewer surprises.',
+    inspiration: 'Microsoft, Stripe, enterprise brand guidelines',
     
     visualPrinciples: {
       composition: 'Structured, grid-based, organized. Professional symmetry.',

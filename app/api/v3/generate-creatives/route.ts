@@ -17,6 +17,8 @@ import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { runCreativeQcOnce, buildQcFixNotes } from '@/services/creative-qc-loop.service';
+import { detectCampaignType } from '@/services/campaign-type-detector.service';
+import { assessPolicyCompliance } from '@/services/policy-compliance.service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,32 +88,66 @@ export async function POST(request: NextRequest) {
       selectedModel = 'pro';
     }
 
-    // Determine campaign type from niche
-    let campaignType: 'recruitment' | 'product' | 'sale' = 'product';
-    if (/job|career|hiring|employment|work|position|opportunity|driver|courier|warehouse|retail/i.test(niche)) {
-      campaignType = 'recruitment';
-    } else if (/sale|discount|offer|deal|promo|clearance|%|off/i.test(niche)) {
-      campaignType = 'sale';
+    // Determine campaign type (AI + keyword fallback)
+    const campaignTypeResult = await detectCampaignType(niche, geo);
+    const campaignType = campaignTypeResult.campaignType;
+    console.log(`📋 Campaign type: ${campaignType} (${campaignTypeResult.confidence}% confidence)`);
+
+    const brandName = detectedBrand?.name || niche.split(' ')[0];
+    const brandColors = detectedBrand?.colors || {
+      primary: '#DFFF00',
+      secondary: '#2B2F36',
+    };
+
+    // Build 2 prompt variants to force diversity (prevents "uniform/apron everywhere")
+    function variationHintsFor(type: string): string[] {
+      const t = String(type);
+      if (t === 'recruitment') {
+        return [
+          'Scene: storefront exterior or store entrance, realistic signage, welcoming hiring message, no uniforms-on-hanger.',
+          'Scene: friendly team at work (employees + manager), candid but clean, no confusing props, no generic stock feel.',
+        ];
+      }
+      if (t === 'delivery_gig') {
+        return [
+          'Scene: courier outdoors near vehicle, upbeat, clean, modern.',
+          'Scene: app-driven gig vibe (phone UI hints, delivery bag), not a uniform-on-hanger.',
+        ];
+      }
+      if (t === 'free_sample') {
+        return [
+          'Scene: premium product hero shot (packaging clear), clean background, trust-first.',
+          'Scene: lifestyle use-case (bathroom vanity / skincare routine / clean countertop), product present, no hiring cues.',
+        ];
+      }
+      if (t === 'discount_sale') {
+        return [
+          'Scene: product hero + clean offer banner, minimal but bold.',
+          'Scene: lifestyle or storefront with offer emphasis, clean typography.',
+        ];
+      }
+      // default: product-like diversity
+      return [
+        'Scene: clean product hero shot, premium lighting.',
+        'Scene: lifestyle or graphic-only layout (no people) with clean typography.',
+      ];
     }
 
-    console.log(`📋 Campaign type: ${campaignType}`);
+    const promptVariants = variationHintsFor(campaignType).map((variationHint) =>
+      buildGeminiPrompt({
+        brandName,
+        brandColors,
+        campaignType: campaignType as any,
+        niche,
+        geo,
+        targetAudience,
+        size: 'square',
+        variationHint,
+      })
+    );
 
-    // Build brand-aware prompt
-    const prompt = buildGeminiPrompt({
-      brandName: detectedBrand?.name || niche.split(' ')[0],
-      brandColors: detectedBrand?.colors || {
-        primary: '#4F46E5',
-        secondary: '#8B5CF6',
-      },
-      campaignType,
-      niche,
-      geo,
-      targetAudience,
-      size: 'square', // Always square for social
-    });
-
-    console.log('\n📝 Generated Prompt:');
-    console.log(prompt.substring(0, 300) + '...\n');
+    console.log('\n📝 Prompt variants (first 220 chars):');
+    promptVariants.slice(0, 2).forEach((p, i) => console.log(`   V${i + 1}: ${p.substring(0, 220)}...`));
 
     // Generate images (+ QC regenerate safety net)
     console.log(`🚀 Generating ${variations} variations with ${selectedModel} model...`);
@@ -128,7 +164,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let generatedImages = await batchGenerate(prompt, variations, selectedModel);
+    let generatedImages = await batchGenerate(promptVariants, variations, selectedModel);
     let qcAttempts = 1;
     let qcFixNotes: string[] = [];
     let qcAssessments: any[] | null = null;
@@ -143,11 +179,12 @@ export async function POST(request: NextRequest) {
     console.log(`   Total cost: $${totalCost.toFixed(4)}`);
     console.log(`   Per ad: $${(totalCost / variations).toFixed(4)}`);
 
-    function buildCreativesFrom(images: any[], promptUsed: string): GeneratedCreativeV3[] {
+    function buildCreativesFrom(images: any[], promptsUsed: string | string[]): GeneratedCreativeV3[] {
       // Generate variation-specific copy
-      const headlines = generateHeadlines(niche, detectedBrand?.name, campaignType);
-      const subheadlines = generateSubheadlines(niche, campaignType, targetAudience);
-      const ctas = generateCTAs(campaignType);
+      const headlines = generateHeadlines(niche, detectedBrand?.name, campaignType as any);
+      const subheadlines = generateSubheadlines(niche, campaignType as any, targetAudience);
+      const ctas = generateCTAs(campaignType as any);
+      const promptArray = Array.isArray(promptsUsed) ? promptsUsed : Array(images.length).fill(promptsUsed);
 
       return images.map((img, idx) => ({
         id: `creative-${Date.now()}-${idx}`,
@@ -160,13 +197,13 @@ export async function POST(request: NextRequest) {
         brandScore: 0,
         textScore: 0,
         model: img.model,
-        prompt: promptUsed,
+        prompt: promptArray[idx % promptArray.length],
         generatedAt: new Date().toISOString(),
       }));
     }
 
     // Build response with AI-generated copy (scores filled by QC)
-    let creatives: GeneratedCreativeV3[] = buildCreativesFrom(generatedImages, prompt);
+    let creatives: GeneratedCreativeV3[] = buildCreativesFrom(generatedImages, promptVariants);
 
     // Run QC (with real image pixels), and regenerate once if below thresholds.
     try {
@@ -187,9 +224,11 @@ export async function POST(request: NextRequest) {
 
       if (!qc1.allOk && qcFixNotes.length > 0) {
         qcAttempts = 2;
-        const improvedPrompt = `${prompt}\n\nQC FIX REQUIREMENTS:\n- ${qcFixNotes.join('\n- ')}\n\nSTRICT: fix all issues above; avoid irrelevant props; keep brand accurate; keep layout clean.`;
-        generatedImages = await batchGenerate(improvedPrompt, variations, selectedModel);
-        creatives = buildCreativesFrom(generatedImages, improvedPrompt);
+        const improvedPromptVariants = promptVariants.map(
+          (p) => `${p}\n\nQC FIX REQUIREMENTS:\n- ${qcFixNotes.join('\n- ')}\n\nSTRICT: fix all issues above; avoid irrelevant props; keep brand accurate; keep layout clean.`
+        );
+        generatedImages = await batchGenerate(improvedPromptVariants, variations, selectedModel);
+        creatives = buildCreativesFrom(generatedImages, improvedPromptVariants);
 
         const qc2 = await runCreativeQcOnce({
           niche,
@@ -238,6 +277,25 @@ export async function POST(request: NextRequest) {
 
     // Sort by predicted CTR (highest first)
     creatives.sort((a, b) => b.predictedCTR - a.predictedCTR);
+
+    // Policy compliance check (non-blocking; for warnings only)
+    let policy: any = null;
+    try {
+      policy = await assessPolicyCompliance({
+        niche,
+        geo,
+        campaignType: String(campaignType),
+        creatives: creatives.map((c) => ({
+          id: c.id,
+          headline: c.headline,
+          subheadline: c.subheadline,
+          cta: c.cta,
+          prompt: c.prompt,
+        })),
+      });
+    } catch {
+      policy = null;
+    }
 
     // If a campaign is provided, persist creatives + copies + variations (RLS protected).
     if (campaignId && isSupabaseConfigured()) {
@@ -344,6 +402,7 @@ export async function POST(request: NextRequest) {
           thresholds: qcThresholds,
           bestVariationId: qcBestId,
         },
+        policy,
       },
     });
   } catch (error: any) {
@@ -362,84 +421,198 @@ export async function POST(request: NextRequest) {
 function generateHeadlines(
   niche: string,
   brandName: string | undefined,
-  campaignType: 'recruitment' | 'product' | 'sale'
+  campaignType: string
 ): string[] {
   const brand = brandName || niche.split(' ')[0];
 
-  if (campaignType === 'recruitment') {
+  if (campaignType === 'recruitment' || campaignType === 'delivery_gig') {
     return [
       `${brand.toUpperCase()} IS HIRING NOW`,
       `Join the ${brand} Team Today`,
       `${brand} Careers - Start This Week`,
       `Now Hiring at ${brand}`,
     ];
-  } else if (campaignType === 'sale') {
+  }
+  if (campaignType === 'free_sample') {
+    return [
+      `Get a Free Sample from ${brand}`,
+      `${brand} Free Sample - Limited Supply`,
+      `Try ${brand} - Free Sample`,
+      `Claim Your ${brand} Sample`,
+    ];
+  }
+  if (campaignType === 'credit_card') {
+    return [
+      `${brand} Card Offer`,
+      `Apply for ${brand} Today`,
+      `${brand} Rewards - Apply Now`,
+      `Get More With ${brand}`,
+    ];
+  }
+  if (campaignType === 'government_program') {
+    return [
+      `Check Your Eligibility`,
+      `See If You Qualify`,
+      `Apply If Eligible`,
+      `Get Help Today`,
+    ];
+  }
+  if (campaignType === 'education') {
+    return [
+      `Learn and Level Up`,
+      `Scholarships & Programs`,
+      `Start Learning Today`,
+      `Build New Skills`,
+    ];
+  }
+  if (campaignType === 'sweepstakes') {
+    return [
+      `Enter to Win`,
+      `Win Big Today`,
+      `Limited Time Giveaway`,
+      `Join the Giveaway`,
+    ];
+  }
+  if (campaignType === 'trial_offer') {
+    return [
+      `Try It Free`,
+      `Start Your Free Trial`,
+      `Try Risk-Free Today`,
+      `Get Started Free`,
+    ];
+  }
+  if (campaignType === 'discount_sale' || campaignType === 'sale') {
     return [
       `${brand} SALE - Limited Time`,
       `Huge Savings at ${brand}`,
       `Don't Miss ${brand}'s Best Deal`,
       `${brand} - Shop Now & Save`,
     ];
-  } else {
-    return [
-      `Discover ${brand}`,
-      `${brand} - Premium Quality`,
-      `Experience ${brand}`,
-      `${brand} - Try It Today`,
-    ];
   }
+  return [
+    `Discover ${brand}`,
+    `${brand} - Premium Quality`,
+    `Experience ${brand}`,
+    `${brand} - Try It Today`,
+  ];
 }
 
 function generateSubheadlines(
   niche: string,
-  campaignType: 'recruitment' | 'product' | 'sale',
+  campaignType: string,
   targetAudience?: string
 ): string[] {
-  if (campaignType === 'recruitment') {
+  if (campaignType === 'recruitment' || campaignType === 'delivery_gig') {
     return [
       'Weekly pay, flexible hours, start this week',
       'Great benefits and career growth opportunities',
       'Join our team - apply in 2 minutes',
       'No experience needed - we provide training',
     ];
-  } else if (campaignType === 'sale') {
+  }
+  if (campaignType === 'free_sample') {
+    return [
+      'Limited supply - claim yours today',
+      'Try it at home - while stock lasts',
+      'Simple signup - quick delivery',
+      'Trusted quality - try before you buy',
+    ];
+  }
+  if (campaignType === 'credit_card') {
+    return [
+      'Apply in minutes, see if you qualify',
+      'Rewards, benefits, and simple terms',
+      'A card designed for everyday spending',
+      'Limited-time offer - apply today',
+    ];
+  }
+  if (campaignType === 'government_program') {
+    return [
+      'Check eligibility in minutes',
+      'Get support if you qualify',
+      'Apply online with simple steps',
+      'See your options today',
+    ];
+  }
+  if (campaignType === 'education') {
+    return [
+      'Flexible options for busy schedules',
+      'Start today and learn step by step',
+      'Programs available now',
+      'Apply or enroll in minutes',
+    ];
+  }
+  if (campaignType === 'sweepstakes') {
+    return [
+      'Limited time entry - don’t miss out',
+      'Simple entry, quick signup',
+      'Enter now while it’s live',
+      'Your chance to win today',
+    ];
+  }
+  if (campaignType === 'trial_offer') {
+    return [
+      'Cancel anytime',
+      'Try it risk-free today',
+      'Start in minutes',
+      'No commitment to get started',
+    ];
+  }
+  if (campaignType === 'discount_sale' || campaignType === 'sale') {
     return [
       'Limited time offer - save up to 50%',
       'Shop now before it\'s too late',
       'Exclusive deals you can\'t miss',
       'Lowest prices of the season',
     ];
-  } else {
-    return [
-      targetAudience ? `Perfect for ${targetAudience}` : 'Premium quality, unbeatable value',
-      'Trusted by thousands worldwide',
-      'Experience the difference today',
-      'Limited availability - order now',
-    ];
   }
+  return [
+    targetAudience ? `Perfect for ${targetAudience}` : 'Premium quality, unbeatable value',
+    'Trusted by thousands worldwide',
+    'Experience the difference today',
+    'Limited availability - order now',
+  ];
 }
 
-function generateCTAs(campaignType: 'recruitment' | 'product' | 'sale'): string[] {
-  if (campaignType === 'recruitment') {
+function generateCTAs(campaignType: string): string[] {
+  if (campaignType === 'recruitment' || campaignType === 'delivery_gig') {
     return [
       'APPLY NOW',
       'APPLY TODAY',
       'START NOW',
       'JOIN US',
     ];
-  } else if (campaignType === 'sale') {
+  }
+  if (campaignType === 'free_sample') {
+    return ['CLAIM SAMPLE', 'GET FREE SAMPLE', 'CLAIM NOW', 'GET STARTED'];
+  }
+  if (campaignType === 'credit_card') {
+    return ['APPLY NOW', 'CHECK ELIGIBILITY', 'LEARN MORE', 'GET STARTED'];
+  }
+  if (campaignType === 'government_program') {
+    return ['CHECK NOW', 'SEE IF YOU QUALIFY', 'APPLY', 'LEARN MORE'];
+  }
+  if (campaignType === 'education') {
+    return ['APPLY', 'ENROLL', 'LEARN MORE', 'GET STARTED'];
+  }
+  if (campaignType === 'sweepstakes') {
+    return ['ENTER NOW', 'JOIN NOW', 'LEARN MORE', 'GET STARTED'];
+  }
+  if (campaignType === 'trial_offer') {
+    return ['START FREE TRIAL', 'TRY NOW', 'GET STARTED', 'LEARN MORE'];
+  }
+  if (campaignType === 'discount_sale' || campaignType === 'sale') {
     return [
       'SHOP NOW',
       'SAVE NOW',
       'GET OFFER',
       'SHOP SALE',
     ];
-  } else {
-    return [
-      'LEARN MORE',
-      'GET STARTED',
-      'TRY NOW',
-      'SHOP NOW',
-    ];
   }
+  return [
+    'LEARN MORE',
+    'GET STARTED',
+    'TRY NOW',
+    'SHOP NOW',
+  ];
 }

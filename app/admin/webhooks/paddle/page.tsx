@@ -56,7 +56,7 @@ export default async function PaddleWebhookAdminPage() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border bg-white">
+      <div className="mt-6 overflow-x-auto rounded-lg border bg-card">
         <table className="min-w-[1100px] w-full text-sm">
           <thead className="bg-muted/40">
             <tr className="text-left">
@@ -95,7 +95,7 @@ export default async function PaddleWebhookAdminPage() {
                   {row.related_transaction_id ? <code className="text-xs">{row.related_transaction_id}</code> : ''}
                 </td>
                 <td className="p-3">
-                  {row.process_error ? <div className="text-xs text-red-600">{row.process_error}</div> : ''}
+                  {row.process_error ? <div className="text-xs text-destructive">{row.process_error}</div> : ''}
                 </td>
               </tr>
             ))}

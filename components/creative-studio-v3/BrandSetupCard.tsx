@@ -18,8 +18,8 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
   const [logo, setLogo] = useState<string | null>(
     typeof initialBrand?.logo === 'string' ? initialBrand.logo : null
   );
-  const [primaryColor, setPrimaryColor] = useState(initialBrand?.colors.primary || '#4F46E5');
-  const [secondaryColor, setSecondaryColor] = useState(initialBrand?.colors.secondary || '#8B5CF6');
+  const [primaryColor, setPrimaryColor] = useState(initialBrand?.colors.primary || '#DFFF00');
+  const [secondaryColor, setSecondaryColor] = useState(initialBrand?.colors.secondary || '#2B2F36');
   const [isCompleted, setIsCompleted] = useState(!!initialBrand);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,21 +58,21 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
   };
 
   return (
-    <Card className="p-8 shadow-sm border border-gray-200">
+    <Card className="p-8 shadow-sm border border-border bg-card">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 text-sm font-semibold">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
               1
             </span>
             Your Brand
           </h2>
-          <p className="text-sm text-gray-600 mt-1 ml-10">
-            Upload your logo and we'll extract brand colors automatically
+          <p className="text-sm text-muted-foreground mt-1 ml-10">
+            Optional: add a logo and tweak colors (auto brand detection is preferred in Creative Studio V2).
           </p>
         </div>
         {isCompleted && (
-          <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+          <div className="flex items-center gap-2 text-emerald-500 text-sm font-medium">
             <Check className="h-5 w-5" />
             Completed
           </div>
@@ -82,23 +82,23 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Logo Upload */}
         <div>
-          <Label className="text-sm font-medium text-gray-700 mb-3 block">
+          <Label className="text-sm font-medium text-foreground mb-3 block">
             Brand Logo
           </Label>
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/50 transition-all aspect-square flex items-center justify-center"
+            className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-all aspect-square flex items-center justify-center"
           >
             {logo ? (
               <img src={logo} alt="Brand logo" className="max-w-full max-h-full object-contain" />
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Upload className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Upload Logo</p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                  <p className="text-sm font-medium text-foreground">Upload logo</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG/JPG up to 5MB</p>
                 </div>
               </div>
             )}
@@ -115,7 +115,7 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
         {/* Brand Details */}
         <div className="space-y-5">
           <div>
-            <Label htmlFor="brandName" className="text-sm font-medium text-gray-700 mb-2 block">
+            <Label htmlFor="brandName" className="text-sm font-medium text-foreground mb-2 block">
               Brand Name
             </Label>
             <Input
@@ -128,7 +128,7 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
           </div>
 
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+            <Label className="text-sm font-medium text-foreground mb-2 block">
               Brand Colors
             </Label>
             <div className="space-y-3">
@@ -139,16 +139,16 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
                     type="color"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                    className="w-12 h-12 rounded-lg border-2 border-border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Input
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      placeholder="#4F46E5"
+                      placeholder="#DFFF00"
                       className="h-11 font-mono"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Primary</p>
+                    <p className="text-xs text-muted-foreground mt-1">Primary</p>
                   </div>
                 </div>
               </div>
@@ -160,16 +160,16 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
                     type="color"
                     value={secondaryColor}
                     onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                    className="w-12 h-12 rounded-lg border-2 border-border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Input
                       value={secondaryColor}
                       onChange={(e) => setSecondaryColor(e.target.value)}
-                      placeholder="#8B5CF6"
+                      placeholder="#2B2F36"
                       className="h-11 font-mono"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Secondary</p>
+                    <p className="text-xs text-muted-foreground mt-1">Secondary</p>
                   </div>
                 </div>
               </div>
@@ -197,7 +197,7 @@ export function BrandSetupCard({ onBrandSetup, initialBrand }: BrandSetupCardPro
         <Button
           onClick={handleSave}
           disabled={!brandName}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 h-11"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 h-11"
         >
           {isCompleted ? 'Update Brand Kit' : 'Save Brand Kit'}
         </Button>

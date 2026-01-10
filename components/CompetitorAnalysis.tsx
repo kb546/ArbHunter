@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, TrendingUp, Users } from 'lucide-react';
+import { ExternalLink, Loader2, TrendingUp, Users } from 'lucide-react';
 import type { CompetitorAd } from '@/services/competitors.service';
 
 interface CompetitorAnalysisProps {
@@ -48,12 +48,12 @@ export function CompetitorAnalysis({ geo, niche }: CompetitorAnalysisProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>🎯 Competitor Analysis</CardTitle>
+          <CardTitle>Competitor Analysis</CardTitle>
           <CardDescription>Loading competitor data...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="text-4xl">⏳</div>
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         </CardContent>
       </Card>
@@ -77,9 +77,9 @@ export function CompetitorAnalysis({ geo, niche }: CompetitorAnalysisProps) {
                 {competitors.length} active advertisers found for "{niche}" in {geo}
                 {dataSource && (
                   <Badge variant="outline" className="ml-2 text-xs">
-                    {dataSource === 'apify' && '🔑 Apify Data'}
-                    {dataSource === 'playwright' && '🎭 Browser Data'}
-                    {dataSource === 'mock' && '🎭 Demo Data'}
+                    {dataSource === 'apify' && 'Apify'}
+                    {dataSource === 'playwright' && 'Browser'}
+                    {dataSource === 'mock' && 'Demo'}
                   </Badge>
                 )}
               </CardDescription>
@@ -155,7 +155,7 @@ export function CompetitorAnalysis({ geo, niche }: CompetitorAnalysisProps) {
                             href={competitor.ad_preview.image_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:underline"
+                            className="text-xs text-primary hover:underline"
                           >
                             View Landing Page →
                           </a>
@@ -203,9 +203,9 @@ export function CompetitorAnalysis({ geo, niche }: CompetitorAnalysisProps) {
 
       {/* Insights */}
       {competitors.length > 0 && (
-        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
+        <Card className="bg-muted/30 border-border">
           <CardHeader>
-            <CardTitle className="text-base">💡 Insights</CardTitle>
+            <CardTitle className="text-base">Insights</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>

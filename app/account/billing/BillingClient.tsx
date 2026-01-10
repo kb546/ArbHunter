@@ -95,15 +95,15 @@ export default function BillingClient(props: BillingClientProps) {
         <Card className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-gray-500">Current plan</div>
+              <div className="text-sm text-muted-foreground">Current plan</div>
               <div className="mt-1">
-                <Badge variant="outline" className="bg-white">
+                <Badge variant="outline" className="bg-transparent">
                   {currentPlan.toUpperCase()}
                 </Badge>
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Status</div>
+              <div className="text-sm text-muted-foreground">Status</div>
               <div className="mt-1">
                 <Badge className="bg-[color:var(--primary)] text-[color:var(--primary-foreground)]">
                   {status.toUpperCase()}
@@ -111,16 +111,16 @@ export default function BillingClient(props: BillingClientProps) {
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 {status === 'trialing' ? 'Trial ends' : 'Next billing / period end'}
               </div>
-              <div className="text-sm font-medium text-gray-900 mt-1">
+              <div className="text-sm font-medium text-foreground mt-1">
                 {trialOrRenewal || '—'}
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Cancel at period end</div>
-              <div className="text-sm font-medium text-gray-900 mt-1">
+              <div className="text-sm text-muted-foreground">Cancel at period end</div>
+              <div className="text-sm font-medium text-foreground mt-1">
                 {subscription?.cancel_at_period_end ? 'Yes' : 'No'}
               </div>
             </div>
@@ -132,22 +132,22 @@ export default function BillingClient(props: BillingClientProps) {
 
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg border p-4">
-              <div className="text-sm text-gray-500">Discoveries</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="text-sm text-muted-foreground">Discoveries</div>
+              <div className="mt-1 text-lg font-semibold text-foreground">
                 {usage.discoveriesUsed}
                 {usage.discoveriesLimit === null ? ' / ∞' : ` / ${usage.discoveriesLimit}`}
               </div>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="text-sm text-muted-foreground mt-1">
                 Remaining: {discoveriesRemaining === null ? '∞' : discoveriesRemaining}
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-sm text-gray-500">Creatives generated</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="text-sm text-muted-foreground">Creatives generated</div>
+              <div className="mt-1 text-lg font-semibold text-foreground">
                 {usage.creativesUsed}
                 {usage.creativesLimit === null ? ' / ∞' : ` / ${usage.creativesLimit}`}
               </div>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="text-sm text-muted-foreground mt-1">
                 Remaining: {creativesRemaining === null ? '∞' : creativesRemaining}
               </div>
             </div>
@@ -156,8 +156,8 @@ export default function BillingClient(props: BillingClientProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5">
-            <div className="font-semibold text-gray-900">Starter</div>
-            <div className="text-sm text-gray-600 mt-1">For early testing</div>
+            <div className="font-semibold text-foreground">Starter</div>
+            <div className="text-sm text-muted-foreground mt-1">For early testing</div>
             <div className="mt-4">
               <Button className="w-full" disabled={isWorking} onClick={() => changePlan('starter')}>
                 Switch to Starter
@@ -165,8 +165,8 @@ export default function BillingClient(props: BillingClientProps) {
             </div>
           </Card>
           <Card className="p-5">
-            <div className="font-semibold text-gray-900">Pro</div>
-            <div className="text-sm text-gray-600 mt-1">For consistent scaling</div>
+            <div className="font-semibold text-foreground">Pro</div>
+            <div className="text-sm text-muted-foreground mt-1">For consistent scaling</div>
             <div className="mt-4">
               <Button className="w-full" disabled={isWorking} onClick={() => changePlan('pro')}>
                 Switch to Pro
@@ -174,8 +174,8 @@ export default function BillingClient(props: BillingClientProps) {
             </div>
           </Card>
           <Card className="p-5">
-            <div className="font-semibold text-gray-900">Agency</div>
-            <div className="text-sm text-gray-600 mt-1">For teams & volume</div>
+            <div className="font-semibold text-foreground">Agency</div>
+            <div className="text-sm text-muted-foreground mt-1">For teams & volume</div>
             <div className="mt-4">
               <Button className="w-full" disabled={isWorking} onClick={() => changePlan('agency')}>
                 Switch to Agency
@@ -187,8 +187,8 @@ export default function BillingClient(props: BillingClientProps) {
         <Card className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div className="font-semibold text-gray-900">Cancel subscription</div>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="font-semibold text-foreground">Cancel subscription</div>
+              <div className="text-sm text-muted-foreground mt-1">
                 You can cancel anytime. Access may remain until your current period ends.
               </div>
             </div>

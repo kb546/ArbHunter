@@ -13,25 +13,12 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
 
 interface BatchDiscoveryProps {
   onSubmit: (geo: string, niches: string[]) => void;
   isLoading?: boolean;
 }
-
-// Tier 2.5 markets with good arbitrage potential
-const GEOS = [
-  { code: 'ZA', name: 'South Africa', tier: '2.5' },
-  { code: 'PH', name: 'Philippines', tier: '2.5' },
-  { code: 'ID', name: 'Indonesia', tier: '2.5' },
-  { code: 'NG', name: 'Nigeria', tier: '2.5' },
-  { code: 'EG', name: 'Egypt', tier: '2.5' },
-  { code: 'KE', name: 'Kenya', tier: '2.5' },
-  { code: 'PK', name: 'Pakistan', tier: '2.5' },
-  { code: 'VN', name: 'Vietnam', tier: '2.5' },
-  { code: 'BD', name: 'Bangladesh', tier: '2.5' },
-  { code: 'TH', name: 'Thailand', tier: '2.5' },
-];
 
 // Suggested niche templates
 const SUGGESTED_NICHES = [
@@ -100,10 +87,27 @@ export function BatchDiscovery({ onSubmit, isLoading = false }: BatchDiscoveryPr
               <SelectTrigger id="batch-geo">
                 <SelectValue placeholder="Select a geographic market" />
               </SelectTrigger>
-              <SelectContent>
-                {GEOS.map((g) => (
-                  <SelectItem key={g.code} value={g.code}>
-                    {g.name} ({g.code}) - Tier {g.tier}
+              <SelectContent className="max-h-[300px]">
+                {/* Worldwide */}
+                <SelectItem value="WW" className="font-semibold text-foreground">
+                  Worldwide
+                </SelectItem>
+
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
+                  Tier 1 - Premium Markets
+                </div>
+                {COUNTRIES.filter((c) => c.tier === 1).map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {getCountryDisplayName(country)}
+                  </SelectItem>
+                ))}
+
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase mt-2">
+                  Tier 2 - Growing Markets
+                </div>
+                {COUNTRIES.filter((c) => c.tier === 2).map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {getCountryDisplayName(country)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -120,7 +124,7 @@ export function BatchDiscovery({ onSubmit, isLoading = false }: BatchDiscoveryPr
                 placeholder="e.g., KFC careers"
                 value={currentNiche}
                 onChange={(e) => setCurrentNiche(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 disabled={isLoading}
                 className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -183,12 +187,10 @@ export function BatchDiscovery({ onSubmit, isLoading = false }: BatchDiscoveryPr
           >
             {isLoading ? (
               <>
-                <span className="mr-2">⏳</span>
                 Analyzing {niches.length} {niches.length === 1 ? 'Niche' : 'Niches'}...
               </>
             ) : (
               <>
-                <span className="mr-2">🚀</span>
                 Run Batch Discovery ({niches.length} {niches.length === 1 ? 'Niche' : 'Niches'})
               </>
             )}
@@ -196,8 +198,7 @@ export function BatchDiscovery({ onSubmit, isLoading = false }: BatchDiscoveryPr
 
           {niches.length > 0 && (
             <p className="text-xs text-muted-foreground text-center">
-              ⚡ This will analyze {niches.length} {niches.length === 1 ? 'niche' : 'niches'} in{' '}
-              {geo || 'your selected GEO'}
+              This will analyze {niches.length} {niches.length === 1 ? 'niche' : 'niches'} in {geo || 'your selected GEO'}.
             </p>
           )}
         </form>

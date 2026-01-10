@@ -12,9 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Sparkles, Loader2, ChevronDown, Info, Zap, Layers } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Info, Zap, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -36,7 +35,6 @@ function CreativeStudioContent() {
   const [targetAudience, setTargetAudience] = useState('');
   const [model, setModel] = useState<'auto' | 'fast' | 'pro'>('auto');
   const [creativePreset, setCreativePreset] = useState<CreativePreset>('premium-minimal');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   
   // Mode state (quick vs batch)
   const [mode, setMode] = useState<'quick' | 'batch'>('quick');
@@ -129,7 +127,7 @@ function CreativeStudioContent() {
       setGeneratedAds(data.creatives);
       setQcMeta(data?.metadata?.qc ? { attempts: data.metadata.qc.attempts, bestVariationId: data.metadata.qc.bestVariationId } : null);
       
-      toast.success(`Generated 2 test ads! Cost: $${data.totalCost.toFixed(4)}`, {
+      toast.success(`Generated 2 test ads!`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
       });
 
@@ -249,7 +247,7 @@ function CreativeStudioContent() {
         aiAgentsUsed: data.metadata.aiAgentsUsed,
       });
       
-      toast.success(`Generated ${config.batchSize} unique ads! Cost: $${data.totalCost.toFixed(4)}`, {
+      toast.success(`Generated ${config.batchSize} unique ads!`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
       });
 
@@ -368,7 +366,7 @@ function CreativeStudioContent() {
                       Lifestyle Authentic - Patagonia-Inspired
                     </SelectItem>
                     <SelectItem value="data-driven">
-                      Data-Driven - Microsoft-Inspired
+                      Platform Compliant - Meta/Google/TikTok
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -453,13 +451,13 @@ function CreativeStudioContent() {
                       )}
                     </Button>
 
-                    {/* Cost/Time Info */}
+                    {/* Time Info */}
                     {!isGenerating && (
                       <div className="mt-3 text-center">
                         <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                           <Info className="h-4 w-4" />
                           <span>
-                            Cost: ~$0.02 • Time: ~20s • Always 2 variations for A/B testing
+                            Time: ~20s • Always 2 variations for A/B testing
                           </span>
                         </p>
                       </div>
@@ -479,58 +477,27 @@ function CreativeStudioContent() {
                 )}
               </div>
 
-              {/* Advanced Settings (Collapsed) */}
-              <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-                <CollapsibleTrigger asChild>
-                  <button className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors">
-                    Advanced Settings
-                    <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">
-                        AI Model Selection
-                      </Label>
-                      <Select value={model} onValueChange={(v: any) => setModel(v)}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">
-                            Auto (Based on margin score) - Recommended
-                          </SelectItem>
-                          <SelectItem value="pro">
-                            Gemini Pro (High quality, $0.01/ad)
-                          </SelectItem>
-                          <SelectItem value="fast">
-                            Gemini Fast (Quick, $0.002/ad)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {model === 'auto' && 'Uses Pro for high-margin discoveries, Fast for low-margin'}
-                        {model === 'pro' && 'Best quality for final production ads'}
-                        {model === 'fast' && 'Speed optimized for bulk testing'}
-                      </p>
-                    </div>
-
-                    {marginScore && (
-                      <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-                        <p className="text-xs font-medium text-foreground">
-                          Discovery Margin Score: {marginScore.toFixed(1)}/10
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {marginScore >= 8 && 'High margin → Gemini Pro recommended'}
-                          {marginScore >= 6 && marginScore < 8 && 'Medium margin → Gemini Fast recommended'}
-                          {marginScore < 6 && 'Low margin → Consider skipping'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+              {/* Model selection (Quick only) */}
+              {mode === 'quick' ? (
+                <div className="pt-2">
+                  <Label className="text-sm font-medium mb-2 block">Model</Label>
+                  <Select value={model} onValueChange={(v: any) => setModel(v)}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Auto (recommended)</SelectItem>
+                      <SelectItem value="pro">Gemini Pro (best quality)</SelectItem>
+                      <SelectItem value="fast">Gemini Fast (quick testing)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {model === 'auto' && 'Auto-selects quality based on opportunity strength.'}
+                    {model === 'pro' && 'Highest quality output.'}
+                    {model === 'fast' && 'Fastest turnaround for testing.'}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </Card>
 
@@ -624,8 +591,8 @@ function CreativeStudioContent() {
                     <p className="text-xs text-muted-foreground mt-1">Generation</p>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
-                    <p className="text-2xl font-bold text-[color:var(--primary)]">$0.02</p>
-                    <p className="text-xs text-muted-foreground mt-1">Total Cost</p>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">A/B</p>
+                    <p className="text-xs text-muted-foreground mt-1">2 variations</p>
                   </div>
                 </div>
               </div>

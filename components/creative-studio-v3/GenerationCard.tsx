@@ -34,16 +34,16 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
   };
 
   return (
-    <Card className="p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border border-indigo-100">
+    <Card className="p-8 bg-card border border-border">
       <div className="text-center space-y-6">
         {/* Header */}
         <div>
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-lg font-semibold mb-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground text-lg font-semibold mb-4">
             3
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Ready to Generate?</h2>
-          <p className="text-gray-600 mt-2">
-            AI will create brand-accurate ad creatives for <span className="font-semibold text-indigo-600">{brandKit.name}</span> in seconds
+          <h2 className="text-2xl font-bold text-foreground">Ready to generate?</h2>
+          <p className="text-muted-foreground mt-2">
+            AI will create brand-accurate ad creatives for <span className="font-semibold text-foreground">{brandKit.name}</span> in seconds
           </p>
         </div>
 
@@ -55,20 +55,20 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
             disabled={isGenerating}
             className={`p-6 border-2 rounded-xl transition-all ${
               selectedMode === 'fast'
-                ? 'border-indigo-500 bg-white shadow-lg scale-105'
-                : 'border-gray-200 bg-white/50 hover:border-indigo-300 hover:bg-white'
+                ? 'border-primary bg-card shadow-lg scale-105'
+                : 'border-border bg-muted/20 hover:border-primary/40 hover:bg-card'
             } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <Zap className={`mx-auto h-10 w-10 mb-3 ${
-              selectedMode === 'fast' ? 'text-indigo-600' : 'text-gray-400'
+              selectedMode === 'fast' ? 'text-primary' : 'text-muted-foreground'
             }`} />
-            <p className="font-bold text-lg text-gray-900">Fast Mode</p>
-            <p className="text-sm text-gray-600 mt-1">2 variations</p>
-            <p className="text-xs text-gray-500 mt-2">
-              ⚡ Nano Banana • ~10s • Low cost
+            <p className="font-bold text-lg text-foreground">Fast Mode</p>
+            <p className="text-sm text-muted-foreground mt-1">2 variations</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Nano Banana • ~10s
             </p>
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-600">Perfect for quick testing</p>
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">Perfect for quick testing</p>
             </div>
           </button>
 
@@ -78,20 +78,20 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
             disabled={isGenerating}
             className={`p-6 border-2 rounded-xl transition-all ${
               selectedMode === 'pro'
-                ? 'border-purple-500 bg-white shadow-lg scale-105'
-                : 'border-gray-200 bg-white/50 hover:border-purple-300 hover:bg-white'
+                ? 'border-primary bg-card shadow-lg scale-105'
+                : 'border-border bg-muted/20 hover:border-primary/40 hover:bg-card'
             } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <Sparkles className={`mx-auto h-10 w-10 mb-3 ${
-              selectedMode === 'pro' ? 'text-purple-600' : 'text-gray-400'
+              selectedMode === 'pro' ? 'text-primary' : 'text-muted-foreground'
             }`} />
-            <p className="font-bold text-lg text-gray-900">Pro Mode</p>
-            <p className="text-sm text-gray-600 mt-1">5 variations</p>
-            <p className="text-xs text-gray-500 mt-2">
-              💎 Nano Banana Pro • ~30s • Higher quality
+            <p className="font-bold text-lg text-foreground">Pro Mode</p>
+            <p className="text-sm text-muted-foreground mt-1">5 variations</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Nano Banana Pro • ~30s
             </p>
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-600">Best for final production</p>
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">Best for final production</p>
             </div>
           </button>
         </div>
@@ -101,7 +101,7 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
           size="lg"
           onClick={handleGenerate}
           disabled={isGenerating}
-          className="w-full max-w-md mx-auto h-14 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all"
+          className="w-full max-w-md mx-auto h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
         >
           {isGenerating ? (
             <>
@@ -119,16 +119,16 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
         {/* Advanced Settings */}
         <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
           <CollapsibleTrigger asChild>
-            <button className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 mx-auto transition-colors">
+            <button className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors">
               Advanced Settings
               <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="mt-6 p-6 bg-white rounded-xl max-w-2xl mx-auto space-y-4">
+            <div className="mt-6 p-6 bg-card rounded-xl max-w-2xl mx-auto space-y-4 border border-border">
               {/* Image Size */}
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label className="text-sm font-medium text-foreground mb-2 block">
                   Image Size
                 </Label>
                 <Select value={size} onValueChange={(v: any) => setSize(v)}>
@@ -145,7 +145,7 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
 
               {/* Model Selection */}
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label className="text-sm font-medium text-foreground mb-2 block">
                   AI Model
                 </Label>
                 <Select value={model} onValueChange={(v: any) => setModel(v)}>
@@ -154,17 +154,17 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="auto">
-                      🤖 Auto (Best Quality) - Recommended
+                      Auto (recommended)
                     </SelectItem>
                     <SelectItem value="fast">
-                      ⚡ Nano Banana (Fast) - 2-5 seconds
+                      Nano Banana (fast)
                     </SelectItem>
                     <SelectItem value="pro">
-                      💎 Nano Banana Pro (Quality) - 10-15 seconds
+                      Nano Banana Pro (quality)
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Auto mode uses Pro for final generation, Fast for previews
                 </p>
               </div>
@@ -174,9 +174,9 @@ export function GenerationCard({ onGenerate, isGenerating, brandKit, campaignDat
 
         {/* Campaign Summary */}
         {!isGenerating && (
-          <div className="mt-6 p-4 bg-white/80 rounded-lg max-w-2xl mx-auto">
-            <p className="text-xs text-gray-500 mb-2">CAMPAIGN SUMMARY</p>
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-700">
+          <div className="mt-6 p-4 bg-muted/20 rounded-lg max-w-2xl mx-auto border border-border">
+            <p className="text-xs text-muted-foreground mb-2">CAMPAIGN SUMMARY</p>
+            <div className="flex items-center justify-center gap-4 text-sm text-foreground">
               <span><span className="font-medium">Brand:</span> {brandKit.name}</span>
               <span>•</span>
               <span><span className="font-medium">Type:</span> {campaignData.type}</span>

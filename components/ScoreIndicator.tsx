@@ -10,11 +10,12 @@ interface ScoreIndicatorProps {
 
 export function ScoreIndicator({ score, size = 'md', showLabel = true }: ScoreIndicatorProps) {
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-blue-500';
-    if (score >= 40) return 'bg-yellow-500';
-    if (score >= 20) return 'bg-orange-500';
-    return 'bg-red-500';
+    // Acid Predator: use Electric Lime for strong/positive signals
+    if (score >= 80) return 'bg-primary text-primary-foreground';
+    if (score >= 60) return 'bg-primary/85 text-primary-foreground';
+    if (score >= 40) return 'bg-amber-500 text-black';
+    if (score >= 20) return 'bg-orange-500 text-white';
+    return 'bg-destructive text-destructive-foreground';
   };
 
   const getScoreLabel = (score: number): string => {
@@ -42,7 +43,7 @@ export function ScoreIndicator({ score, size = 'md', showLabel = true }: ScoreIn
     <div className="flex items-center gap-2">
       {/* Score Number */}
       <div
-        className={`flex items-center justify-center font-bold text-white rounded-md px-3 ${sizeClasses[size]} ${getScoreColor(score)}`}
+        className={`flex items-center justify-center font-bold rounded-md px-3 ${sizeClasses[size]} ${getScoreColor(score)}`}
       >
         {score}
       </div>

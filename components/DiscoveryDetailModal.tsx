@@ -129,7 +129,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all"
+                      className="h-full bg-primary transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '40%' }}
                     />
                   </div>
@@ -148,7 +148,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all"
+                      className="h-full bg-primary/80 transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '30%' }}
                     />
                   </div>
@@ -167,7 +167,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all"
+                      className="h-full bg-primary/60 transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '30%' }}
                     />
                   </div>
@@ -214,8 +214,8 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                     <p
                       className={`text-2xl font-bold ${
                         discovery.trend_velocity.growth_rate > 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
+                          ? 'text-emerald-500'
+                          : 'text-destructive'
                       }`}
                     >
                       {discovery.trend_velocity.growth_rate > 0 ? '+' : ''}
@@ -291,7 +291,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 transition-all"
+                        className="h-full bg-primary transition-all"
                         style={{ width: `${discovery.competition_data.market_saturation}%` }}
                       />
                     </div>
@@ -327,7 +327,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                 )}
                 {discovery.margin_score >= 60 && discovery.margin_score < 80 && (
                   <>
-                    <strong className="text-blue-600">GOOD OPPORTUNITY</strong> - Solid potential for
+                    <strong className="text-[color:var(--primary)]">GOOD OPPORTUNITY</strong> - Solid potential for
                     profitability. Launch with a moderate budget and monitor performance closely for
                     the first 48 hours.
                   </>
