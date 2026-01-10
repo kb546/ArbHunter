@@ -54,7 +54,13 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const hideChrome = pathname.startsWith('/auth') || pathname === '/' || pathname.startsWith('/pricing');
+  const hideChrome =
+    pathname.startsWith('/auth') ||
+    pathname === '/' ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/privacy') ||
+    pathname.startsWith('/refund-policy');
   const title = useMemo(() => pageTitle(pathname), [pathname]);
   const crumbs = useMemo(() => breadcrumbs(pathname), [pathname]);
 

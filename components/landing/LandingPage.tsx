@@ -5,6 +5,7 @@ import { ArticleFactoryMock, CreativeStudioMock, SnifferMock, TiltedFrame } from
 import { FAQ, type FAQItem } from "@/components/landing/FAQ";
 import { ProductInMotion } from "@/components/landing/ProductInMotion";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 import { cn } from "@/lib/utils";
 
 function Section({
@@ -14,7 +15,7 @@ function Section({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <section className={cn("py-16 sm:py-20", className)}>{children}</section>;
+  return <section className={cn("py-12 sm:py-20", className)}>{children}</section>;
 }
 
 function Container({ children }: { children: React.ReactNode }) {
@@ -76,14 +77,15 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" className="text-white/80 hover:text-white hover:bg-white/5">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-white/80 hover:text-white hover:bg-white/5">
                 <Link href="/pricing">Pricing</Link>
               </Button>
-              <Button asChild variant="outline" className="border-white/15 bg-transparent text-white hover:bg-white/5">
+              <Button asChild variant="outline" size="sm" className="border-white/15 bg-transparent text-white hover:bg-white/5">
                 <Link href="/auth/login">Log in</Link>
               </Button>
               <Button
                 asChild
+                size="sm"
                 className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90 shadow-[0_0_0_1px_rgba(223,255,0,0.35),0_20px_60px_rgba(223,255,0,0.10)]"
               >
                 <Link href="/auth/signup">Start free</Link>
@@ -94,7 +96,7 @@ export default function LandingPage() {
       </div>
 
       {/* Hero */}
-      <Section className="pt-14 sm:pt-18">
+      <Section className="pt-10 sm:pt-18">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-5">
@@ -244,21 +246,7 @@ export default function LandingPage() {
         </Container>
       </Section>
 
-      <footer className="border-t border-white/10 py-10">
-        <Container>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-white/50">
-            <div>© {new Date().getFullYear()} ArbHunter</div>
-            <div className="flex items-center gap-4">
-              <Link className="hover:text-white" href="/pricing">
-                Pricing
-              </Link>
-              <Link className="hover:text-white" href="/auth/signup">
-                Start free
-              </Link>
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter />
 
       {/* Structured data (minimal) */}
       <script

@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { openPaddleCheckout } from "@/lib/paddle-client";
 import { ForceDark } from "@/components/ForceDark";
+import { MarketingHeader } from "@/components/landing/MarketingHeader";
+import { SiteFooter } from "@/components/landing/SiteFooter";
+import { FAQ, type FAQItem } from "@/components/landing/FAQ";
 
 const plans = [
   {
@@ -37,31 +40,27 @@ const plans = [
 ] as const;
 
 export default function PricingPage() {
+  const billingFaq: FAQItem[] = [
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes. You can cancel from your Billing page. You’ll keep access until the end of your current billing period or trial (if applicable).",
+    },
+    {
+      q: "Do you handle taxes/VAT?",
+      a: "Yes. Paddle is the Merchant of Record and handles taxes/VAT when applicable.",
+    },
+    {
+      q: "Where can I find your refund policy?",
+      a: "Right here: Refund policy. We keep it simple and readable.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#0B0D10] text-white">
       <ForceDark />
-      <div className="border-b border-white/10 bg-[#0B0D10]/85 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="h-16 flex items-center justify-between gap-3">
-            <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#2B2F36] border border-white/10">
-                <span className="h-2 w-2 rounded-full bg-[#DFFF00]" />
-              </span>
-              ArbHunter
-            </Link>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" className="text-white/80 hover:text-white hover:bg-white/5">
-                <Link href="/auth/login">Log in</Link>
-              </Button>
-              <Button asChild className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90">
-                <Link href="/auth/signup">Start free</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MarketingHeader active="pricing" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-14">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Pricing</h1>
@@ -117,10 +116,36 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="mt-10 text-center text-sm text-white/50">
-          Questions? Reply to the onboarding email after signup.
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7">
+            <FAQ items={billingFaq} />
+          </div>
+          <div className="lg:col-span-5 rounded-3xl border border-white/10 bg-[#2B2F36]/35 p-5 sm:p-6">
+            <div className="text-lg font-semibold text-white">What’s included</div>
+            <div className="text-sm text-white/70 mt-1 leading-relaxed">
+              All plans include the core workflow. You’re mainly choosing monthly limits.
+            </div>
+            <ul className="mt-5 space-y-2 text-sm text-white/70">
+              <li>Discovery runs (country + topic)</li>
+              <li>Creative generation (2 variations for A/B testing)</li>
+              <li>Campaigns (save, tag, export copy)</li>
+            </ul>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90">
+                <Link href="/auth/signup">Start free</Link>
+              </Button>
+              <Button asChild variant="outline" className="border-white/15 bg-transparent text-white hover:bg-white/5">
+                <Link href="/refund-policy">Refund policy</Link>
+              </Button>
+            </div>
+            <div className="mt-6 text-xs text-white/50">
+              Want to go back? <Link className="underline underline-offset-4 hover:text-white" href="/">Home</Link>
+            </div>
+          </div>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

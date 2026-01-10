@@ -69,7 +69,7 @@ export function SnifferMock() {
           </div>
         </div>
         <div className="col-span-5 rounded-2xl border border-white/10 bg-[#2B2F36]/60 p-4">
-          <div className="text-[11px] text-white/60">Spread</div>
+          <div className="text-[11px] text-white/60">Profit gap</div>
           <div className="mt-2 text-2xl font-semibold text-[#DFFF00]">$0.05 → $4.00</div>
           <div className="mt-3 space-y-2">
             <Row label="CPC" value="$0.05" />
@@ -98,7 +98,7 @@ export function CreativeStudioMock() {
             </div>
             <div className="mt-2 h-24 rounded-xl border border-white/10 bg-[#0B0D10]/60" />
             <div className="mt-2 text-[11px] text-white/60 line-clamp-2">
-              Policy-safe layout • brand-aligned colors • mobile-first text hierarchy
+              Clean layout • brand-aligned colors • readable text
             </div>
             <div className="mt-3 flex items-center justify-between">
               <div className="text-[11px] text-white/50">Predicted CTR</div>
@@ -140,7 +140,7 @@ export function ArticleFactoryMock() {
               <div className="text-2xl font-semibold text-white mt-1">3–5</div>
             </div>
             <div className="rounded-lg border border-white/10 bg-[#0B0D10]/60 p-3">
-              <div className="text-[11px] text-white/60">Dwell time</div>
+              <div className="text-[11px] text-white/60">Time on page</div>
               <div className="text-2xl font-semibold text-white mt-1">↑</div>
             </div>
             <div className="rounded-lg border border-white/10 bg-[#0B0D10]/60 p-3">
