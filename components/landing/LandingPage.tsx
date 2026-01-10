@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProfitCalculator } from "@/components/landing/ProfitCalculator";
 import { ArticleFactoryMock, CreativeStudioMock, SnifferMock, TiltedFrame } from "@/components/landing/Mockups";
+import { FAQ, type FAQItem } from "@/components/landing/FAQ";
 import { cn } from "@/lib/utils";
 
 function Section({
@@ -19,6 +20,33 @@ function Container({ children }: { children: React.ReactNode }) {
 }
 
 export default function LandingPage() {
+  const faqs: FAQItem[] = [
+    {
+      q: "What is ArbHunter in one sentence?",
+      a: "ArbHunter helps you find undervalued GEO opportunities, generate policy-safe creatives, and organize campaigns so you can scale ad arbitrage faster.",
+    },
+    {
+      q: "Do I need design skills to get good creatives?",
+      a: "No. Creative Studio generates ready-to-run A/B variations with a QC loop to catch low-quality outputs before you waste budget.",
+    },
+    {
+      q: "What does 'QC loop' mean?",
+      a: "We generate creatives, score them for quality, and (when needed) regenerate once to fix common issues like irrelevant elements, weak hierarchy, or brand mismatch.",
+    },
+    {
+      q: "Is ArbHunter a free tool?",
+      a: "ArbHunter is hard-gated. You can create an account, then upgrade to unlock higher monthly limits for discoveries and creatives.",
+    },
+    {
+      q: "What markets does it work best for?",
+      a: "It’s designed to help you identify spreads across Tier 1 and Tier 2 markets and pick the right tradeoff between speed and quality.",
+    },
+    {
+      q: "Can I export creatives and copy?",
+      a: "Yes. Campaigns lets you mark winners, tag variations, and export copy. Creative exports can be expanded next (ZIP bundles, presets).",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#0B0D10] text-white">
       {/* Top nav */}
@@ -161,6 +189,13 @@ export default function LandingPage() {
         </Container>
       </Section>
 
+      {/* FAQ */}
+      <Section className="pt-0">
+        <Container>
+          <FAQ items={faqs} />
+        </Container>
+      </Section>
+
       {/* Pricing teaser */}
       <Section className="pt-0">
         <Container>
@@ -213,6 +248,22 @@ export default function LandingPage() {
             description:
               "Ad arbitrage intelligence platform to discover undervalued GEOs, generate policy-safe creatives, and launch AdSense-ready articles.",
             offers: { "@type": "Offer", price: "29", priceCurrency: "USD" },
+          }),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
           }),
         }}
       />

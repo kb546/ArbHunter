@@ -11,7 +11,8 @@ export function TiltedFrame({
   return (
     <div
       className={cn(
-        "relative rounded-3xl border border-white/10 bg-[#0B0D10]/60 shadow-[0_0_0_1px_rgba(223,255,0,0.10),0_30px_80px_rgba(0,0,0,0.6)]",
+        "relative rounded-3xl border border-white/10 bg-[#0B0D10]/60",
+        "shadow-[0_0_0_1px_rgba(223,255,0,0.12),0_40px_110px_rgba(0,0,0,0.70)]",
         "before:pointer-events-none before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:opacity-60",
         className
       )}
@@ -21,7 +22,8 @@ export function TiltedFrame({
       }}
     >
       {/* tilt-shift edge blur */}
-      <div className="pointer-events-none absolute -inset-6 blur-2xl opacity-35 bg-gradient-to-r from-[#DFFF00]/20 via-transparent to-[#DFFF00]/10" />
+      <div className="pointer-events-none absolute -inset-10 blur-2xl opacity-40 bg-gradient-to-r from-[#DFFF00]/20 via-transparent to-[#DFFF00]/10" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl [background:radial-gradient(circle_at_30%_10%,rgba(223,255,0,0.10),transparent_45%)]" />
       <div className="relative">{children}</div>
     </div>
   );
@@ -30,6 +32,15 @@ export function TiltedFrame({
 export function SnifferMock() {
   return (
     <div className="p-5 sm:p-6">
+      <div className="mb-4 rounded-2xl border border-white/10 bg-[#2B2F36]/50 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+          <span className="h-2 w-2 rounded-full bg-white/20" />
+          <span className="ml-2 text-[11px] text-white/60">arbhunter.dev</span>
+        </div>
+        <div className="text-[11px] text-white/50">LIVE</div>
+      </div>
       <div className="flex items-center justify-between">
         <div className="text-xs font-semibold tracking-wide text-white/70">Opportunity Sniffer</div>
         <div className="text-[11px] text-white/50">ZA • DHL jobs</div>
@@ -42,6 +53,7 @@ export function SnifferMock() {
             <div className="text-xs text-white/50">last 14 days</div>
           </div>
           <div className="mt-3 h-20 rounded-xl bg-[#0B0D10]/60 border border-white/10 overflow-hidden relative">
+            <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_40%_30%,rgba(255,255,255,0.10),transparent_55%)]" />
             <div className="absolute inset-0 flex items-end gap-1 p-2">
               {Array.from({ length: 22 }).map((_, i) => (
                 <div
