@@ -8,9 +8,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { orchestrateCreativeGeneration } from '@/services/orchestrator.service';
 import type { Campaign } from '@/types/creative-studio';
 import type { PresetName } from '@/services/presets/presets.config';
+import { getBillingAccess } from '@/lib/billing.server';
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await getBillingAccess();
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: 'Subscription required', reason: access.reason, status: access.status ?? null, plan: access.plan ?? null },
+        { status: 402 }
+      );
+    }
+
     const body = await request.json();
     const { campaign, preset, variations, targetAudience } = body as {
       campaign: Campaign;

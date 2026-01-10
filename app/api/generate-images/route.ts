@@ -7,9 +7,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateCreatives } from '@/services/image-generation.service';
 import type { ImageGenerationRequest } from '@/types/creative-studio';
+import { getBillingAccess } from '@/lib/billing.server';
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await getBillingAccess();
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: 'Subscription required', reason: access.reason, status: access.status ?? null, plan: access.plan ?? null },
+        { status: 402 }
+      );
+    }
+
     const body: ImageGenerationRequest = await request.json();
     const { campaignId, niche, geo, style, orientation, variations } = body;
 

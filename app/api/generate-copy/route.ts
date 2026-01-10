@@ -7,9 +7,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateCopy } from '@/services/copy-generation.service';
 import type { CopyGenerationRequest } from '@/types/creative-studio';
+import { getBillingAccess } from '@/lib/billing.server';
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await getBillingAccess();
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: 'Subscription required', reason: access.reason, status: access.status ?? null, plan: access.plan ?? null },
+        { status: 402 }
+      );
+    }
+
     const body: CopyGenerationRequest = await request.json();
     const { campaignId, niche, geo, targetAudience, toneOfVoice, callToAction, variations } = body;
 
