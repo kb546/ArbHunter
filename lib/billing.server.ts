@@ -74,6 +74,14 @@ export async function getBillingAccess(): Promise<BillingAccess> {
     return { ok: true, plan: plan as any, status: status as any };
   }
 
+  // Safety net:
+  // If the subscription row says inactive but the current period end is in the future,
+  // treat it as trialing/active. This protects users if a webhook briefly wrote a wrong status.
+  const end = data.current_period_end ? new Date(data.current_period_end).getTime() : null;
+  if (plan !== 'free' && end && end > Date.now()) {
+    return { ok: true, plan: plan as any, status: 'trialing' };
+  }
+
   return { ok: false, reason: 'inactive', status, plan };
 }
 

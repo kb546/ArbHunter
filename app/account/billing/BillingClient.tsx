@@ -18,6 +18,13 @@ export type BillingClientProps = {
         current_period_end: string | null;
         cancel_at_period_end: boolean | null;
       };
+  usage: {
+    plan: 'free' | 'starter' | 'pro' | 'agency';
+    discoveriesUsed: number;
+    creativesUsed: number;
+    discoveriesLimit: number | null;
+    creativesLimit: number | null;
+  };
 };
 
 function formatDate(iso: string | null | undefined) {
@@ -30,12 +37,16 @@ function formatDate(iso: string | null | undefined) {
 }
 
 export default function BillingClient(props: BillingClientProps) {
-  const { email, subscription } = props;
+  const { email, subscription, usage } = props;
   const [isWorking, setIsWorking] = useState(false);
 
   const currentPlan = subscription?.plan || 'free';
   const status = subscription?.status || 'inactive';
   const trialOrRenewal = formatDate(subscription?.current_period_end);
+  const discoveriesRemaining =
+    usage.discoveriesLimit === null ? null : Math.max(0, usage.discoveriesLimit - usage.discoveriesUsed);
+  const creativesRemaining =
+    usage.creativesLimit === null ? null : Math.max(0, usage.creativesLimit - usage.creativesUsed);
 
   async function changePlan(plan: Plan) {
     setIsWorking(true);
@@ -104,6 +115,38 @@ export default function BillingClient(props: BillingClientProps) {
               <div className="text-sm text-gray-500">Cancel at period end</div>
               <div className="text-sm font-medium text-gray-900 mt-1">
                 {subscription?.cancel_at_period_end ? 'Yes' : 'No'}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <div className="font-semibold text-gray-900">This month’s usage</div>
+              <div className="text-sm text-gray-600 mt-1">Plan: {usage.plan.toUpperCase()}</div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-lg border p-4">
+              <div className="text-sm text-gray-500">Discoveries</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {usage.discoveriesUsed}
+                {usage.discoveriesLimit === null ? ' / ∞' : ` / ${usage.discoveriesLimit}`}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Remaining: {discoveriesRemaining === null ? '∞' : discoveriesRemaining}
+              </div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="text-sm text-gray-500">Creatives generated</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {usage.creativesUsed}
+                {usage.creativesLimit === null ? ' / ∞' : ` / ${usage.creativesLimit}`}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Remaining: {creativesRemaining === null ? '∞' : creativesRemaining}
               </div>
             </div>
           </div>

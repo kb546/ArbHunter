@@ -12,6 +12,7 @@ import {
 import { detectBrand } from '@/services/brand-intelligence.service';
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import { getBillingAccess } from '@/lib/billing.server';
+import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -111,6 +112,15 @@ export async function POST(request: NextRequest) {
     console.log(`🚀 Generating ${variations} variations with ${selectedModel} model...`);
     const startTime = Date.now();
 
+    // Monthly usage limit (creatives)
+    const usageCheck = await ensureWithinLimit('creative', Number(variations) || 0);
+    if (!usageCheck.ok) {
+      return NextResponse.json(
+        { error: 'Monthly creative limit reached', plan: usageCheck.plan, limit: usageCheck.limit, used: usageCheck.used },
+        { status: 429 }
+      );
+    }
+
     const generatedImages = await batchGenerate(prompt, variations, selectedModel);
 
     const totalTime = Date.now() - startTime;
@@ -151,6 +161,9 @@ export async function POST(request: NextRequest) {
 
     // Sort by predicted CTR (highest first)
     creatives.sort((a, b) => b.predictedCTR - a.predictedCTR);
+
+    // Record usage (best-effort)
+    await recordUsage('creative', creatives.length);
 
     return NextResponse.json({
       success: true,

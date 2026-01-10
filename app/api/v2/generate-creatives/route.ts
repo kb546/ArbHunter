@@ -9,6 +9,7 @@ import { orchestrateCreativeGeneration } from '@/services/orchestrator.service';
 import type { Campaign } from '@/types/creative-studio';
 import type { PresetName } from '@/services/presets/presets.config';
 import { getBillingAccess } from '@/lib/billing.server';
+import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,10 +49,19 @@ export async function POST(request: NextRequest) {
     console.log(`   Preset: ${preset}`);
     console.log(`   Variations: ${variations || 2}`);
 
+    const requested = variations || 2;
+    const usageCheck = await ensureWithinLimit('creative', requested);
+    if (!usageCheck.ok) {
+      return NextResponse.json(
+        { error: 'Monthly creative limit reached', plan: usageCheck.plan, limit: usageCheck.limit, used: usageCheck.used },
+        { status: 429 }
+      );
+    }
+
     const result = await orchestrateCreativeGeneration({
       campaign,
       preset,
-      variations: variations || 2,
+      variations: requested,
       targetAudience,
     });
 
@@ -60,6 +70,9 @@ export async function POST(request: NextRequest) {
     console.log(`   Best: #${result.bestVariation + 1}`);
     console.log(`   Cost: $${result.totalCost.toFixed(3)}`);
     console.log(`   Time: ${(result.totalTime / 1000).toFixed(1)}s\n`);
+
+    // Record usage (best-effort)
+    await recordUsage('creative', result.variations.length);
 
     return NextResponse.json(result, { status: 200 });
 

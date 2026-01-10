@@ -233,9 +233,6 @@ export async function POST(req: Request) {
       const transactionId: string | undefined = data?.id;
       const subscriptionId: string | undefined =
         data?.subscription_id || data?.subscription?.id || data?.related_subscription_id;
-      const statusRaw: string | undefined =
-        data?.subscription?.status || data?.subscription_status || data?.related_subscription_status || data?.status;
-      const inferredStatus = statusRaw ? mapStatus(statusRaw) : 'active';
 
       await logEvent({
         status: 'processed',
@@ -254,18 +251,21 @@ export async function POST(req: Request) {
         const productId = firstItem?.price?.product_id || firstItem?.product_id || null;
         const plan = planFromProductId(productId);
 
-        const { error: upsertErr } = await supabase.from('subscriptions').upsert(
-          {
-            provider: 'paddle',
-            user_id: userId,
-            paddle_subscription_id: subscriptionId,
-            paddle_price_id: priceId,
-            paddle_transaction_id: transactionId ?? null,
-            plan,
-            status: inferredStatus,
-          },
-          { onConflict: 'paddle_subscription_id' }
-        );
+        // IMPORTANT:
+        // Do NOT overwrite status here. `subscription.created` / `subscription.updated` are the
+        // authoritative sources for `trialing/active`.
+        const payload: any = {
+          provider: 'paddle',
+          user_id: userId,
+          paddle_subscription_id: subscriptionId,
+          paddle_transaction_id: transactionId ?? null,
+        };
+        if (priceId) payload.paddle_price_id = priceId;
+        if (plan && plan !== 'free') payload.plan = plan;
+
+        const { error: upsertErr } = await supabase.from('subscriptions').upsert(payload, {
+          onConflict: 'paddle_subscription_id',
+        });
         if (upsertErr) throw upsertErr;
       }
 

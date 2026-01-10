@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { getUserSubscription } from '@/lib/billing.server';
+import { getCurrentPlanKey, getMonthlyUsage, PLAN_LIMITS } from '@/lib/usage.server';
 import BillingClient from './BillingClient';
 
 export default async function BillingPage() {
@@ -8,6 +9,9 @@ export default async function BillingPage() {
   if (!session?.user) redirect('/auth/login?next=/account/billing');
 
   const sub = await getUserSubscription();
+  const planKey = await getCurrentPlanKey();
+  const usage = await getMonthlyUsage();
+  const limits = PLAN_LIMITS[planKey];
 
   return (
     <BillingClient
@@ -23,6 +27,13 @@ export default async function BillingPage() {
             }
           : null
       }
+      usage={{
+        plan: planKey,
+        discoveriesUsed: usage.discoveries,
+        creativesUsed: usage.creatives,
+        discoveriesLimit: limits.discoveriesPerMonth,
+        creativesLimit: limits.creativesPerMonth,
+      }}
     />
   );
 }

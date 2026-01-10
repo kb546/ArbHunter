@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { generateCreatives } from '@/services/image-generation.service';
 import type { ImageGenerationRequest } from '@/types/creative-studio';
 import { getBillingAccess } from '@/lib/billing.server';
+import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +44,14 @@ export async function POST(request: NextRequest) {
     console.log(`   Style: ${style}`);
     console.log(`   Variations: ${variations}`);
 
+    const usageCheck = await ensureWithinLimit('creative', variations);
+    if (!usageCheck.ok) {
+      return NextResponse.json(
+        { error: 'Monthly creative limit reached', plan: usageCheck.plan, limit: usageCheck.limit, used: usageCheck.used },
+        { status: 429 }
+      );
+    }
+
     // Generate images with multi-provider fallback
     const { creatives, totalCost, provider } = await generateCreatives(body);
 
@@ -76,6 +85,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`✅ Successfully saved ${data.length} creatives to database`);
+
+    // Record usage (best-effort)
+    await recordUsage('creative', data.length);
 
     const providerNames: Record<string, string> = {
       'dalle3': 'DALL-E 3 (Highest Quality)',

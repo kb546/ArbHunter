@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { orchestrateBatchGeneration } from '@/services/batch-orchestrator.service';
 import type { BatchGenerationRequest } from '@/services/batch-orchestrator.service';
 import { getBillingAccess } from '@/lib/billing.server';
+import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,6 +50,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Monthly usage limit (creatives)
+    const usageCheck = await ensureWithinLimit('creative', batchSize);
+    if (!usageCheck.ok) {
+      return NextResponse.json(
+        { error: 'Monthly creative limit reached', plan: usageCheck.plan, limit: usageCheck.limit, used: usageCheck.used },
+        { status: 429 }
+      );
+    }
+
     // Orchestrate batch generation
     const result = await orchestrateBatchGeneration({
       niche,
@@ -58,6 +68,9 @@ export async function POST(request: NextRequest) {
       model,
       marginScore,
     });
+
+    // Record usage (best-effort)
+    await recordUsage('creative', result.variations.length);
 
     return NextResponse.json({
       success: true,

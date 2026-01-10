@@ -7,6 +7,7 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { Discovery, DiscoverRequest } from '@/types';
+import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,6 +81,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Usage limits (monthly): count discoveries
+    const limitCheck = await ensureWithinLimit('discovery', 1);
+    if (!limitCheck.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Monthly discovery limit reached',
+          limit: limitCheck.limit,
+          used: limitCheck.used,
+          plan: limitCheck.plan,
+        },
+        { status: 429 }
+      );
+    }
+
     const supabase = createSupabaseAuthedServerClient(session.accessToken);
     const { data: saved, error } = await supabase
       .from('discoveries')
@@ -104,6 +120,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Saved to Supabase:', saved?.id);
+
+    // Record usage event (best-effort)
+    await recordUsage('discovery', 1);
 
     // Return success response
     return NextResponse.json({
