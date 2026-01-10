@@ -31,7 +31,7 @@ export default async function CampaignsPage() {
 
       {!campaigns || campaigns.length === 0 ? (
         <Card className="p-8">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             No campaigns yet. Run a discovery and click <span className="font-medium">Create Campaign</span>.
           </div>
           <div className="mt-4">
@@ -46,8 +46,8 @@ export default async function CampaignsPage() {
             <Card key={c.id} className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="font-semibold text-gray-900 line-clamp-2">{c.name}</div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="font-semibold text-foreground line-clamp-2">{c.name}</div>
+                  <div className="text-sm text-muted-foreground mt-1">
                     {c.geo} • {c.niche}
                   </div>
                 </div>
@@ -56,7 +56,7 @@ export default async function CampaignsPage() {
                   {c.winner_variation_id ? <Badge>Winner set</Badge> : null}
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between gap-2 text-xs text-gray-500">
+              <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span>Updated {new Date(c.updated_at || c.created_at).toLocaleDateString()}</span>
                 <span>Created {new Date(c.created_at).toLocaleDateString()}</span>
               </div>

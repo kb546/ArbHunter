@@ -51,10 +51,10 @@ export function CommandPalette() {
       {
         id: 'discovery',
         label: 'Go to Discovery',
-        hint: '/',
+        hint: '/discovery',
         icon: <Home className="h-4 w-4" />,
         keywords: ['discovery', 'opportunity', 'sniffer'],
-        run: () => router.push('/'),
+        run: () => router.push('/discovery'),
       },
       {
         id: 'creative',
@@ -101,7 +101,7 @@ export function CommandPalette() {
       },
     ].filter((i) => {
       // Hide "go to X" if already on X (small polish)
-      if (i.id === 'discovery' && pathname === '/') return false;
+      if (i.id === 'discovery' && pathname.startsWith('/discovery')) return false;
       if (i.id === 'dashboard' && pathname.startsWith('/dashboard')) return false;
       if (i.id === 'creative' && pathname.startsWith('/creative-studio')) return false;
       if (i.id === 'campaigns' && pathname.startsWith('/campaigns')) return false;
@@ -157,7 +157,7 @@ export function CommandPalette() {
                 }
               }}
             />
-            <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
               <span>Tip: press ⌘K / Ctrl+K</span>
               <span>Enter to run • Esc to close</span>
             </div>
@@ -165,7 +165,7 @@ export function CommandPalette() {
 
           <div className="max-h-[360px] overflow-auto">
             {filtered.length === 0 ? (
-              <div className="p-6 text-sm text-gray-600">No results.</div>
+              <div className="p-6 text-sm text-muted-foreground">No results.</div>
             ) : (
               <div className="p-2">
                 {filtered.map((item, idx) => {
@@ -184,12 +184,12 @@ export function CommandPalette() {
                         active ? 'bg-[color:var(--accent)]' : 'hover:bg-[color:var(--accent)]/60'
                       )}
                     >
-                      <div className="h-8 w-8 rounded-md bg-gray-100 flex items-center justify-center text-gray-700">
+                      <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-foreground">
                         {item.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate">{item.label}</div>
-                        {item.hint ? <div className="text-xs text-gray-500 truncate">{item.hint}</div> : null}
+                        <div className="font-medium text-foreground truncate">{item.label}</div>
+                        {item.hint ? <div className="text-xs text-muted-foreground truncate">{item.hint}</div> : null}
                       </div>
                     </button>
                   );

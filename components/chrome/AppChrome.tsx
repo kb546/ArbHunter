@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
 import { CommandPalette } from '@/components/chrome/CommandPalette';
 import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
+import { ThemeToggle } from '@/components/chrome/ThemeToggle';
 
 type NavItem = {
   href: string;
@@ -102,7 +103,9 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                      active ? 'bg-[color:var(--sidebar-accent)] text-[color:var(--foreground)]' : 'text-gray-600 hover:bg-gray-50'
+                      active
+                        ? 'bg-[color:var(--sidebar-accent)] text-[color:var(--foreground)]'
+                        : 'text-[color:var(--muted-foreground)] hover:bg-[color:var(--sidebar-accent)] hover:text-[color:var(--foreground)]'
                     )}
                   >
                     {item.icon}
@@ -112,9 +115,12 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
               })}
             </div>
             <div className="mt-6">
-              <Button asChild className="w-full">
-                <Link href="/pricing">Upgrade</Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Button asChild className="flex-1">
+                  <Link href="/pricing">Upgrade</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -142,7 +148,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                     'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                     active
                       ? 'bg-[color:var(--sidebar-accent)] text-[color:var(--foreground)]'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      : 'text-[color:var(--muted-foreground)] hover:bg-[color:var(--sidebar-accent)] hover:text-[color:var(--foreground)]'
                   )}
                 >
                   {item.icon}
@@ -163,16 +169,16 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
           {/* Desktop topbar */}
           <div className="hidden lg:block sticky top-0 z-40 border-b bg-[color:var(--card)]/90 backdrop-blur">
             <div className="h-16 px-8 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-[color:var(--muted-foreground)]">
                 {crumbs.map((c, idx) => (
                   <span key={`${c.label}-${idx}`} className="flex items-center gap-2">
-                    {idx > 0 ? <span className="text-gray-300">/</span> : null}
+                    {idx > 0 ? <span className="text-[color:var(--muted-foreground)]/60">/</span> : null}
                     {c.href ? (
-                      <Link className="hover:text-gray-900 transition-colors" href={c.href}>
+                      <Link className="hover:text-[color:var(--foreground)] transition-colors" href={c.href}>
                         {c.label}
                       </Link>
                     ) : (
-                      <span className="font-semibold text-gray-900">{c.label}</span>
+                      <span className="font-semibold text-[color:var(--foreground)]">{c.label}</span>
                     )}
                   </span>
                 ))}
@@ -184,12 +190,13 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                     // Trigger via synthetic keypress keeps behavior aligned with global handler
                     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
                   }}
-                  className="hidden xl:flex items-center gap-2 h-9 w-[360px] rounded-md border bg-white px-3 text-sm text-gray-500 hover:text-gray-700"
+                  className="hidden xl:flex items-center gap-2 h-9 w-[360px] rounded-md border bg-[color:var(--card)] px-3 text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
                 >
-                  <Search className="h-4 w-4 text-gray-400" />
+                  <Search className="h-4 w-4 text-[color:var(--muted-foreground)]" />
                   <span className="flex-1 text-left">Search…</span>
-                  <span className="text-xs text-gray-400">⌘K</span>
+                  <span className="text-xs text-[color:var(--muted-foreground)]">⌘K</span>
                 </button>
+                <ThemeToggle />
                 <Button asChild variant="outline" size="sm">
                   <Link href="/account/settings">Account</Link>
                 </Button>

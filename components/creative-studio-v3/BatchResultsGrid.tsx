@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Trophy, Link2, Eye, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
@@ -26,15 +26,14 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
   const [isExporting, setIsExporting] = useState(false);
 
   // Trigger confetti on mount (celebrate batch completion!)
-  useState(() => {
-    if (creatives.length >= 5) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-    }
-  });
+  useEffect(() => {
+    if (creatives.length < 5) return;
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+  }, [creatives.length]);
 
   // Find A/B pair for an ad
   const findABPair = (adId: string): string | null => {
@@ -140,14 +139,14 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
     >
       <Card className="shadow-lg">
         {/* Header */}
-        <div className="p-6 border-b bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="p-6 border-b bg-gradient-to-r from-[color:var(--primary)]/12 to-transparent">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-green-600" />
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-[color:var(--primary)]" />
                 Batch Generation Complete!
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {creatives.length} unique ads generated
                 {batchMetadata?.aiAgentsUsed && ' • 5 AI Agents Used'}
               </p>
@@ -155,7 +154,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
             <Button
               onClick={exportAllAsZip}
               disabled={isExporting}
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isExporting ? (
                 <>Exporting...</>
@@ -171,21 +170,21 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
           {/* Summary Stats */}
           {batchMetadata && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600">Total Cost</p>
-                <p className="text-lg font-bold text-gray-900">${batchMetadata.totalCost.toFixed(4)}</p>
+              <div className="bg-card rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground">Total Cost</p>
+                <p className="text-lg font-bold text-foreground">${batchMetadata.totalCost.toFixed(4)}</p>
               </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600">Time Taken</p>
-                <p className="text-lg font-bold text-gray-900">{(batchMetadata.totalTime / 1000).toFixed(1)}s</p>
+              <div className="bg-card rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground">Time Taken</p>
+                <p className="text-lg font-bold text-foreground">{(batchMetadata.totalTime / 1000).toFixed(1)}s</p>
               </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600">Per Ad Cost</p>
-                <p className="text-lg font-bold text-gray-900">${(batchMetadata.totalCost / creatives.length).toFixed(4)}</p>
+              <div className="bg-card rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground">Per Ad Cost</p>
+                <p className="text-lg font-bold text-foreground">${(batchMetadata.totalCost / creatives.length).toFixed(4)}</p>
               </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600">A/B Pairs</p>
-                <p className="text-lg font-bold text-gray-900">{batchMetadata.abTestPairs?.length || 0}</p>
+              <div className="bg-card rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground">A/B Pairs</p>
+                <p className="text-lg font-bold text-foreground">{batchMetadata.abTestPairs?.length || 0}</p>
               </div>
             </div>
           )}
@@ -213,7 +212,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                   className="relative"
                 >
                   <Card className={`overflow-hidden group hover:shadow-xl transition-all duration-300 ${
-                    isInPair ? 'ring-2 ring-purple-500' : ''
+                    isInPair ? 'ring-2 ring-[color:var(--primary)]' : ''
                   }`}>
                     {/* Best Ad Badge */}
                     {isBest && (
@@ -228,7 +227,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                     {/* A/B Pair Badge */}
                     {isInPair && (
                       <div className="absolute top-3 right-3 z-10">
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 flex items-center gap-1 px-2 py-1">
+                        <Badge variant="outline" className="bg-primary/10 text-[color:var(--primary)] border-primary/25 flex items-center gap-1 px-2 py-1">
                           <Link2 className="w-3 h-3" />
                           A/B
                         </Badge>
@@ -236,7 +235,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                     )}
 
                     {/* Image */}
-                    <div className="aspect-square relative bg-gray-100">
+                    <div className="aspect-square relative bg-muted">
                       <img
                         src={creative.imageUrl}
                         alt={creative.headline}
@@ -247,7 +246,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                           size="sm"
                           variant="secondary"
                           onClick={() => setSelectedAd(creative)}
-                          className="text-white bg-blue-600 hover:bg-blue-700"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           View
@@ -256,7 +255,7 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                           size="sm"
                           variant="secondary"
                           onClick={() => downloadImage(creative)}
-                          className="text-white bg-green-600 hover:bg-green-700"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Download
@@ -267,57 +266,57 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                     {/* Content */}
                     <div className="p-4 space-y-3">
                       {/* Headline */}
-                      <h3 className="text-lg font-bold text-gray-800 line-clamp-2">
+                      <h3 className="text-lg font-bold text-foreground line-clamp-2">
                         {creative.headline}
                       </h3>
 
                       {/* Subheadline */}
                       {creative.subheadline && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
                           {creative.subheadline}
                         </p>
                       )}
 
                       {/* CTA */}
                       {creative.cta && (
-                        <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                        <Button size="sm" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                           {creative.cta}
                         </Button>
                       )}
 
                       {/* Scores */}
                       <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-xs">
+                        <Badge variant="outline" className="bg-primary/10 text-[color:var(--primary)] border-primary/25 text-xs">
                           CTR: {creative.predictedCTR.toFixed(1)}%
                         </Badge>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 text-xs">
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs">
                           QC: {overallScore}/100
                         </Badge>
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-xs">
+                        <Badge variant="outline" className="bg-primary/10 text-[color:var(--primary)] border-primary/25 text-xs">
                           {creative.model === 'gemini-3-pro-image-preview' ? 'Pro' : 'Fast'}
                         </Badge>
                       </div>
 
                       {/* QC Issues (minimal) */}
                       {Array.isArray(creative.qcIssues) && creative.qcIssues.length > 0 ? (
-                        <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 line-clamp-2">
+                        <div className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1 line-clamp-2">
                           {creative.qcIssues.join(' • ')}
                         </div>
                       ) : null}
 
                       {/* Detailed Scores */}
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200">
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Visual</p>
-                          <p className="text-sm font-semibold text-gray-800">{creative.visualScore}</p>
+                          <p className="text-xs text-muted-foreground">Visual</p>
+                          <p className="text-sm font-semibold text-foreground">{creative.visualScore}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Brand</p>
-                          <p className="text-sm font-semibold text-gray-800">{creative.brandScore}</p>
+                          <p className="text-xs text-muted-foreground">Brand</p>
+                          <p className="text-sm font-semibold text-foreground">{creative.brandScore}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Text</p>
-                          <p className="text-sm font-semibold text-gray-800">{creative.textScore}</p>
+                          <p className="text-xs text-muted-foreground">Text</p>
+                          <p className="text-sm font-semibold text-foreground">{creative.textScore}</p>
                         </div>
                       </div>
                     </div>
@@ -336,50 +335,50 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
           onClick={() => setSelectedAd(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-card border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">Ad Details</h2>
+                <h2 className="text-2xl font-bold text-foreground">Ad Details</h2>
                 <Button variant="ghost" onClick={() => setSelectedAd(null)}>
-                  ✕
+                  Close
                 </Button>
               </div>
               <img src={selectedAd.imageUrl} alt={selectedAd.headline} className="w-full rounded-lg mb-4" />
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-gray-700">Headline</h3>
-                  <p className="text-gray-900">{selectedAd.headline}</p>
+                  <h3 className="font-semibold text-muted-foreground">Headline</h3>
+                  <p className="text-foreground">{selectedAd.headline}</p>
                 </div>
                 {selectedAd.subheadline && (
                   <div>
-                    <h3 className="font-semibold text-gray-700">Subheadline</h3>
-                    <p className="text-gray-900">{selectedAd.subheadline}</p>
+                    <h3 className="font-semibold text-muted-foreground">Subheadline</h3>
+                    <p className="text-foreground">{selectedAd.subheadline}</p>
                   </div>
                 )}
                 {selectedAd.cta && (
                   <div>
-                    <h3 className="font-semibold text-gray-700">Call to Action</h3>
-                    <p className="text-gray-900">{selectedAd.cta}</p>
+                    <h3 className="font-semibold text-muted-foreground">Call to Action</h3>
+                    <p className="text-foreground">{selectedAd.cta}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <h3 className="font-semibold text-gray-700 text-sm">Visual Score</h3>
-                    <p className="text-2xl font-bold text-blue-600">{selectedAd.visualScore}</p>
+                    <h3 className="font-semibold text-muted-foreground text-sm">Visual Score</h3>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">{selectedAd.visualScore}</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-700 text-sm">Brand Score</h3>
-                    <p className="text-2xl font-bold text-green-600">{selectedAd.brandScore}</p>
+                    <h3 className="font-semibold text-muted-foreground text-sm">Brand Score</h3>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">{selectedAd.brandScore}</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-700 text-sm">Text Score</h3>
-                    <p className="text-2xl font-bold text-purple-600">{selectedAd.textScore}</p>
+                    <h3 className="font-semibold text-muted-foreground text-sm">Text Score</h3>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">{selectedAd.textScore}</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-700 text-sm">Predicted CTR</h3>
-                    <p className="text-2xl font-bold text-yellow-600">{selectedAd.predictedCTR.toFixed(1)}%</p>
+                    <h3 className="font-semibold text-muted-foreground text-sm">Predicted CTR</h3>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">{selectedAd.predictedCTR.toFixed(1)}%</p>
                   </div>
                 </div>
               </div>

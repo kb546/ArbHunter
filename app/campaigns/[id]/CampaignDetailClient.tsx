@@ -208,24 +208,24 @@ export function CampaignDetailClient(props: {
     <div className="space-y-5">
       <Card className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="font-semibold text-gray-900">Variations</div>
-          <div className="text-sm text-gray-600">{variations.length} linked variants</div>
+          <div className="font-semibold text-foreground">Variations</div>
+          <div className="text-sm text-muted-foreground">{variations.length} linked variants</div>
         </div>
 
         {loading ? (
-          <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
+          <div className="mt-4 text-sm text-muted-foreground flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading variations…
           </div>
         ) : variations.length === 0 ? (
-          <div className="text-sm text-gray-600 mt-2">No variations yet.</div>
+          <div className="text-sm text-muted-foreground mt-2">No variations yet.</div>
         ) : (
           <div className="mt-4 space-y-3">
             {variations.map((v) => {
               const cp = copyById.get(v.copy_id);
               const creativeState = creativeCache[v.creative_id]?.state || 'idle';
               return (
-                <div key={v.id} className="rounded-lg border bg-white p-4">
+                <div key={v.id} className="rounded-lg border bg-card p-4">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="w-full lg:w-40">
                       {creativeState === 'loaded' ? (
@@ -238,13 +238,13 @@ export function CampaignDetailClient(props: {
                         <button
                           type="button"
                           onClick={() => loadCreativeImage(v.creative_id)}
-                          className="w-full aspect-square rounded-md border bg-gray-50 flex flex-col items-center justify-center text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                          className="w-full aspect-square rounded-md border bg-muted flex flex-col items-center justify-center text-sm text-muted-foreground hover:bg-muted/70 transition-colors"
                         >
                           {creativeState === 'loading' ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
                           ) : (
                             <>
-                              <ImageIcon className="h-5 w-5 mb-2 text-gray-500" />
+                              <ImageIcon className="h-5 w-5 mb-2 text-muted-foreground" />
                               Load preview
                             </>
                           )}
@@ -254,23 +254,23 @@ export function CampaignDetailClient(props: {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="font-semibold text-gray-900">{v.variation_name || v.id.slice(0, 6)}</div>
+                          <div className="font-semibold text-foreground">{v.variation_name || v.id.slice(0, 6)}</div>
                           <Badge variant="outline">{String(v.status).toUpperCase()}</Badge>
                           {v.predicted_winner ? <Badge>Predicted winner</Badge> : null}
                         </div>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                           onClick={() => toggleFavorite(v.id, !v.is_favorite)}
                           disabled={Boolean(busyById[v.id])}
                         >
-                          <Star className={`h-4 w-4 ${v.is_favorite ? 'fill-yellow-400 text-yellow-500' : 'text-gray-400'}`} />
+                          <Star className={`h-4 w-4 ${v.is_favorite ? 'fill-yellow-400 text-yellow-500' : 'text-muted-foreground'}`} />
                           Favorite
                         </button>
                       </div>
 
-                      <div className="text-sm text-gray-900 font-medium">{cp?.headline || '—'}</div>
-                      <div className="text-sm text-gray-700">{cp?.primary_text || '—'}</div>
+                      <div className="text-sm text-foreground font-medium">{cp?.headline || '—'}</div>
+                      <div className="text-sm text-muted-foreground">{cp?.primary_text || '—'}</div>
 
                       <div className="flex flex-col sm:flex-row gap-2 pt-2">
                         <Button
@@ -294,7 +294,7 @@ export function CampaignDetailClient(props: {
                             }}
                             disabled={Boolean(busyById[v.id])}
                           />
-                          <div className="text-xs text-gray-500 mt-1">
+                                  <div className="text-xs text-muted-foreground mt-1">
                             Winner = the variation you plan to run as your control. Press Enter to save tags.
                           </div>
                         </div>
@@ -309,7 +309,7 @@ export function CampaignDetailClient(props: {
       </Card>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           {variations.length} variations • {copies.length} copies
         </div>
         <div className="flex gap-2">
@@ -320,23 +320,23 @@ export function CampaignDetailClient(props: {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="font-semibold text-gray-900">Creatives</div>
-        <div className="text-sm text-gray-600 mt-2">
+        <div className="font-semibold text-foreground">Creatives</div>
+        <div className="text-sm text-muted-foreground mt-2">
           Previews are loaded on-demand per variation to keep campaign pages fast.
         </div>
       </Card>
 
       <Card className="p-4 sm:p-5">
-        <div className="font-semibold text-gray-900">Copies</div>
+        <div className="font-semibold text-foreground">Copies</div>
         {copies.length === 0 ? (
-          <div className="text-sm text-gray-600 mt-2">No copies yet.</div>
+          <div className="text-sm text-muted-foreground mt-2">No copies yet.</div>
         ) : (
           <div className="mt-4 space-y-3">
             {copies.map((c) => (
-              <div key={c.id} className="rounded-lg border bg-white p-4">
-                <div className="font-medium text-gray-900">{c.headline}</div>
-                <div className="text-sm text-gray-700 mt-1">{c.primary_text}</div>
-                {c.call_to_action ? <div className="text-xs text-gray-500 mt-2">CTA: {c.call_to_action}</div> : null}
+              <div key={c.id} className="rounded-lg border bg-card p-4">
+                <div className="font-medium text-foreground">{c.headline}</div>
+                <div className="text-sm text-muted-foreground mt-1">{c.primary_text}</div>
+                {c.call_to_action ? <div className="text-xs text-muted-foreground mt-2">CTA: {c.call_to_action}</div> : null}
               </div>
             ))}
           </div>

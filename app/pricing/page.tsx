@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { openPaddleCheckout } from "@/lib/paddle-client";
+import { ForceDark } from "@/components/ForceDark";
 
 const plans = [
   {
@@ -38,6 +39,7 @@ const plans = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#0B0D10] text-white">
+      <ForceDark />
       <div className="border-b border-white/10 bg-[#0B0D10]/85 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="h-16 flex items-center justify-between gap-3">

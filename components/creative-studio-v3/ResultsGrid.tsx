@@ -42,14 +42,14 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900">Generated Creatives</h2>
+            <h2 className="text-2xl font-bold text-foreground">Generated Creatives</h2>
             {qcMeta?.attempts ? (
-              <Badge variant="outline" className="bg-white">
+              <Badge variant="outline" className="bg-transparent">
                 QC {qcMeta.attempts === 1 ? 'passed' : 'regenerated'} • {qcMeta.attempts} attempt{qcMeta.attempts === 1 ? '' : 's'}
               </Badge>
             ) : null}
           </div>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {sortedCreatives.length} ad{sortedCreatives.length !== 1 ? 's' : ''} ready for download
           </p>
         </div>
@@ -74,7 +74,7 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
             onClick={() => setSelectedCreative(creative)}
           >
             {/* Image */}
-            <div className="relative aspect-square bg-gray-100">
+            <div className="relative aspect-square bg-muted">
               <img
                 src={creative.imageUrl}
                 alt={creative.headline}
@@ -127,7 +127,7 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
 
               {/* Model Badge */}
               <div className="absolute top-3 left-3">
-                <Badge variant="secondary" className="bg-white/90 text-xs">
+                <Badge variant="secondary" className="bg-[color:var(--card)]/90 text-xs">
                   {creative.model === 'gemini-2.5-flash-image' ? 'Fast' : 'Pro'}
                 </Badge>
               </div>
@@ -137,12 +137,12 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
             <div className="p-5">
               {/* CTR Score */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700">Predicted CTR</span>
+                <span className="text-sm font-medium text-muted-foreground">Predicted CTR</span>
                 <div className="flex items-center gap-2">
                   <div className={`text-2xl font-bold ${
                     creative.predictedCTR >= 8 ? 'text-green-600' :
                     creative.predictedCTR >= 5 ? 'text-yellow-600' :
-                    'text-gray-600'
+                    'text-muted-foreground'
                   }`}>
                     {creative.predictedCTR.toFixed(1)}%
                   </div>
@@ -155,24 +155,24 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
               {/* Quality Scores */}
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{creative.visualScore}</div>
-                  <div className="text-xs text-gray-600">Visual</div>
+                  <div className="text-lg font-bold text-foreground">{creative.visualScore}</div>
+                  <div className="text-xs text-muted-foreground">Visual</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{creative.brandScore}</div>
-                  <div className="text-xs text-gray-600">Brand</div>
+                  <div className="text-lg font-bold text-foreground">{creative.brandScore}</div>
+                  <div className="text-xs text-muted-foreground">Brand</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{creative.textScore}</div>
-                  <div className="text-xs text-gray-600">Text</div>
+                  <div className="text-lg font-bold text-foreground">{creative.textScore}</div>
+                  <div className="text-xs text-muted-foreground">Text</div>
                 </div>
               </div>
 
               {/* QC Summary (minimal) */}
               <div className="mb-4 flex items-start justify-between gap-2">
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-muted-foreground">
                   QC Score:{' '}
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-foreground">
                     {typeof creative.qcOverallScore === 'number'
                       ? Math.round(creative.qcOverallScore)
                       : Math.round((creative.visualScore + creative.brandScore + creative.textScore) / 3)}
@@ -180,19 +180,19 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
                   </span>
                 </div>
                 {Array.isArray(creative.qcIssues) && creative.qcIssues.length > 0 ? (
-                  <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 max-w-[65%] line-clamp-2">
+                  <div className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1 max-w-[65%] line-clamp-2">
                     {creative.qcIssues.join(' • ')}
                   </div>
                 ) : null}
               </div>
 
               {/* Copy */}
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+              <div className="pt-4 border-t border-border">
+                <p className="text-sm font-semibold text-foreground mb-1 line-clamp-2">
                   {creative.headline}
                 </p>
                 {creative.subheadline && (
-                  <p className="text-xs text-gray-600 line-clamp-1 mb-2">
+                  <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
                     {creative.subheadline}
                   </p>
                 )}
@@ -214,12 +214,12 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
           onClick={() => setSelectedCreative(null)}
         >
           <div
-            className="max-w-4xl w-full bg-white rounded-xl overflow-hidden"
+            className="max-w-4xl w-full bg-card rounded-xl overflow-hidden border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Image */}
-              <div className="aspect-square bg-gray-100">
+              <div className="aspect-square bg-muted">
                 <img
                   src={selectedCreative.imageUrl}
                   alt={selectedCreative.headline}
@@ -229,16 +229,16 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
 
               {/* Details */}
               <div className="p-5 sm:p-6">
-                <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
+                <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-3">
                   {selectedCreative.headline}
                 </h3>
                 {selectedCreative.subheadline && (
-                  <p className="text-sm text-gray-700 mb-5 leading-relaxed">{selectedCreative.subheadline}</p>
+                  <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{selectedCreative.subheadline}</p>
                 )}
 
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Predicted CTR</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Predicted CTR</p>
                     <p className="text-2xl sm:text-3xl font-semibold text-[color:var(--primary)]">
                       {selectedCreative.predictedCTR.toFixed(1)}%
                     </p>
@@ -246,21 +246,21 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Visual</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Visual</p>
                       <p className="text-xl font-bold">{selectedCreative.visualScore}/100</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Brand</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Brand</p>
                       <p className="text-xl font-bold">{selectedCreative.brandScore}/100</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Text</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Text</p>
                       <p className="text-xl font-bold">{selectedCreative.textScore}/100</p>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t">
-                    <p className="text-sm font-medium text-gray-600 mb-2">Model Used</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Model Used</p>
                     <Badge>
                       {selectedCreative.model === 'gemini-2.5-flash-image'
                         ? 'Nano Banana (Fast)'

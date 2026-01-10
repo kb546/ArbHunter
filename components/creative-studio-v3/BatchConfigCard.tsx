@@ -60,18 +60,18 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b">
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[color:var(--primary)]" />
           Batch generation
         </CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardDescription className="text-muted-foreground">
           Generate 5–20 unique variations using 5 AI agents.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-6">
         {/* Batch Size Selector */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-3 block">
+          <label className="text-sm font-semibold text-foreground mb-3 block">
             Batch Size
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -80,13 +80,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 batchSize === 5
-                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className="text-2xl font-bold text-gray-800">5</div>
-              <div className="text-xs text-gray-600 mt-1">ads</div>
-              <Badge variant="outline" className="mt-2 text-xs bg-green-50 text-green-700 border-green-300">
+              <div className="text-2xl font-bold text-foreground">5</div>
+              <div className="text-xs text-muted-foreground mt-1">ads</div>
+              <Badge variant="outline" className="mt-2 text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20">
                 Quick
               </Badge>
             </button>
@@ -96,13 +96,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 batchSize === 10
-                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className="text-2xl font-bold text-gray-800">10</div>
-              <div className="text-xs text-gray-600 mt-1">ads</div>
-              <Badge variant="outline" className="mt-2 text-xs bg-blue-50 text-blue-700 border-blue-300">
+              <div className="text-2xl font-bold text-foreground">10</div>
+              <div className="text-xs text-muted-foreground mt-1">ads</div>
+              <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-[color:var(--primary)] border-primary/25">
                 Recommended
               </Badge>
             </button>
@@ -112,13 +112,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 batchSize === 20
-                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className="text-2xl font-bold text-gray-800">20</div>
-              <div className="text-xs text-gray-600 mt-1">ads</div>
-              <Badge variant="outline" className="mt-2 text-xs bg-purple-50 text-purple-700 border-purple-300">
+              <div className="text-2xl font-bold text-foreground">20</div>
+              <div className="text-xs text-muted-foreground mt-1">ads</div>
+              <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-[color:var(--primary)] border-primary/25">
                 Pro
               </Badge>
             </button>
@@ -127,7 +127,7 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
 
         {/* Model Mode Selector */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-3 block">
+          <label className="text-sm font-semibold text-foreground mb-3 block">
             Model Mode
           </label>
           <div className="grid grid-cols-3 gap-3">
@@ -136,13 +136,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                 model === 'auto'
-                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <TrendingUp className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-              <div className="text-sm font-semibold text-gray-800">Auto</div>
-              <div className="text-xs text-gray-500 mt-1">Best quality/cost</div>
+              <TrendingUp className="w-5 h-5 text-[color:var(--primary)] mx-auto mb-1" />
+              <div className="text-sm font-semibold text-foreground">Auto</div>
+              <div className="text-xs text-muted-foreground mt-1">Best quality/cost</div>
             </button>
 
             <button
@@ -150,13 +150,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                 model === 'fast'
-                  ? 'border-green-600 bg-green-50 shadow-md'
-                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50/50'
+                  ? 'border-emerald-500/60 bg-emerald-500/10 shadow-md'
+                  : 'border-border hover:border-emerald-500/40 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <Zap className="w-5 h-5 text-green-600 mx-auto mb-1" />
-              <div className="text-sm font-semibold text-gray-800">Fast</div>
-              <div className="text-xs text-gray-500 mt-1">Cheaper, faster</div>
+              <Zap className="w-5 h-5 text-emerald-600 dark:text-emerald-300 mx-auto mb-1" />
+              <div className="text-sm font-semibold text-foreground">Fast</div>
+              <div className="text-xs text-muted-foreground mt-1">Cheaper, faster</div>
             </button>
 
             <button
@@ -164,13 +164,13 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               disabled={isGenerating}
               className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                 model === 'pro'
-                  ? 'border-purple-600 bg-purple-50 shadow-md'
-                  : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
               } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <Crown className="w-5 h-5 text-purple-600 mx-auto mb-1" />
-              <div className="text-sm font-semibold text-gray-800">Pro</div>
-              <div className="text-xs text-gray-500 mt-1">Best quality</div>
+              <Crown className="w-5 h-5 text-[color:var(--primary)] mx-auto mb-1" />
+              <div className="text-sm font-semibold text-foreground">Pro</div>
+              <div className="text-xs text-muted-foreground mt-1">Best quality</div>
             </button>
           </div>
         </div>
@@ -178,21 +178,21 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
         {/* Cost & Time Estimates */}
         <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Estimated Cost:</span>
-            <span className="text-lg font-bold text-gray-800">${totalCost}</span>
+            <span className="text-sm text-muted-foreground">Estimated Cost:</span>
+            <span className="text-lg font-bold text-foreground">${totalCost}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Per Ad:</span>
-            <span className="text-md font-semibold text-gray-700">${perAdCost}</span>
+            <span className="text-sm text-muted-foreground">Per Ad:</span>
+            <span className="text-md font-semibold text-foreground">${perAdCost}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Estimated Time:</span>
-            <span className="text-md font-semibold text-gray-700">~{estimatedTime}s</span>
+            <span className="text-sm text-muted-foreground">Estimated Time:</span>
+            <span className="text-md font-semibold text-foreground">~{estimatedTime}s</span>
           </div>
           
           {model === 'fast' && (
             <div className="mt-3 pt-3 border-t">
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-muted-foreground">
                 Fast mode is cheaper and quicker than Pro.
               </p>
             </div>
@@ -220,7 +220,7 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
         </Button>
 
         {/* Info Text */}
-        <p className="text-xs text-center text-gray-500">
+        <p className="text-xs text-center text-muted-foreground">
           Each ad will be UNIQUE with different visuals, copy, and CTAs
         </p>
       </CardContent>

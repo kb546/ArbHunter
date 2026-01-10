@@ -18,8 +18,8 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
   if (cErr || !campaign) {
     return (
       <PageShell>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Campaign not found</h1>
-        <p className="text-sm text-gray-600">This campaign may not exist or you may not have access.</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Campaign not found</h1>
+        <p className="text-sm text-muted-foreground">This campaign may not exist or you may not have access.</p>
         <Button asChild variant="outline">
           <Link href="/campaigns">Back to Campaigns</Link>
         </Button>

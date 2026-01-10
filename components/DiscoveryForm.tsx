@@ -66,7 +66,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
                   Worldwide
                 </SelectItem>
 
-                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
                   Tier 1 - Premium Markets
                 </div>
                 {COUNTRIES.filter((c) => c.tier === 1).map((country) => (
@@ -75,7 +75,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
                   </SelectItem>
                 ))}
 
-                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase mt-2">
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase mt-2">
                   Tier 2 - Growing Markets
                 </div>
                 {COUNTRIES.filter((c) => c.tier === 2).map((country) => (

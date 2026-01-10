@@ -23,8 +23,8 @@ export function PageHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">{title}</h1>
-        {description ? <p className="text-sm text-gray-600 mt-1 leading-relaxed">{description}</p> : null}
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
+        {description ? <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p> : null}
       </div>
       {right ? <div className="shrink-0 flex items-center gap-2">{right}</div> : null}
     </div>
@@ -40,8 +40,8 @@ export function SectionTitle({
 }) {
   return (
     <div>
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{title}</h2>
-      {description ? <p className="text-sm text-gray-600 mt-1 leading-relaxed">{description}</p> : null}
+      <h2 className="text-lg sm:text-xl font-semibold text-foreground">{title}</h2>
+      {description ? <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p> : null}
     </div>
   );
 }

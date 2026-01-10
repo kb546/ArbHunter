@@ -127,7 +127,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                   <span className="text-sm text-muted-foreground">0-40 points</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '40%' }}
@@ -146,7 +146,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                   <span className="text-sm text-muted-foreground">0-30 points</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '30%' }}
@@ -165,7 +165,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                   <span className="text-sm text-muted-foreground">0-30 points</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all"
                       style={{ width: `${(discovery.margin_score / 100) * 100}%`, maxWidth: '30%' }}
@@ -289,7 +289,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                 <div className="pt-4 border-t">
                   <p className="text-sm font-semibold mb-2">Market Saturation</p>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 transition-all"
                         style={{ width: `${discovery.competition_data.market_saturation}%` }}
@@ -301,10 +301,10 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     {discovery.competition_data.market_saturation < 30
-                      ? '✅ Low saturation - good opportunity to enter'
+                      ? 'Low saturation - good opportunity to enter'
                       : discovery.competition_data.market_saturation < 60
-                      ? '⚠️ Moderate saturation - test carefully'
-                      : '❌ High saturation - crowded market'}
+                      ? 'Moderate saturation - test carefully'
+                      : 'High saturation - crowded market'}
                   </p>
                 </div>
               </CardContent>

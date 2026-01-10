@@ -28,10 +28,10 @@ function pct(used: number, limit: number | null): number | null {
 }
 
 function barClass(percent: number | null) {
-  if (percent === null) return 'bg-indigo-600';
+  if (percent === null) return 'bg-[color:var(--primary)]';
   if (percent >= 95) return 'bg-red-600';
   if (percent >= 80) return 'bg-amber-500';
-  return 'bg-indigo-600';
+  return 'bg-[color:var(--primary)]';
 }
 
 export function UsageBanner() {
@@ -68,14 +68,14 @@ export function UsageBanner() {
     data.plan === 'free';
 
   return (
-    <Card className="p-4 border-l-4 border-l-indigo-600">
+    <Card className="p-4 border-l-4 border-l-[color:var(--primary)]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-900">This month</span>{' '}
-            <span className="text-gray-500">(Plan: {data.plan.toUpperCase()})</span>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">This month</span>{' '}
+            <span className="text-muted-foreground">(Plan: {data.plan.toUpperCase()})</span>
           </div>
-          <div className="mt-1 text-sm text-gray-800">
+          <div className="mt-1 text-sm text-foreground">
             <span className="font-medium">Discoveries:</span> {data.usage.discoveries} / {fmtLimit(data.limits.discoveriesPerMonth)}
             {'  '}•{'  '}
             <span className="font-medium">Creatives:</span> {data.usage.creatives} / {fmtLimit(data.limits.creativesPerMonth)}
@@ -89,24 +89,24 @@ export function UsageBanner() {
 
           <div className="mt-3 space-y-2">
             <div>
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span>Discoveries</span>
                 <span>{dPct === null ? '—' : `${dPct}%`}</span>
               </div>
               <Progress
                 value={dPct ?? 0}
-                className="h-2 bg-gray-100"
+                className="h-2 bg-muted"
                 indicatorClassName={barClass(dPct)}
               />
             </div>
             <div>
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span>Creatives</span>
                 <span>{cPct === null ? '—' : `${cPct}%`}</span>
               </div>
-              <Progress value={cPct ?? 0} className="h-2 bg-gray-100" indicatorClassName={barClass(cPct)} />
+              <Progress value={cPct ?? 0} className="h-2 bg-muted" indicatorClassName={barClass(cPct)} />
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Color thresholds: <span className="font-medium text-amber-700">80%</span> warning •{' '}
               <span className="font-medium text-red-700">95%</span> critical
             </div>

@@ -14,17 +14,16 @@ type Stage = {
   id: number;
   name: string;
   description: string;
-  emoji: string;
   estimatedTime: number; // seconds
 };
 
 const stages: Stage[] = [
-  { id: 1, name: 'Strategy Planning', description: 'Planning unique creative strategies', emoji: '🎯', estimatedTime: 5 },
-  { id: 2, name: 'Copywriting', description: 'Writing unique ad copy', emoji: '✍️', estimatedTime: 10 },
-  { id: 3, name: 'Visual Design', description: 'Designing visual specifications', emoji: '🎨', estimatedTime: 5 },
-  { id: 4, name: 'Prompt Engineering', description: 'Optimizing Gemini prompts', emoji: '🔧', estimatedTime: 5 },
-  { id: 5, name: 'Image Generation', description: 'Generating images with Gemini', emoji: '📸', estimatedTime: 30 },
-  { id: 6, name: 'Quality Control', description: 'Assessing quality & A/B pairs', emoji: '✅', estimatedTime: 10 },
+  { id: 1, name: 'Strategy Planning', description: 'Planning unique creative strategies', estimatedTime: 5 },
+  { id: 2, name: 'Copywriting', description: 'Writing unique ad copy', estimatedTime: 10 },
+  { id: 3, name: 'Visual Design', description: 'Designing visual specifications', estimatedTime: 5 },
+  { id: 4, name: 'Prompt Engineering', description: 'Optimizing Gemini prompts', estimatedTime: 5 },
+  { id: 5, name: 'Image Generation', description: 'Generating images with Gemini', estimatedTime: 30 },
+  { id: 6, name: 'Quality Control', description: 'Assessing quality & A/B pairs', estimatedTime: 10 },
 ];
 
 export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgressIndicatorProps) {
@@ -78,10 +77,10 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="shadow-lg border-blue-200 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Card className="shadow-lg border border-border bg-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Loader2 className="w-5 h-5 text-[color:var(--primary)] animate-spin" />
             Generating {batchSize} Unique Ads...
           </CardTitle>
         </CardHeader>
@@ -101,10 +100,10 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
                   transition={{ delay: stage.id * 0.1 }}
                   className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
                     isCurrent
-                      ? 'bg-blue-100 border border-blue-300 shadow-sm'
+                      ? 'bg-primary/10 border border-primary/20 shadow-sm'
                       : isCompleted
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-gray-50 border border-gray-200'
+                      ? 'bg-emerald-500/10 border border-emerald-500/20'
+                      : 'bg-muted/40 border border-border'
                   }`}
                 >
                   {/* Status Icon */}
@@ -112,10 +111,10 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
                     {isCompleted ? (
                       <CheckCircle2 className="w-6 h-6 text-green-600" />
                     ) : isCurrent ? (
-                      <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                      <Loader2 className="w-6 h-6 text-[color:var(--primary)] animate-spin" />
                     ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                        <span className="text-xs text-gray-400">{stage.id}</span>
+                      <div className="w-6 h-6 rounded-full border-2 border-border flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">{stage.id}</span>
                       </div>
                     )}
                   </div>
@@ -123,16 +122,15 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
                   {/* Stage Info */}
                   <div className="flex-grow">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{stage.emoji}</span>
                       <span
                         className={`font-semibold ${
-                          isCurrent ? 'text-blue-800' : isCompleted ? 'text-green-800' : 'text-gray-600'
+                          isCurrent ? 'text-foreground' : isCompleted ? 'text-foreground' : 'text-muted-foreground'
                         }`}
                       >
                         {stage.name}
                       </span>
                       {isCurrent && (
-                        <span className="ml-auto text-xs text-blue-600 font-medium animate-pulse">
+                        <span className="ml-auto text-xs text-[color:var(--primary)] font-medium animate-pulse">
                           In Progress...
                         </span>
                       )}
@@ -140,7 +138,7 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
                         <span className="ml-auto text-xs text-green-600 font-medium">✓ Done</span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{stage.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{stage.description}</p>
                   </div>
                 </motion.div>
               );
@@ -149,13 +147,13 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
 
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>Overall Progress</span>
               <span className="font-semibold">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+            <div className="w-full bg-muted rounded-full h-3 overflow-hidden shadow-inner">
               <motion.div
-                className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
+                className="h-full bg-[color:var(--primary)] rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5, ease: 'easeInOut' }}
@@ -164,15 +162,15 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
           </div>
 
           {/* Time Info */}
-          <div className="flex justify-between items-center text-sm bg-white rounded-lg p-3 border border-gray-200">
+          <div className="flex justify-between items-center text-sm bg-card rounded-lg p-3 border border-border">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-600">Time Elapsed:</span>
-              <span className="font-semibold text-gray-800">{elapsedTime}s</span>
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Time Elapsed:</span>
+              <span className="font-semibold text-foreground">{elapsedTime}s</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">Remaining:</span>
-              <span className="font-semibold text-blue-600">~{estimatedRemaining}s</span>
+              <span className="text-muted-foreground">Remaining:</span>
+              <span className="font-semibold text-[color:var(--primary)]">~{estimatedRemaining}s</span>
             </div>
           </div>
 
@@ -181,9 +179,9 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
-            className="text-center text-xs text-gray-500 italic"
+            className="text-center text-xs text-muted-foreground italic"
           >
-            💡 Each ad is being crafted by 5 specialized AI agents
+            Each ad is being crafted by 5 specialized AI agents.
           </motion.div>
         </CardContent>
       </Card>

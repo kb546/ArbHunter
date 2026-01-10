@@ -20,8 +20,8 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6">
-          <div className="font-semibold text-gray-900">Discovery</div>
-          <div className="text-sm text-gray-600 mt-1">
+          <div className="font-semibold text-foreground">Discovery</div>
+          <div className="text-sm text-muted-foreground mt-1">
             Find profitable GEO + niche combos.
           </div>
           <div className="mt-4">
@@ -32,8 +32,8 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="p-6">
-          <div className="font-semibold text-gray-900">Creative Studio</div>
-          <div className="text-sm text-gray-600 mt-1">
+          <div className="font-semibold text-foreground">Creative Studio</div>
+          <div className="text-sm text-muted-foreground mt-1">
             Generate A/B creatives from a niche.
           </div>
           <div className="mt-4">
@@ -44,8 +44,8 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="p-6">
-          <div className="font-semibold text-gray-900">Campaigns</div>
-          <div className="text-sm text-gray-600 mt-1">
+          <div className="font-semibold text-foreground">Campaigns</div>
+          <div className="text-sm text-muted-foreground mt-1">
             Organize creatives, exports, and experiments.
           </div>
           <div className="mt-4">

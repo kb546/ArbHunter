@@ -278,8 +278,8 @@ function CreativeStudioContent() {
           {/* Campaign Form */}
           <Card className="p-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Campaign details</h2>
-              <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">Campaign details</h2>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 We&apos;ll auto-detect brand, colors, and style from your niche.
               </p>
             </div>
@@ -288,7 +288,7 @@ function CreativeStudioContent() {
               {/* Niche & GEO */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <Label htmlFor="niche" className="text-sm font-medium text-gray-700 mb-2 block">
+                  <Label htmlFor="niche" className="text-sm font-medium mb-2 block">
                     Niche / Industry *
                   </Label>
                   <Input
@@ -298,13 +298,13 @@ function CreativeStudioContent() {
                     placeholder="e.g., KFC careers, Amazon delivery jobs"
                     className="h-11"
                   />
-                  <p className="text-xs text-gray-500 mt-1.5">
+                  <p className="text-xs text-muted-foreground mt-1.5">
                     Brand will be auto-detected (no upload needed)
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="geo" className="text-sm font-medium text-gray-700 mb-2 block">
+                  <Label htmlFor="geo" className="text-sm font-medium mb-2 block">
                     Geographic Market *
                   </Label>
                   <Select value={geo} onValueChange={setGeo}>
@@ -318,7 +318,7 @@ function CreativeStudioContent() {
                       </SelectItem>
                       
                       {/* Tier 1 Countries */}
-                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
                         Tier 1 - Premium Markets
                       </div>
                       {COUNTRIES.filter(c => c.tier === 1).map(country => (
@@ -328,7 +328,7 @@ function CreativeStudioContent() {
                       ))}
                       
                       {/* Tier 2 Countries */}
-                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase mt-2">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase mt-2">
                         Tier 2 - Growing Markets
                       </div>
                       {COUNTRIES.filter(c => c.tier === 2).map(country => (
@@ -338,7 +338,7 @@ function CreativeStudioContent() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-gray-500 mt-1.5">
+                  <p className="text-xs text-muted-foreground mt-1.5">
                     Tier 1 = High CPM (Premium) • Tier 2 = Medium CPM (Standard)
                   </p>
                 </div>
@@ -346,8 +346,8 @@ function CreativeStudioContent() {
 
               {/* Creative Preset */}
               <div>
-                <Label htmlFor="preset" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
+                <Label htmlFor="preset" className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[color:var(--primary)]" />
                   Creative Direction Preset
                 </Label>
                 <Select value={creativePreset} onValueChange={(v: CreativePreset) => setCreativePreset(v)}>
@@ -372,14 +372,14 @@ function CreativeStudioContent() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1.5">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   World-class creative direction inspired by top brands. &quot;Premium Minimal&quot; is our recommended best performer.
                 </p>
               </div>
 
               {/* Target Audience */}
               <div>
-                <Label htmlFor="audience" className="text-sm font-medium text-gray-700 mb-2 block">
+                <Label htmlFor="audience" className="text-sm font-medium mb-2 block">
                   Target Audience (Optional)
                 </Label>
                 <Textarea
@@ -390,21 +390,21 @@ function CreativeStudioContent() {
                   rows={3}
                   className="resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1.5">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   Helps AI understand who to target (age, interests, needs)
                 </p>
               </div>
 
               {/* Mode Toggle */}
               <div className="pt-4">
-                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg mb-6">
+                <div className="flex gap-2 p-1 bg-muted rounded-lg mb-6">
                   <button
                     onClick={() => setMode('quick')}
                     disabled={isGenerating}
                     className={`flex-1 px-4 py-3 rounded-md font-semibold text-sm transition-all ${
                       mode === 'quick'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-card shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                     } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center justify-center gap-2">
@@ -417,14 +417,14 @@ function CreativeStudioContent() {
                     disabled={isGenerating}
                     className={`flex-1 px-4 py-3 rounded-md font-semibold text-sm transition-all ${
                       mode === 'batch'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-card shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                     } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Layers className="w-4 h-4" />
                       Batch (5-20 ads)
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-xs">
+                      <Badge variant="outline" className="bg-primary/10 text-[color:var(--primary)] border-primary/25 text-xs">
                         AI Agents
                       </Badge>
                     </div>
@@ -438,7 +438,7 @@ function CreativeStudioContent() {
                       size="lg"
                       onClick={handleGenerate}
                       disabled={isGenerating || !niche || !geo}
-                      className="w-full h-14 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all"
+                      className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                     >
                       {isGenerating ? (
                         <>
@@ -456,7 +456,7 @@ function CreativeStudioContent() {
                     {/* Cost/Time Info */}
                     {!isGenerating && (
                       <div className="mt-3 text-center">
-                        <p className="text-sm text-gray-600 flex items-center justify-center gap-2">
+                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                           <Info className="h-4 w-4" />
                           <span>
                             Cost: ~$0.02 • Time: ~20s • Always 2 variations for A/B testing
@@ -482,15 +482,15 @@ function CreativeStudioContent() {
               {/* Advanced Settings (Collapsed) */}
               <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
                 <CollapsibleTrigger asChild>
-                  <button className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 mx-auto transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors">
                     Advanced Settings
                     <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                      <Label className="text-sm font-medium mb-2 block">
                         AI Model Selection
                       </Label>
                       <Select value={model} onValueChange={(v: any) => setModel(v)}>
@@ -509,7 +509,7 @@ function CreativeStudioContent() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         {model === 'auto' && 'Uses Pro for high-margin discoveries, Fast for low-margin'}
                         {model === 'pro' && 'Best quality for final production ads'}
                         {model === 'fast' && 'Speed optimized for bulk testing'}
@@ -517,11 +517,11 @@ function CreativeStudioContent() {
                     </div>
 
                     {marginScore && (
-                      <div className="p-3 bg-indigo-50 rounded-lg">
-                        <p className="text-xs font-medium text-indigo-900">
+                      <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                        <p className="text-xs font-medium text-foreground">
                           Discovery Margin Score: {marginScore.toFixed(1)}/10
                         </p>
-                        <p className="text-xs text-indigo-700 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {marginScore >= 8 && 'High margin → Gemini Pro recommended'}
                           {marginScore >= 6 && marginScore < 8 && 'Medium margin → Gemini Fast recommended'}
                           {marginScore < 6 && 'Low margin → Consider skipping'}
@@ -543,11 +543,11 @@ function CreativeStudioContent() {
           {generatedAds.length > 0 && (
             <>
               {/* Post-generation journey */}
-              <Card className="p-4 border bg-white">
+              <Card className="p-4 border bg-card">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <div className="font-semibold text-gray-900">Next step</div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="font-semibold text-foreground">Next step</div>
+                    <div className="text-sm text-muted-foreground mt-1">
                       {campaignId
                         ? 'Your ads were saved to this campaign. Continue to Campaigns to manage winners, tags, and exports.'
                         : 'Create a campaign to save these results (recommended).'}
@@ -585,7 +585,7 @@ function CreativeStudioContent() {
                   creatives={generatedAds}
                   brandKit={{
                     name: niche.split(' ')[0], // Simple brand name extraction
-                    colors: { primary: '#4F46E5', secondary: '#8B5CF6' }, // Default
+                    colors: { primary: '#DFFF00', secondary: '#2B2F36' }, // Theme default
                   }}
                   campaignData={{
                     name: `${niche} - ${geo}`,
@@ -604,28 +604,28 @@ function CreativeStudioContent() {
           {generatedAds.length === 0 && !isGenerating && (
             <Card className="p-12 text-center border-dashed">
               <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   Ready to Generate Test Ads
                 </h3>
-                <p className="text-sm text-gray-600 mb-6">
+                <p className="text-sm text-muted-foreground mb-6">
                   Fill in the campaign details above and click "Generate 2 Test Ads" to create
                   high-quality ad creatives for your discovery.
                 </p>
                 <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-indigo-600">2</p>
-                    <p className="text-xs text-gray-600 mt-1">Variations</p>
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">2</p>
+                    <p className="text-xs text-muted-foreground mt-1">Variations</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-indigo-600">~20s</p>
-                    <p className="text-xs text-gray-600 mt-1">Generation</p>
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">~20s</p>
+                    <p className="text-xs text-muted-foreground mt-1">Generation</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-indigo-600">$0.02</p>
-                    <p className="text-xs text-gray-600 mt-1">Total Cost</p>
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">$0.02</p>
+                    <p className="text-xs text-muted-foreground mt-1">Total Cost</p>
                   </div>
                 </div>
               </div>
@@ -640,7 +640,7 @@ export default function CreativeStudioClient() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[color:var(--primary)]" />
       </div>
     }>
       <CreativeStudioContent />
