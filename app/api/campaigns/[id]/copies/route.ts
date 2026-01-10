@@ -27,7 +27,7 @@ export async function GET(
     const supabase = createSupabaseAuthedServerClient(session.accessToken);
     const { data, error } = await supabase
       .from('generated_copies')
-      .select('*')
+      .select('id,campaign_id,headline,primary_text,call_to_action,generated_at')
       .eq('campaign_id', campaignId)
       .order('generated_at', { ascending: false });
 

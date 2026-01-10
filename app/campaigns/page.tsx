@@ -4,13 +4,17 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
+import { Badge } from '@/components/ui/badge';
 
 export default async function CampaignsPage() {
   const session = await getAuthedSessionFromCookies();
   if (!session?.user) redirect('/auth/login?next=/campaigns');
 
   const supabase = createSupabaseAuthedServerClient(session.accessToken);
-  const { data: campaigns } = await supabase.from('campaigns').select('*').order('created_at', { ascending: false });
+  const { data: campaigns } = await supabase
+    .from('campaigns')
+    .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
+    .order('created_at', { ascending: false });
 
   return (
     <div className="space-y-6">
@@ -40,15 +44,24 @@ export default async function CampaignsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {campaigns.map((c: any) => (
-            <Card key={c.id} className="p-6">
-              <div className="font-semibold text-gray-900 line-clamp-2">{c.name}</div>
-              <div className="text-sm text-gray-600 mt-1">
-                {c.geo} • {c.niche}
+            <Card key={c.id} className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-semibold text-gray-900 line-clamp-2">{c.name}</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {c.geo} • {c.niche}
+                  </div>
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-2">
+                  <Badge variant="outline">{String(c.status || 'draft').toUpperCase()}</Badge>
+                  {c.winner_variation_id ? <Badge>Winner set</Badge> : null}
+                </div>
               </div>
-              <div className="text-xs text-gray-500 mt-2">
-                Status: {String(c.status || 'draft').toUpperCase()}
+              <div className="mt-3 flex items-center justify-between gap-2 text-xs text-gray-500">
+                <span>Updated {new Date(c.updated_at || c.created_at).toLocaleDateString()}</span>
+                <span>Created {new Date(c.created_at).toLocaleDateString()}</span>
               </div>
-              <div className="mt-4">
+              <div className="mt-3">
                 <Button asChild className="w-full">
                   <Link href={`/campaigns/${c.id}`}>Open</Link>
                 </Button>

@@ -6,16 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Star } from 'lucide-react';
-
-type CreativeRow = {
-  id: string;
-  image_url: string;
-  prompt: string;
-  model?: string | null;
-  cost?: number | null;
-  generated_at?: string;
-};
+import { Image as ImageIcon, Loader2, Star } from 'lucide-react';
 
 type CopyRow = {
   id: string;
@@ -26,33 +17,88 @@ type CopyRow = {
 };
 
 export function CampaignDetailClient(props: {
-  creatives: CreativeRow[];
-  copies: CopyRow[];
-  variations: Array<{
-    id: string;
-    campaign_id: string;
-    creative_id: string;
-    copy_id: string;
-    variation_name?: string | null;
-    status: 'untested' | 'testing' | 'winner' | 'loser';
-    is_control?: boolean | null;
-    predicted_winner?: boolean | null;
-    is_favorite?: boolean | null;
-    tags?: string[] | null;
-  }>;
   campaignId: string;
 }) {
-  const { creatives, copies, campaignId } = props;
-  const [variations, setVariations] = React.useState(props.variations);
+  const { campaignId } = props;
+  const [loading, setLoading] = React.useState(true);
+  const [variations, setVariations] = React.useState<
+    Array<{
+      id: string;
+      campaign_id: string;
+      creative_id: string;
+      copy_id: string;
+      variation_name?: string | null;
+      status: 'untested' | 'testing' | 'winner' | 'loser';
+      is_control?: boolean | null;
+      predicted_winner?: boolean | null;
+      is_favorite?: boolean | null;
+      tags?: string[] | null;
+    }>
+  >([]);
+  const [copies, setCopies] = React.useState<CopyRow[]>([]);
   const [busyById, setBusyById] = React.useState<Record<string, boolean>>({});
   const [tagDraftById, setTagDraftById] = React.useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
-    for (const v of props.variations) init[v.id] = (v.tags || []).join(', ');
+    // filled after fetch
     return init;
   });
 
-  const creativeById = new Map(creatives.map((c) => [c.id, c]));
-  const copyById = new Map(copies.map((c) => [c.id, c]));
+  const copyById = React.useMemo(() => new Map(copies.map((c) => [c.id, c])), [copies]);
+
+  const [creativeCache, setCreativeCache] = React.useState<
+    Record<
+      string,
+      | { state: 'idle' }
+      | { state: 'loading' }
+      | { state: 'loaded'; image_url: string }
+      | { state: 'error' }
+    >
+  >({});
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const [vRes, cRes] = await Promise.all([
+          fetch(`/api/campaigns/${campaignId}/variations`),
+          fetch(`/api/campaigns/${campaignId}/copies`),
+        ]);
+        const vData = await vRes.json().catch(() => ({}));
+        const cData = await cRes.json().catch(() => ({}));
+        if (!cancelled) {
+          setVariations(Array.isArray(vData.variations) ? vData.variations : []);
+          setCopies(Array.isArray(cData.copies) ? cData.copies : []);
+          setTagDraftById(() => {
+            const init: Record<string, string> = {};
+            for (const v of (Array.isArray(vData.variations) ? vData.variations : [])) init[v.id] = (v.tags || []).join(', ');
+            return init;
+          });
+        }
+      } catch (e: any) {
+        toast.error('Failed to load campaign assets', { description: e?.message || String(e) });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [campaignId]);
+
+  async function loadCreativeImage(creativeId: string) {
+    const existing = creativeCache[creativeId];
+    if (existing?.state === 'loading' || existing?.state === 'loaded') return;
+    setCreativeCache((m) => ({ ...m, [creativeId]: { state: 'loading' } }));
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/creative/${creativeId}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `Failed (HTTP ${res.status})`);
+      setCreativeCache((m) => ({ ...m, [creativeId]: { state: 'loaded', image_url: data.creative.image_url } }));
+    } catch {
+      setCreativeCache((m) => ({ ...m, [creativeId]: { state: 'error' } }));
+    }
+  }
 
   async function markWinner(variationId: string) {
     if (busyById[variationId]) return;
@@ -140,25 +186,6 @@ export function CampaignDetailClient(props: {
     }
   }
 
-  function exportCreativesCsv() {
-    const headers = ['id', 'image_url', 'model', 'cost', 'prompt'];
-    const rows = creatives.map((c) => [
-      c.id,
-      c.image_url,
-      c.model || '',
-      c.cost ?? '',
-      (c.prompt || '').replace(/\n/g, ' ').slice(0, 500),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `campaign-creatives-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
-
   function exportCopiesCsv() {
     const headers = ['id', 'headline', 'primary_text', 'call_to_action'];
     const rows = copies.map((c) => [
@@ -185,21 +212,43 @@ export function CampaignDetailClient(props: {
           <div className="text-sm text-gray-600">{variations.length} linked variants</div>
         </div>
 
-        {variations.length === 0 ? (
+        {loading ? (
+          <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading variations…
+          </div>
+        ) : variations.length === 0 ? (
           <div className="text-sm text-gray-600 mt-2">No variations yet.</div>
         ) : (
           <div className="mt-4 space-y-3">
             {variations.map((v) => {
-              const cr = creativeById.get(v.creative_id);
               const cp = copyById.get(v.copy_id);
+              const creativeState = creativeCache[v.creative_id]?.state || 'idle';
               return (
                 <div key={v.id} className="rounded-lg border bg-white p-4">
                   <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                     <div className="w-full lg:w-40">
-                      {cr?.image_url ? (
-                        <img src={cr.image_url} alt="creative" className="w-full aspect-square object-cover rounded-md border" />
+                      {creativeState === 'loaded' ? (
+                        <img
+                          src={(creativeCache[v.creative_id] as any).image_url}
+                          alt="creative"
+                          className="w-full aspect-square object-cover rounded-md border"
+                        />
                       ) : (
-                        <div className="w-full aspect-square rounded-md border bg-gray-50" />
+                        <button
+                          type="button"
+                          onClick={() => loadCreativeImage(v.creative_id)}
+                          className="w-full aspect-square rounded-md border bg-gray-50 flex flex-col items-center justify-center text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                        >
+                          {creativeState === 'loading' ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <>
+                              <ImageIcon className="h-5 w-5 mb-2 text-gray-500" />
+                              Load preview
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
                     <div className="flex-1 min-w-0 space-y-2">
@@ -256,12 +305,9 @@ export function CampaignDetailClient(props: {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="text-sm text-gray-600">
-          {creatives.length} creatives • {copies.length} copies
+          {variations.length} variations • {copies.length} copies
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCreativesCsv} disabled={creatives.length === 0}>
-            Export creatives CSV
-          </Button>
           <Button variant="outline" onClick={exportCopiesCsv} disabled={copies.length === 0}>
             Export copies CSV
           </Button>
@@ -270,23 +316,9 @@ export function CampaignDetailClient(props: {
 
       <Card className="p-5">
         <div className="font-semibold text-gray-900">Creatives</div>
-        {creatives.length === 0 ? (
-          <div className="text-sm text-gray-600 mt-2">No creatives yet. Generate some from Creative Studio.</div>
-        ) : (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {creatives.map((c) => (
-              <div key={c.id} className="rounded-lg border bg-white overflow-hidden">
-                <img src={c.image_url} alt="creative" className="w-full aspect-square object-cover" />
-                <div className="p-3 space-y-1">
-                  <div className="text-xs text-gray-500">
-                    {c.model || 'model'} {typeof c.cost === 'number' ? `• $${c.cost.toFixed(4)}` : ''}
-                  </div>
-                  <div className="text-xs text-gray-700 line-clamp-3">{c.prompt}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="text-sm text-gray-600 mt-2">
+          Previews are loaded on-demand per variation to keep campaign pages fast.
+        </div>
       </Card>
 
       <Card className="p-5">

@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const { data, error } = await supabase
       .from('campaign_variations')
-      .select('*')
+      .select('id,campaign_id,creative_id,copy_id,variation_name,status,is_control,predicted_winner,is_favorite,tags,created_at')
       .eq('campaign_id', id)
       .order('created_at', { ascending: true });
 

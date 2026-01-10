@@ -58,14 +58,14 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
   const estimatedTime = estimateTime(batchSize);
 
   return (
-    <Card className="shadow-md border-blue-200">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-blue-600" />
-          Batch Generation
+    <Card className="shadow-sm">
+      <CardHeader className="border-b">
+        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[color:var(--primary)]" />
+          Batch generation
         </CardTitle>
         <CardDescription className="text-gray-600">
-          Generate 5-20 UNIQUE ad variations powered by 5 AI agents
+          Generate 5–20 unique variations using 5 AI agents.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-6">
@@ -176,7 +176,7 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
         </div>
 
         {/* Cost & Time Estimates */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 space-y-2">
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Estimated Cost:</span>
             <span className="text-lg font-bold text-gray-800">${totalCost}</span>
@@ -191,9 +191,9 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
           </div>
           
           {model === 'fast' && (
-            <div className="mt-3 pt-3 border-t border-blue-200">
-              <p className="text-xs text-green-700">
-                💡 Fast mode saves ~60% compared to Pro mode!
+            <div className="mt-3 pt-3 border-t">
+              <p className="text-xs text-gray-600">
+                Fast mode is cheaper and quicker than Pro.
               </p>
             </div>
           )}
@@ -204,7 +204,7 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
           onClick={handleGenerate}
           disabled={isGenerating || !niche || !geo}
           size="lg"
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 text-lg transition-all duration-200 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full font-semibold py-4 text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
