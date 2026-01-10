@@ -54,7 +54,7 @@ export function MarketingHeader({ active }: { active?: Key }) {
               <Link href="/auth/login">Log in</Link>
             </Button>
             <Button asChild size="sm" className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90">
-              <Link href="/auth/signup">Start free</Link>
+              <Link href="/auth/signup?next=/dashboard">Start the hunt</Link>
             </Button>
           </div>
         </div>

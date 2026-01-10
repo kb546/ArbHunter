@@ -48,7 +48,21 @@ export async function signupAction(formData: FormData) {
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
 
-  if (error) return { error: error.message };
+  if (error) {
+    const msg = error.message || 'Signup failed';
+    // Common Supabase message for existing users
+    if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('registered')) {
+      return { error: 'An account with this email already exists. Please log in.' };
+    }
+    return { error: msg };
+  }
+
+  // Supabase can return a "user" with empty identities when the email already exists.
+  // In that case, we should not show "check your email" or pretend signup succeeded.
+  const identitiesLen = (data.user as any)?.identities?.length ?? null;
+  if (typeof identitiesLen === 'number' && identitiesLen === 0) {
+    return { error: 'An account with this email already exists. Please log in.' };
+  }
 
   // If email confirmations are enabled, session may be null.
   if (!data.session) {

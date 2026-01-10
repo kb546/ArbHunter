@@ -64,7 +64,7 @@ export function SiteFooter() {
           <div className="col-span-1 md:col-span-2">
             <Col title="Account">
               <FooterLink href="/auth/login">Log in</FooterLink>
-              <FooterLink href="/auth/signup">Start free</FooterLink>
+              <FooterLink href="/auth/signup?next=/dashboard">Start the hunt</FooterLink>
               <FooterLink href="/account/billing">Billing</FooterLink>
               <FooterLink href="/account/settings">Settings</FooterLink>
             </Col>

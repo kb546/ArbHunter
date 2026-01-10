@@ -77,18 +77,15 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-white/80 hover:text-white hover:bg-white/5">
-                <Link href="/pricing">Pricing</Link>
-              </Button>
               <Button asChild variant="outline" size="sm" className="border-white/15 bg-transparent text-white hover:bg-white/5">
-                <Link href="/auth/login">Log in</Link>
+                <Link href="/auth/login?next=/dashboard">Log in</Link>
               </Button>
               <Button
                 asChild
                 size="sm"
                 className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90 shadow-[0_0_0_1px_rgba(223,255,0,0.35),0_20px_60px_rgba(223,255,0,0.10)]"
               >
-                <Link href="/auth/signup">Start free</Link>
+                <Link href="/auth/signup?next=/dashboard">Start the hunt</Link>
               </Button>
             </div>
           </div>
@@ -124,7 +121,7 @@ export default function LandingPage() {
                   variant="outline"
                   className="border-white/15 bg-transparent text-white hover:bg-white/5"
                 >
-                  <Link href="/auth/login">View demo inside app</Link>
+                  <Link href="/auth/login?next=/dashboard">View demo inside app</Link>
                 </Button>
               </div>
 

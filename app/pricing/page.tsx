@@ -132,7 +132,7 @@ export default function PricingPage() {
             </ul>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90">
-                <Link href="/auth/signup">Start free</Link>
+                <Link href="/auth/signup?next=/dashboard">Start the hunt</Link>
               </Button>
               <Button asChild variant="outline" className="border-white/15 bg-transparent text-white hover:bg-white/5">
                 <Link href="/refund-policy">Refund policy</Link>
