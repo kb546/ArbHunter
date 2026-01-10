@@ -25,6 +25,7 @@ import { BatchResultsGrid } from '@/components/creative-studio-v3/BatchResultsGr
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import type { CreativePreset } from '@/services/creative-presets.service';
 import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
+import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
 function CreativeStudioContent() {
   const searchParams = useSearchParams();
@@ -262,49 +263,30 @@ function CreativeStudioContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Discovery
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Creative Studio
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Generate 2 test ads for your discovery
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Powered by</span>
-              <span className="font-semibold text-indigo-600">Gemini Nano Banana</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Creative Studio"
+        description="Generate 2 test ads for your discovery."
+        right={
+          <Button asChild variant="outline">
+            <Link href="/">Back to Discovery</Link>
+          </Button>
+        }
+      />
 
-      {/* Main Content */}
-      <div className="space-y-8">
+      <div className="space-y-6">
           {/* Campaign Form */}
-          <Card className="p-8 shadow-sm">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Campaign Details</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                We'll auto-detect brand, colors, and style from your niche
+          <Card className="p-6 shadow-sm">
+            <div className="mb-5">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Campaign details</h2>
+              <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                We&apos;ll auto-detect brand, colors, and style from your niche.
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Niche & GEO */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <Label htmlFor="niche" className="text-sm font-medium text-gray-700 mb-2 block">
                     Niche / Industry *
@@ -650,7 +632,7 @@ function CreativeStudioContent() {
             </Card>
           )}
       </div>
-    </div>
+    </PageShell>
   );
 }
 

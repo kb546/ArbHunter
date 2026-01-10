@@ -197,12 +197,14 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <main className="px-4 py-6 lg:px-8 lg:py-8">
-            {/* Stripe-like: lightweight inline usage status */}
-            <div className="mb-6">
-              <UsageBanner />
+          <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <div className="max-w-6xl mx-auto">
+              {/* lightweight inline usage status */}
+              <div className="mb-6">
+                <UsageBanner />
+              </div>
+              {children}
             </div>
-            {children}
           </main>
         </div>
       </div>

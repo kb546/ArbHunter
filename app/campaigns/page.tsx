@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
 export default async function CampaignsPage() {
   const session = await getAuthedSessionFromCookies();
@@ -17,18 +18,16 @@ export default async function CampaignsPage() {
     .order('created_at', { ascending: false });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Campaigns</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Your saved campaigns (creatives and exports live here).
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/">New campaign from discovery</Link>
-        </Button>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Campaigns"
+        description="Your saved campaigns (creatives and exports live here)."
+        right={
+          <Button asChild variant="outline">
+            <Link href="/">New campaign from discovery</Link>
+          </Button>
+        }
+      />
 
       {!campaigns || campaigns.length === 0 ? (
         <Card className="p-8">
@@ -70,7 +69,7 @@ export default async function CampaignsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
 
