@@ -2,6 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { Star } from 'lucide-react';
 
 type CreativeRow = {
   id: string;
@@ -23,8 +27,74 @@ type CopyRow = {
 export function CampaignDetailClient(props: {
   creatives: CreativeRow[];
   copies: CopyRow[];
+  variations: Array<{
+    id: string;
+    campaign_id: string;
+    creative_id: string;
+    copy_id: string;
+    variation_name?: string | null;
+    status: 'untested' | 'testing' | 'winner' | 'loser';
+    is_control?: boolean | null;
+    predicted_winner?: boolean | null;
+    is_favorite?: boolean | null;
+    tags?: string[] | null;
+  }>;
+  campaignId: string;
 }) {
-  const { creatives, copies } = props;
+  const { creatives, copies, variations, campaignId } = props;
+  const creativeById = new Map(creatives.map((c) => [c.id, c]));
+  const copyById = new Map(copies.map((c) => [c.id, c]));
+
+  async function markWinner(variationId: string) {
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_winner', variationId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
+      toast.success('Winner saved', { description: 'Refreshing…' });
+      window.location.reload();
+    } catch (e: any) {
+      toast.error('Failed to mark winner', { description: e?.message || String(e) });
+    }
+  }
+
+  async function toggleFavorite(variationId: string, is_favorite: boolean) {
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'toggle_favorite', variationId, is_favorite }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
+      window.location.reload();
+    } catch (e: any) {
+      toast.error('Failed to update favorite', { description: e?.message || String(e) });
+    }
+  }
+
+  async function setTags(variationId: string, tagsCsv: string) {
+    const tags = tagsCsv
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/variations`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_tags', variationId, tags }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Failed (HTTP ${res.status})`);
+      toast.success('Tags saved');
+      window.location.reload();
+    } catch (e: any) {
+      toast.error('Failed to save tags', { description: e?.message || String(e) });
+    }
+  }
 
   function exportCreativesCsv() {
     const headers = ['id', 'image_url', 'model', 'cost', 'prompt'];
@@ -65,6 +135,76 @@ export function CampaignDetailClient(props: {
 
   return (
     <div className="space-y-6">
+      <Card className="p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="font-semibold text-gray-900">Variations</div>
+          <div className="text-sm text-gray-600">{variations.length} linked variants</div>
+        </div>
+
+        {variations.length === 0 ? (
+          <div className="text-sm text-gray-600 mt-2">No variations yet.</div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {variations.map((v) => {
+              const cr = creativeById.get(v.creative_id);
+              const cp = copyById.get(v.copy_id);
+              return (
+                <div key={v.id} className="rounded-lg border bg-white p-4">
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                    <div className="w-full lg:w-40">
+                      {cr?.image_url ? (
+                        <img src={cr.image_url} alt="creative" className="w-full aspect-square object-cover rounded-md border" />
+                      ) : (
+                        <div className="w-full aspect-square rounded-md border bg-gray-50" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold text-gray-900">{v.variation_name || v.id.slice(0, 6)}</div>
+                          <Badge variant="outline">{String(v.status).toUpperCase()}</Badge>
+                          {v.predicted_winner ? <Badge>Predicted winner</Badge> : null}
+                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                          onClick={() => toggleFavorite(v.id, !v.is_favorite)}
+                        >
+                          <Star className={`h-4 w-4 ${v.is_favorite ? 'fill-yellow-400 text-yellow-500' : 'text-gray-400'}`} />
+                          Favorite
+                        </button>
+                      </div>
+
+                      <div className="text-sm text-gray-900 font-medium">{cp?.headline || '—'}</div>
+                      <div className="text-sm text-gray-700">{cp?.primary_text || '—'}</div>
+
+                      <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                        <Button variant="outline" onClick={() => markWinner(v.id)}>
+                          Mark winner
+                        </Button>
+                        <div className="flex-1">
+                          <Input
+                            defaultValue={(v.tags || []).join(', ')}
+                            placeholder="Tags (comma separated)"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                setTags(v.id, (e.target as HTMLInputElement).value);
+                              }
+                            }}
+                          />
+                          <div className="text-xs text-gray-500 mt-1">Press Enter to save tags.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="text-sm text-gray-600">
           {creatives.length} creatives • {copies.length} copies

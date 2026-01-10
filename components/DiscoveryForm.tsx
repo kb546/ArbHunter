@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,14 +12,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { COUNTRIES, getCountryDisplayName, searchCountries } from '@/lib/countries';
+import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
 
 interface DiscoveryFormProps {
   onSubmit: (geo: string, niche: string) => void;
   isLoading?: boolean;
 }
 
-const RECOMMENDED_GEOS = ['ZA', 'PH', 'ID', 'NG', 'EG', 'KE', 'PK', 'VN', 'BD', 'TH'];
+// (kept for future: recommended ordering if we re-add search)
 
 // High-intent niches for arbitrage
 const SUGGESTED_NICHES = [
@@ -36,18 +36,6 @@ const SUGGESTED_NICHES = [
 export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProps) {
   const [geo, setGeo] = useState('');
   const [niche, setNiche] = useState('');
-  const [geoQuery, setGeoQuery] = useState('');
-
-  const filtered = useMemo(() => {
-    const q = geoQuery.trim();
-    if (!q) return null;
-    return searchCountries(q);
-  }, [geoQuery]);
-
-  const recommended = useMemo(() => {
-    const map = new Map(COUNTRIES.map((c) => [c.code, c]));
-    return RECOMMENDED_GEOS.map((code) => map.get(code)).filter(Boolean) as any[];
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,44 +60,29 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
               <SelectTrigger id="geo">
                 <SelectValue placeholder="Select a geographic market" />
               </SelectTrigger>
-              <SelectContent>
-                <div className="p-2">
-                  <Input
-                    value={geoQuery}
-                    onChange={(e) => setGeoQuery(e.target.value)}
-                    placeholder="Search countries…"
-                    className="h-9"
-                  />
+              <SelectContent className="max-h-[300px]">
+                {/* Worldwide */}
+                <SelectItem value="WW" className="font-semibold">
+                  🌍 Worldwide
+                </SelectItem>
+
+                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                  Tier 1 - Premium Markets
                 </div>
+                {COUNTRIES.filter((c) => c.tier === 1).map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {getCountryDisplayName(country)}
+                  </SelectItem>
+                ))}
 
-                {filtered ? (
-                  <>
-                    {filtered.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
-                      </SelectItem>
-                    ))}
-                    {filtered.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">Recommended</div>
-                    {recommended.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
-                      </SelectItem>
-                    ))}
-
-                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase mt-2">All countries</div>
-                    {COUNTRIES.filter((c) => c.code !== 'WW').map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
-                      </SelectItem>
-                    ))}
-                  </>
-                )}
+                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase mt-2">
+                  Tier 2 - Growing Markets
+                </div>
+                {COUNTRIES.filter((c) => c.tier === 2).map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {getCountryDisplayName(country)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -31,6 +31,12 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
     supabase.from('generated_copies').select('*').eq('campaign_id', id).order('generated_at', { ascending: false }),
   ]);
 
+  const { data: variations } = await supabase
+    .from('campaign_variations')
+    .select('*')
+    .eq('campaign_id', id)
+    .order('created_at', { ascending: true });
+
   const creativeStudioHref = `/creative-studio?${new URLSearchParams({
     campaign: String(campaign.id),
     niche: String(campaign.niche),
@@ -59,7 +65,12 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
       </div>
 
       <Card className="p-6">
-        <CampaignDetailClient creatives={(creatives as any) || []} copies={(copies as any) || []} />
+        <CampaignDetailClient
+          creatives={(creatives as any) || []}
+          copies={(copies as any) || []}
+          variations={(variations as any) || []}
+          campaignId={id}
+        />
       </Card>
     </div>
   );
