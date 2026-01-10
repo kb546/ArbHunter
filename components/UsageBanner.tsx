@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 type UsagePayload = {
   plan: 'free' | 'starter' | 'pro' | 'agency';
@@ -18,6 +19,19 @@ function fmtLimit(n: number | null) {
 function remaining(used: number, limit: number | null) {
   if (limit === null) return null;
   return Math.max(0, limit - used);
+}
+
+function pct(used: number, limit: number | null): number | null {
+  if (limit === null) return null;
+  if (limit <= 0) return 100;
+  return Math.min(100, Math.round((used / limit) * 100));
+}
+
+function barClass(percent: number | null) {
+  if (percent === null) return 'bg-indigo-600';
+  if (percent >= 95) return 'bg-red-600';
+  if (percent >= 80) return 'bg-amber-500';
+  return 'bg-indigo-600';
 }
 
 export function UsageBanner() {
@@ -45,6 +59,8 @@ export function UsageBanner() {
 
   const dRem = remaining(data.usage.discoveries, data.limits.discoveriesPerMonth);
   const cRem = remaining(data.usage.creatives, data.limits.creativesPerMonth);
+  const dPct = pct(data.usage.discoveries, data.limits.discoveriesPerMonth);
+  const cPct = pct(data.usage.creatives, data.limits.creativesPerMonth);
 
   const isLow =
     (dRem !== null && dRem <= 5) ||
@@ -69,6 +85,31 @@ export function UsageBanner() {
                 <span className="text-amber-700 font-medium">Running low</span>
               </>
             ) : null}
+          </div>
+
+          <div className="mt-3 space-y-2">
+            <div>
+              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                <span>Discoveries</span>
+                <span>{dPct === null ? '—' : `${dPct}%`}</span>
+              </div>
+              <Progress
+                value={dPct ?? 0}
+                className="h-2 bg-gray-100"
+                indicatorClassName={barClass(dPct)}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                <span>Creatives</span>
+                <span>{cPct === null ? '—' : `${cPct}%`}</span>
+              </div>
+              <Progress value={cPct ?? 0} className="h-2 bg-gray-100" indicatorClassName={barClass(cPct)} />
+            </div>
+            <div className="text-xs text-gray-500">
+              Color thresholds: <span className="font-medium text-amber-700">80%</span> warning •{' '}
+              <span className="font-medium text-red-700">95%</span> critical
+            </div>
           </div>
         </div>
 
