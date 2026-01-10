@@ -63,7 +63,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
               <SelectContent className="max-h-[300px]">
                 {/* Worldwide */}
                 <SelectItem value="WW" className="font-semibold">
-                  🌍 Worldwide
+                  Worldwide
                 </SelectItem>
 
                 <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">

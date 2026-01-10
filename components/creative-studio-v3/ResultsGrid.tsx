@@ -128,7 +128,7 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
               {/* Model Badge */}
               <div className="absolute top-3 left-3">
                 <Badge variant="secondary" className="bg-white/90 text-xs">
-                  {creative.model === 'gemini-2.5-flash-image' ? '⚡ Fast' : '💎 Pro'}
+                  {creative.model === 'gemini-2.5-flash-image' ? 'Fast' : 'Pro'}
                 </Badge>
               </div>
             </div>

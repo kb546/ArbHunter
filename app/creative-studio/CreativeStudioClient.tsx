@@ -141,6 +141,35 @@ function CreativeStudioContent() {
     }
   };
 
+  const createCampaignAndSave = async () => {
+    if (!generatedAds.length) return;
+    try {
+      const name = `${niche} • ${geo}`;
+      const res = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, niche, geo }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Failed to create campaign (HTTP ${res.status})`);
+      const newId = data?.campaign?.id as string | undefined;
+      if (!newId) throw new Error('Campaign created but missing id');
+
+      const importRes = await fetch(`/api/campaigns/${newId}/import-v3`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creatives: generatedAds }),
+      });
+      const importData = await importRes.json();
+      if (!importRes.ok) throw new Error(importData?.error || `Failed to save into campaign (HTTP ${importRes.status})`);
+
+      toast.success('Saved to campaign', { description: 'Opening your campaign…' });
+      window.location.href = `/campaigns/${newId}`;
+    } catch (e: any) {
+      toast.error('Could not save to campaign', { description: e?.message || String(e) });
+    }
+  };
+
   const handleBatchGenerate = async (config: BatchConfig) => {
     if (!niche || !geo) {
       toast.error('Please enter niche and select GEO');
@@ -303,7 +332,7 @@ function CreativeStudioContent() {
                     <SelectContent className="max-h-[300px]">
                       {/* Worldwide */}
                       <SelectItem value="WW" className="font-semibold">
-                        🌍 Worldwide
+                        Worldwide
                       </SelectItem>
                       
                       {/* Tier 1 Countries */}
@@ -345,19 +374,19 @@ function CreativeStudioContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="premium-minimal">
-                      ✨ Premium Minimal - Apple-Inspired (DEFAULT)
+                      Premium Minimal - Apple-Inspired (Default)
                     </SelectItem>
                     <SelectItem value="bold-impact">
-                      ⚡ Bold Impact - Nike-Inspired
+                      Bold Impact - Nike-Inspired
                     </SelectItem>
                     <SelectItem value="friendly-trustworthy">
-                      🤝 Friendly & Trustworthy - Google-Inspired
+                      Friendly & Trustworthy - Google-Inspired
                     </SelectItem>
                     <SelectItem value="lifestyle-authentic">
-                      ❤️ Lifestyle Authentic - Patagonia-Inspired
+                      Lifestyle Authentic - Patagonia-Inspired
                     </SelectItem>
                     <SelectItem value="data-driven">
-                      📊 Data-Driven - Microsoft-Inspired
+                      Data-Driven - Microsoft-Inspired
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -488,13 +517,13 @@ function CreativeStudioContent() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="auto">
-                            🤖 Auto (Based on margin score) - Recommended
+                            Auto (Based on margin score) - Recommended
                           </SelectItem>
                           <SelectItem value="pro">
-                            💎 Gemini Pro (High quality, $0.01/ad)
+                            Gemini Pro (High quality, $0.01/ad)
                           </SelectItem>
                           <SelectItem value="fast">
-                            ⚡ Gemini Fast (Quick, $0.002/ad)
+                            Gemini Fast (Quick, $0.002/ad)
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -531,6 +560,39 @@ function CreativeStudioContent() {
           {/* Results */}
           {generatedAds.length > 0 && (
             <>
+              {/* Post-generation journey */}
+              <Card className="p-4 border bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-gray-900">Next step</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {campaignId
+                        ? 'Your ads were saved to this campaign. Continue to Campaigns to manage winners, tags, and exports.'
+                        : 'Create a campaign to save these results (recommended).'}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {campaignId ? (
+                      <>
+                        <Button asChild>
+                          <Link href={`/campaigns/${campaignId}`}>View campaign</Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                          <Link href="/campaigns">All campaigns</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button onClick={createCampaignAndSave}>Create campaign & save</Button>
+                        <Button asChild variant="outline">
+                          <Link href="/campaigns">Go to campaigns</Link>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
               {mode === 'batch' && batchMetadata ? (
                 <BatchResultsGrid
                   creatives={generatedAds}

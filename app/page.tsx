@@ -213,7 +213,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
         {/* Discovery Forms */}
         <div className="lg:sticky lg:top-20 lg:self-start">
           <Tabs defaultValue="single" className="w-full">
@@ -231,11 +231,10 @@ export default function Home() {
         </div>
 
         {/* Results Table */}
-        <div>
+        <div className="min-w-0">
           {isFetching ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="text-4xl mb-4">⏳</div>
                 <p className="text-muted-foreground">Loading discoveries...</p>
               </div>
             </div>

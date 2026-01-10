@@ -225,7 +225,7 @@ export function CampaignDetailClient(props: {
 
                       <div className="flex flex-col sm:flex-row gap-2 pt-2">
                         <Button variant="outline" onClick={() => markWinner(v.id)} disabled={Boolean(busyById[v.id])}>
-                          Mark winner
+                          Set as winner
                         </Button>
                         <div className="flex-1">
                           <Input
@@ -240,7 +240,9 @@ export function CampaignDetailClient(props: {
                             }}
                             disabled={Boolean(busyById[v.id])}
                           />
-                          <div className="text-xs text-gray-500 mt-1">Press Enter to save tags.</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Winner = the variation you plan to run as your control. Press Enter to save tags.
+                          </div>
                         </div>
                       </div>
                     </div>

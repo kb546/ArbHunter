@@ -294,7 +294,8 @@ export function getRecommendedModel(countryCode: string): 'pro' | 'fast' {
 
 // For display in dropdowns
 export function getCountryDisplayName(country: Country): string {
-  return `${country.flag} ${country.name}`;
+  // No emojis/flags in UI (clean SaaS look)
+  return `${country.name} (${country.code})`;
 }
 
 // Search/filter

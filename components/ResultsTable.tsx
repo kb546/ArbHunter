@@ -117,8 +117,49 @@ export function ResultsTable({ discoveries, onExport, onClear }: ResultsTablePro
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
+        {/* Mobile: card list (prevents overlap) */}
+        <div className="md:hidden space-y-3">
+          {sortedDiscoveries.map((discovery) => (
+            <button
+              key={discovery.id}
+              type="button"
+              onClick={() => handleRowClick(discovery)}
+              className="w-full text-left rounded-lg border bg-white p-4 hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-gray-900 truncate">{discovery.niche}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {discovery.geo} • {formatDate(discovery.created_at)}
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  <ScoreIndicator score={discovery.margin_score} size="sm" />
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-md bg-muted/40 p-2">
+                  <div className="text-muted-foreground">Search vol</div>
+                  <div className="font-medium text-gray-900">
+                    {discovery.trend_velocity?.search_volume?.toLocaleString?.() || '—'}
+                  </div>
+                </div>
+                <div className="rounded-md bg-muted/40 p-2">
+                  <div className="text-muted-foreground">Growth</div>
+                  <div className="font-medium text-gray-900">
+                    {typeof discovery.trend_velocity?.growth_rate === 'number'
+                      ? `${discovery.trend_velocity.growth_rate > 0 ? '+' : ''}${discovery.trend_velocity.growth_rate.toFixed(1)}%`
+                      : '—'}
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop: scrollable table */}
+        <div className="hidden md:block rounded-md border overflow-x-auto">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>
