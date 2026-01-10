@@ -233,6 +233,9 @@ export async function POST(req: Request) {
       const transactionId: string | undefined = data?.id;
       const subscriptionId: string | undefined =
         data?.subscription_id || data?.subscription?.id || data?.related_subscription_id;
+      const statusRaw: string | undefined =
+        data?.subscription?.status || data?.subscription_status || data?.related_subscription_status || data?.status;
+      const inferredStatus = statusRaw ? mapStatus(statusRaw) : 'active';
 
       await logEvent({
         status: 'processed',
@@ -259,7 +262,7 @@ export async function POST(req: Request) {
             paddle_price_id: priceId,
             paddle_transaction_id: transactionId ?? null,
             plan,
-            status: 'active',
+            status: inferredStatus,
           },
           { onConflict: 'paddle_subscription_id' }
         );
