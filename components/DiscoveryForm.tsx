@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,25 +12,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { COUNTRIES, getCountryDisplayName, searchCountries } from '@/lib/countries';
 
 interface DiscoveryFormProps {
   onSubmit: (geo: string, niche: string) => void;
   isLoading?: boolean;
 }
 
-// Tier 2.5 markets with good arbitrage potential
-const GEOS = [
-  { code: 'ZA', name: 'South Africa', tier: '2.5' },
-  { code: 'PH', name: 'Philippines', tier: '2.5' },
-  { code: 'ID', name: 'Indonesia', tier: '2.5' },
-  { code: 'NG', name: 'Nigeria', tier: '2.5' },
-  { code: 'EG', name: 'Egypt', tier: '2.5' },
-  { code: 'KE', name: 'Kenya', tier: '2.5' },
-  { code: 'PK', name: 'Pakistan', tier: '2.5' },
-  { code: 'VN', name: 'Vietnam', tier: '2.5' },
-  { code: 'BD', name: 'Bangladesh', tier: '2.5' },
-  { code: 'TH', name: 'Thailand', tier: '2.5' },
-];
+const RECOMMENDED_GEOS = ['ZA', 'PH', 'ID', 'NG', 'EG', 'KE', 'PK', 'VN', 'BD', 'TH'];
 
 // High-intent niches for arbitrage
 const SUGGESTED_NICHES = [
@@ -47,6 +36,18 @@ const SUGGESTED_NICHES = [
 export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProps) {
   const [geo, setGeo] = useState('');
   const [niche, setNiche] = useState('');
+  const [geoQuery, setGeoQuery] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = geoQuery.trim();
+    if (!q) return null;
+    return searchCountries(q);
+  }, [geoQuery]);
+
+  const recommended = useMemo(() => {
+    const map = new Map(COUNTRIES.map((c) => [c.code, c]));
+    return RECOMMENDED_GEOS.map((code) => map.get(code)).filter(Boolean) as any[];
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +73,43 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
                 <SelectValue placeholder="Select a geographic market" />
               </SelectTrigger>
               <SelectContent>
-                {GEOS.map((g) => (
-                  <SelectItem key={g.code} value={g.code}>
-                    {g.name} ({g.code}) - Tier {g.tier}
-                  </SelectItem>
-                ))}
+                <div className="p-2">
+                  <Input
+                    value={geoQuery}
+                    onChange={(e) => setGeoQuery(e.target.value)}
+                    placeholder="Search countries…"
+                    className="h-9"
+                  />
+                </div>
+
+                {filtered ? (
+                  <>
+                    {filtered.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
+                      </SelectItem>
+                    ))}
+                    {filtered.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">Recommended</div>
+                    {recommended.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
+                      </SelectItem>
+                    ))}
+
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase mt-2">All countries</div>
+                    {COUNTRIES.filter((c) => c.code !== 'WW').map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {getCountryDisplayName(c)} ({c.code}) • Tier {c.tier}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -105,12 +138,10 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
           <Button type="submit" disabled={!geo || !niche || isLoading} className="w-full">
             {isLoading ? (
               <>
-                <span className="mr-2">⏳</span>
                 Analyzing Opportunity...
               </>
             ) : (
               <>
-                <span className="mr-2">🔍</span>
                 Run Discovery
               </>
             )}

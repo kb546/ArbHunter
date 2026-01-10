@@ -74,6 +74,17 @@ export interface GeneratedCreativeV3 {
   generatedAt: string;
 }
 
+// Campaign support for V3 generation endpoints
+export type V3GenerateRequest = {
+  niche: string;
+  geo: string;
+  targetAudience?: string;
+  model?: 'auto' | 'fast' | 'pro';
+  marginScore?: number | null;
+  variations?: number;
+  campaignId?: string | null;
+};
+
 // ============================================================================
 // DATABASE MODELS
 // ============================================================================

@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 
 interface ResultsTableProps {
   discoveries: Discovery[];
@@ -79,7 +80,9 @@ export function ResultsTable({ discoveries, onExport, onClear }: ResultsTablePro
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Search className="h-5 w-5 text-muted-foreground" />
+            </div>
             <p className="text-muted-foreground">
               No discoveries yet. Run your first opportunity scan above!
             </p>

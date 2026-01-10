@@ -13,6 +13,9 @@ import { detectBrand } from '@/services/brand-intelligence.service';
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import { getBillingAccess } from '@/lib/billing.server';
 import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
+import { getAuthedSessionFromCookies } from '@/lib/auth.server';
+import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +35,8 @@ export async function POST(request: NextRequest) {
       model = 'auto',
       marginScore,
       variations = 2, // Always 2 for A/B testing
-    } = body;
+    } = body as any;
+    const campaignId = (body as any)?.campaignId as string | undefined;
 
     console.log('\n🎨 Creative Studio V3 - Ad Arb Focused');
     console.log(`   Niche: ${niche}`);
@@ -162,6 +166,25 @@ export async function POST(request: NextRequest) {
     // Sort by predicted CTR (highest first)
     creatives.sort((a, b) => b.predictedCTR - a.predictedCTR);
 
+    // If a campaign is provided, persist creatives into generated_creatives (RLS protected).
+    if (campaignId && isSupabaseConfigured()) {
+      const session = await getAuthedSessionFromCookies();
+      if (session?.accessToken) {
+        const supabase = createSupabaseAuthedServerClient(session.accessToken);
+        const toInsert = generatedImages.map((img: any) => ({
+          campaign_id: campaignId,
+          image_url: img.imageUrl,
+          prompt,
+          model: img.model,
+          cost: img.cost,
+          orientation: 'square',
+          style: null,
+        }));
+        const { error } = await supabase.from('generated_creatives').insert(toInsert);
+        if (error) console.warn('Failed to save generated_creatives:', error);
+      }
+    }
+
     // Record usage (best-effort)
     await recordUsage('creative', creatives.length);
 
@@ -170,6 +193,7 @@ export async function POST(request: NextRequest) {
       creatives,
       totalTime,
       totalCost,
+      campaignId: campaignId || null,
       metadata: {
         niche,
         geo,

@@ -8,6 +8,9 @@ import { orchestrateBatchGeneration } from '@/services/batch-orchestrator.servic
 import type { BatchGenerationRequest } from '@/services/batch-orchestrator.service';
 import { getBillingAccess } from '@/lib/billing.server';
 import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
+import { getAuthedSessionFromCookies } from '@/lib/auth.server';
+import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +30,8 @@ export async function POST(request: NextRequest) {
       batchSize = 5,
       model = 'auto',
       marginScore,
-    }: BatchGenerationRequest = body;
+    } = body as any;
+    const campaignId = (body as any)?.campaignId as string | undefined;
 
     console.log('\n🎨 Batch Creative Generation API');
     console.log(`   Niche: ${niche}`);
@@ -64,10 +68,29 @@ export async function POST(request: NextRequest) {
       niche,
       geo,
       targetAudience,
-      batchSize,
+      batchSize: batchSize as any,
       model,
       marginScore,
     });
+
+    // Persist into generated_creatives if campaignId provided (RLS protected).
+    if (campaignId && isSupabaseConfigured()) {
+      const session = await getAuthedSessionFromCookies();
+      if (session?.accessToken) {
+        const supabase = createSupabaseAuthedServerClient(session.accessToken);
+        const toInsert = result.variations.map((v: any) => ({
+          campaign_id: campaignId,
+          image_url: v.imageUrl,
+          prompt: v.prompt || '',
+          model: v.model || null,
+          cost: v.cost || null,
+          orientation: 'square',
+          style: null,
+        }));
+        const { error } = await supabase.from('generated_creatives').insert(toInsert);
+        if (error) console.warn('Failed to save generated_creatives:', error);
+      }
+    }
 
     // Record usage (best-effort)
     await recordUsage('creative', result.variations.length);
@@ -77,6 +100,7 @@ export async function POST(request: NextRequest) {
       variations: result.variations,
       totalCost: result.totalCost,
       totalTime: result.totalTime,
+      campaignId: campaignId || null,
       metadata: result.metadata,
     });
   } catch (error: any) {

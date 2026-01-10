@@ -48,6 +48,7 @@ function CreativeStudioContent() {
   
   // Discovery metadata (for smart routing)
   const [marginScore, setMarginScore] = useState<number | null>(null);
+  const [campaignId, setCampaignId] = useState<string | null>(null);
 
   // Auto-fill from discovery deep link
   useEffect(() => {
@@ -55,6 +56,7 @@ function CreativeStudioContent() {
     const discoveryNiche = searchParams.get('niche');
     const discoveryGeo = searchParams.get('geo');
     const discoveryMargin = searchParams.get('margin');
+    const campaign = searchParams.get('campaign');
 
     if (discoveryNiche && discoveryGeo) {
       console.log('🔗 Deep link from discovery:', { discoveryId, discoveryNiche, discoveryGeo });
@@ -63,7 +65,8 @@ function CreativeStudioContent() {
       if (discoveryMargin) {
         setMarginScore(parseFloat(discoveryMargin));
       }
-      toast.success('Pre-filled from discovery! Ready to generate.');
+      if (campaign) setCampaignId(campaign);
+      toast.success(campaign ? 'Campaign created! Generate creatives to save them.' : 'Pre-filled from discovery! Ready to generate.');
     }
   }, [searchParams]);
 
@@ -93,6 +96,7 @@ function CreativeStudioContent() {
           model,
           marginScore,
           variations: 2, // Always 2 for A/B testing
+          campaignId,
         }),
       });
 
@@ -122,7 +126,7 @@ function CreativeStudioContent() {
       setGeneratedAds(data.creatives);
       
       toast.success(`Generated 2 test ads! Cost: $${data.totalCost.toFixed(4)}`, {
-        description: `Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
+        description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
       });
 
       console.log('✅ Generation complete:', data);
@@ -161,6 +165,7 @@ function CreativeStudioContent() {
           model: config.model,
           marginScore,
           creativePreset,
+          campaignId,
         }),
       });
 
@@ -212,7 +217,7 @@ function CreativeStudioContent() {
       });
       
       toast.success(`Generated ${config.batchSize} unique ads! Cost: $${data.totalCost.toFixed(4)}`, {
-        description: `Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
+        description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
       });
 
       console.log('✅ Batch generation complete:', data);
