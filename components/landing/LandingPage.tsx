@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ProfitCalculator } from "@/components/landing/ProfitCalculator";
 import { ArticleFactoryMock, CreativeStudioMock, SnifferMock, TiltedFrame } from "@/components/landing/Mockups";
 import { FAQ, type FAQItem } from "@/components/landing/FAQ";
+import { ProductInMotion } from "@/components/landing/ProductInMotion";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { cn } from "@/lib/utils";
 
 function Section({
@@ -23,11 +25,11 @@ export default function LandingPage() {
   const faqs: FAQItem[] = [
     {
       q: "What is ArbHunter in one sentence?",
-      a: "ArbHunter helps you find undervalued GEO opportunities, generate policy-safe creatives, and organize campaigns so you can scale ad arbitrage faster.",
+      a: "ArbHunter helps you find opportunities by country, generate ad creatives faster, and organize campaigns so you can scale without chaos.",
     },
     {
       q: "Do I need design skills to get good creatives?",
-      a: "No. Creative Studio generates ready-to-run A/B variations with a QC loop to catch low-quality outputs before you waste budget.",
+      a: "No. Creative Studio generates ready-to-run A/B variations and uses quality checks to reduce weird outputs before you waste budget.",
     },
     {
       q: "What does 'QC loop' mean?",
@@ -39,7 +41,7 @@ export default function LandingPage() {
     },
     {
       q: "What markets does it work best for?",
-      a: "It’s designed to help you identify spreads across Tier 1 and Tier 2 markets and pick the right tradeoff between speed and quality.",
+      a: "It’s designed for testing different countries quickly and choosing the right tradeoff between speed and quality.",
     },
     {
       q: "Can I export creatives and copy?",
@@ -59,6 +61,20 @@ export default function LandingPage() {
               </span>
               ArbHunter
             </Link>
+            <div className="hidden md:flex items-center gap-1 text-sm">
+              <a href="#features" className="px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5">
+                Features
+              </a>
+              <a href="#demo" className="px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5">
+                Product
+              </a>
+              <a href="#pricing" className="px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5">
+                Pricing
+              </a>
+              <a href="#faq" className="px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5">
+                FAQ
+              </a>
+            </div>
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" className="text-white/80 hover:text-white hover:bg-white/5">
                 <Link href="/pricing">Pricing</Link>
@@ -70,7 +86,7 @@ export default function LandingPage() {
                 asChild
                 className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90 shadow-[0_0_0_1px_rgba(223,255,0,0.35),0_20px_60px_rgba(223,255,0,0.10)]"
               >
-                <Link href="/auth/signup">Start hunting for free</Link>
+                <Link href="/auth/signup">Start free</Link>
               </Button>
             </div>
           </div>
@@ -83,14 +99,14 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#2B2F36]/50 px-3 py-1 text-xs text-white/70">
-                High-velocity intelligence for Ad Arbitrage
+                A beginner-friendly workflow for ad arbitrage
                 <span className="h-1.5 w-1.5 rounded-full bg-[#DFFF00]" />
               </div>
               <h1 className="mt-5 text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
-                Maximize your <span className="text-[#DFFF00]">arbitrage spread</span>.
+                Find better opportunities. Test faster. <span className="text-[#DFFF00]">Scale smarter</span>.
               </h1>
               <p className="mt-4 text-base sm:text-lg text-white/70 leading-relaxed">
-                Identify undervalued GEOs, generate policy-safe creatives, and launch AdSense-ready articles in one click.
+                Pick a country + topic, generate ad creatives, and organize results — without spreadsheets and guesswork.
               </p>
               <div className="mt-7 flex flex-col sm:flex-row gap-3">
                 <Button
@@ -111,9 +127,9 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-8 grid grid-cols-3 gap-3">
-                <Stat label="Signals" value="Spikes + spread" />
-                <Stat label="Creatives" value="QC loop" />
-                <Stat label="Speed" value="Minutes, not days" />
+                <Stat label="Signals" value="Trend + demand" />
+                <Stat label="Creatives" value="2 variations" />
+                <Stat label="Speed" value="Minutes" />
               </div>
             </div>
 
@@ -122,7 +138,7 @@ export default function LandingPage() {
                 <SnifferMock />
               </TiltedFrame>
               <div className="mt-4 text-xs text-white/50">
-                Example: “DHL Jobs” spike in South Africa with wide CPC→RPM spread.
+                Example: “DHL Jobs” spike in South Africa (demo).
               </div>
             </div>
           </div>
@@ -147,13 +163,13 @@ export default function LandingPage() {
         </Container>
       </div>
 
-      {/* Product in motion / bento */}
+      {/* Feature bento */}
       <Section>
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div id="features" className="grid grid-cols-1 lg:grid-cols-12 gap-6 scroll-mt-24">
             <BentoCard
               title="Opportunity Sniffer"
-              desc="Stop guessing. Target Tier-2 markets where the spread is widest."
+              desc="Stop guessing. Find countries + topics worth testing."
               className="lg:col-span-7"
             >
               <div className="rounded-2xl border border-white/10 bg-[#0B0D10]/50 overflow-hidden">
@@ -162,7 +178,7 @@ export default function LandingPage() {
             </BentoCard>
             <BentoCard
               title="Creative Studio"
-              desc="Compliance-locked assets. Reduce policy rejections for jobs & credit."
+              desc="Generate A/B pairs (2 variations) or batch options quickly."
               className="lg:col-span-5"
             >
               <div className="rounded-2xl border border-white/10 bg-[#0B0D10]/50 overflow-hidden">
@@ -171,13 +187,22 @@ export default function LandingPage() {
             </BentoCard>
             <BentoCard
               title="Article Factory"
-              desc="Articles built for yield — structured for CTR and dwell time."
+              desc="Turn a topic into a clean article layout (shipping next)."
               className="lg:col-span-12"
             >
               <div className="rounded-2xl border border-white/10 bg-[#0B0D10]/50 overflow-hidden">
                 <ArticleFactoryMock />
               </div>
             </BentoCard>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Product in motion */}
+      <Section className="pt-0">
+        <Container>
+          <div id="demo" className="scroll-mt-24">
+            <ProductInMotion />
           </div>
         </Container>
       </Section>
@@ -189,31 +214,32 @@ export default function LandingPage() {
         </Container>
       </Section>
 
-      {/* FAQ */}
+      {/* Pricing */}
       <Section className="pt-0">
         <Container>
-          <FAQ items={faqs} />
+          <div id="pricing" className="scroll-mt-24">
+            <PricingSection />
+          </div>
         </Container>
       </Section>
 
-      {/* Pricing teaser */}
+      {/* FAQ */}
       <Section className="pt-0">
         <Container>
-          <div className="rounded-2xl border border-white/10 bg-[#2B2F36]/50 p-6 sm:p-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <div className="text-sm font-semibold text-white">Tiered pricing</div>
-                <div className="text-sm text-white/70 mt-1">
-                  Starter for testing • Agency for volume. Upgrade as you scale.
-                </div>
+          <div id="faq" className="scroll-mt-24">
+            <FAQ items={faqs} />
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-white/10 bg-[#0B0D10]/55 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="text-base font-semibold text-white">Ready to try it?</div>
+              <div className="text-sm text-white/70 mt-1">
+                Create an account in seconds and explore the workflow inside the app.
               </div>
-              <Button
-                asChild
-                className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90"
-              >
-                <Link href="/pricing">View pricing</Link>
-              </Button>
             </div>
+            <Button asChild size="lg" className="bg-[#DFFF00] text-[#0B0D10] hover:bg-[#DFFF00]/90">
+              <Link href="/auth/signup">Create account</Link>
+            </Button>
           </div>
         </Container>
       </Section>
@@ -246,7 +272,7 @@ export default function LandingPage() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "Ad arbitrage intelligence platform to discover undervalued GEOs, generate policy-safe creatives, and launch AdSense-ready articles.",
+              "Ad arbitrage workflow platform to find opportunities by country, generate creatives faster, and organize campaigns.",
             offers: { "@type": "Offer", price: "29", priceCurrency: "USD" },
           }),
         }}
