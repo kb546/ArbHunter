@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Discovery } from '@/types';
 import { toast } from 'sonner';
 import { openPaddleCheckout } from '@/lib/paddle-client';
+import { UsageBanner } from '@/components/UsageBanner';
 
 export default function Home() {
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -230,6 +231,9 @@ export default function Home() {
         <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
           {/* Discovery Forms */}
           <div className="lg:sticky lg:top-8 lg:self-start">
+            <div className="mb-4">
+              <UsageBanner />
+            </div>
             <Tabs defaultValue="single" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="single">Single Discovery</TabsTrigger>

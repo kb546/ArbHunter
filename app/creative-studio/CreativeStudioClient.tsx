@@ -25,6 +25,7 @@ import { BatchResultsGrid } from '@/components/creative-studio-v3/BatchResultsGr
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import type { CreativePreset } from '@/services/creative-presets.service';
 import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
+import { UsageBanner } from '@/components/UsageBanner';
 
 function CreativeStudioContent() {
   const searchParams = useSearchParams();
@@ -257,6 +258,8 @@ function CreativeStudioContent() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="space-y-8">
+          <UsageBanner />
+
           {/* Campaign Form */}
           <Card className="p-8 shadow-sm">
             <div className="mb-6">

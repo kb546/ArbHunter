@@ -10,6 +10,7 @@ function isProtectedPath(pathname: string) {
   if (pathname.startsWith('/api/discover')) return true;
   if (pathname.startsWith('/api/discoveries')) return true;
   if (pathname.startsWith('/api/campaigns')) return true;
+  if (pathname.startsWith('/api/usage')) return true;
   return false;
 }
 
