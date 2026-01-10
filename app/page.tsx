@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Discovery } from '@/types';
 import { toast } from 'sonner';
 import { openPaddleCheckout } from '@/lib/paddle-client';
-import { UsageBanner } from '@/components/UsageBanner';
 
 export default function Home() {
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -213,65 +212,40 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">
-            <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-              ArbHunter
-            </span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Discover profitable ad arbitrage opportunities with AI-powered intelligence
-          </p>
+    <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
+        {/* Discovery Forms */}
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <Tabs defaultValue="single" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="single">Single Discovery</TabsTrigger>
+              <TabsTrigger value="batch">Batch Discovery</TabsTrigger>
+            </TabsList>
+            <TabsContent value="single" className="mt-4">
+              <DiscoveryForm onSubmit={handleDiscover} isLoading={isLoading} />
+            </TabsContent>
+            <TabsContent value="batch" className="mt-4">
+              <BatchDiscovery onSubmit={handleBatchDiscover} isLoading={isLoading} />
+            </TabsContent>
+          </Tabs>
         </div>
 
-        {/* Main Content */}
-        <div className="grid gap-8 lg:grid-cols-[450px_1fr]">
-          {/* Discovery Forms */}
-          <div className="lg:sticky lg:top-8 lg:self-start">
-            <div className="mb-4">
-              <UsageBanner />
-            </div>
-            <Tabs defaultValue="single" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="single">Single Discovery</TabsTrigger>
-                <TabsTrigger value="batch">Batch Discovery</TabsTrigger>
-              </TabsList>
-              <TabsContent value="single" className="mt-4">
-                <DiscoveryForm onSubmit={handleDiscover} isLoading={isLoading} />
-              </TabsContent>
-              <TabsContent value="batch" className="mt-4">
-                <BatchDiscovery onSubmit={handleBatchDiscover} isLoading={isLoading} />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Results Table */}
-          <div>
-            {isFetching ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="text-4xl mb-4">⏳</div>
-                  <p className="text-muted-foreground">Loading discoveries...</p>
-                </div>
+        {/* Results Table */}
+        <div>
+          {isFetching ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-4xl mb-4">⏳</div>
+                <p className="text-muted-foreground">Loading discoveries...</p>
               </div>
-            ) : (
-              <ResultsTable 
-                discoveries={discoveries} 
-                onExport={handleExport} 
-                onClear={handleClearResults}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-16 text-center text-sm text-muted-foreground">
-          <p>
-            ArbHunter MVP - Opportunity Sniffer Module
-          </p>
+            </div>
+          ) : (
+            <ResultsTable
+              discoveries={discoveries}
+              onExport={handleExport}
+              onClear={handleClearResults}
+            />
+          )}
         </div>
       </div>
     </div>
