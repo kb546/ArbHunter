@@ -110,8 +110,8 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                     className={cn(
                       'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                       active
-                        ? 'bg-[color:var(--sidebar-accent)] text-[color:var(--foreground)]'
-                        : 'text-[color:var(--muted-foreground)] hover:bg-[color:var(--sidebar-accent)] hover:text-[color:var(--foreground)]'
+                        ? 'bg-primary/10 text-[color:var(--foreground)] ring-1 ring-primary/25'
+                        : 'text-[color:var(--muted-foreground)] hover:bg-primary/5 hover:text-[color:var(--foreground)]'
                     )}
                   >
                     {item.icon}
@@ -153,8 +153,8 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                   className={cn(
                     'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
                     active
-                      ? 'bg-[color:var(--sidebar-accent)] text-[color:var(--foreground)]'
-                      : 'text-[color:var(--muted-foreground)] hover:bg-[color:var(--sidebar-accent)] hover:text-[color:var(--foreground)]'
+                      ? 'bg-primary/10 text-[color:var(--foreground)] ring-1 ring-primary/25'
+                      : 'text-[color:var(--muted-foreground)] hover:bg-primary/5 hover:text-[color:var(--foreground)]'
                   )}
                 >
                   {item.icon}

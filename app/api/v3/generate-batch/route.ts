@@ -11,6 +11,8 @@ import { ensureWithinLimit, recordUsage } from '@/lib/usage.server';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { assessPolicyCompliance } from '@/services/policy-compliance.service';
+import { detectCampaignType } from '@/services/campaign-type-detector.service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +74,26 @@ export async function POST(request: NextRequest) {
       model,
       marginScore,
     });
+
+    // Policy compliance check (non-blocking; warnings only)
+    let policy: any = null;
+    try {
+      const ct = await detectCampaignType(niche, geo);
+      policy = await assessPolicyCompliance({
+        niche,
+        geo,
+        campaignType: String(ct?.campaignType || ''),
+        creatives: (result.variations || []).map((v: any) => ({
+          id: String(v.id || ''),
+          headline: String(v.headline || ''),
+          subheadline: v.subheadline ? String(v.subheadline) : undefined,
+          cta: v.cta ? String(v.cta) : undefined,
+          prompt: v.prompt ? String(v.prompt) : undefined,
+        })),
+      });
+    } catch {
+      policy = null;
+    }
 
     // Persist into generated_creatives if campaignId provided (RLS protected).
     if (campaignId && isSupabaseConfigured()) {
@@ -158,7 +180,7 @@ export async function POST(request: NextRequest) {
       totalCost: result.totalCost,
       totalTime: result.totalTime,
       campaignId: campaignId || null,
-      metadata: result.metadata,
+      metadata: { ...(result.metadata || {}), policy },
     });
   } catch (error: any) {
     console.error('❌ Batch generation error:', error);

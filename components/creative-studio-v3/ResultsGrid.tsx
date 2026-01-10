@@ -4,17 +4,19 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Heart, Eye, Trophy, Filter, ArrowDownToLine } from 'lucide-react';
+import { AlertTriangle, Download, Heart, Eye, Trophy, Filter, ArrowDownToLine } from 'lucide-react';
 import type { BrandKit, CampaignData, GeneratedCreativeV3 } from '@/types/creative-studio';
+import type { PolicyCheckResult } from '@/services/policy-compliance.service';
 
 interface ResultsGridProps {
   creatives: GeneratedCreativeV3[];
   brandKit: BrandKit;
   campaignData: CampaignData;
   qcMeta?: { attempts: number; bestVariationId?: string | null } | null;
+  policy?: PolicyCheckResult | null;
 }
 
-export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: ResultsGridProps) {
+export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta, policy }: ResultsGridProps) {
   const [selectedCreative, setSelectedCreative] = useState<GeneratedCreativeV3 | null>(null);
 
   const handleDownload = (creative: GeneratedCreativeV3) => {
@@ -35,6 +37,7 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
 
   // Sort by predicted CTR
   const sortedCreatives = [...creatives].sort((a, b) => b.predictedCTR - a.predictedCTR);
+  const policyById = new Map((policy?.perCreative || []).map((p) => [p.id, p]));
 
   return (
     <div className="space-y-6">
@@ -64,6 +67,36 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
           </Button>
         </div>
       </div>
+
+      {/* Policy warnings (non-blocking) */}
+      {policy && policy.overallRisk !== 'low' ? (
+        <Card className="p-4 border border-amber-500/25 bg-amber-500/10">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="h-9 w-9 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  Policy risk: {policy.overallRisk.toUpperCase()}
+                </div>
+                {policy.issues?.length ? (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {policy.issues.slice(0, 4).join(' • ')}
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Potential policy issues detected. Consider the “Platform Compliant” preset.
+                  </div>
+                )}
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-transparent">
+              {policy.provider === 'openai' ? 'AI check' : 'Heuristic'}
+            </Badge>
+          </div>
+        </Card>
+      ) : null}
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,6 +218,15 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: Resul
                   </div>
                 ) : null}
               </div>
+
+              {/* Policy badge (per creative) */}
+              {policyById.get(creative.id)?.risk && policyById.get(creative.id)?.risk !== 'low' ? (
+                <div className="mb-4">
+                  <Badge variant="outline" className="bg-transparent border-amber-500/30 text-amber-700 dark:text-amber-300">
+                    Policy: {String(policyById.get(creative.id)?.risk).toUpperCase()}
+                  </Badge>
+                </div>
+              ) : null}
 
               {/* Copy */}
               <div className="pt-4 border-t border-border">

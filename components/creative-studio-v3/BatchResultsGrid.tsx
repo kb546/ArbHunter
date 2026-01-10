@@ -7,6 +7,7 @@ import { Download, Trophy, Link2, Eye, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
+import type { PolicyCheckResult } from '@/services/policy-compliance.service';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import confetti from 'canvas-confetti';
@@ -19,9 +20,10 @@ interface BatchResultsGridProps {
     abTestPairs?: Array<[string, string]>;
     aiAgentsUsed?: boolean;
   };
+  policy?: PolicyCheckResult | null;
 }
 
-export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridProps) {
+export function BatchResultsGrid({ creatives, batchMetadata, policy }: BatchResultsGridProps) {
   const [selectedAd, setSelectedAd] = useState<GeneratedCreativeV3 | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -150,6 +152,18 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                 {creatives.length} unique ads generated
                 {batchMetadata?.aiAgentsUsed && ' • 5 AI Agents Used'}
               </p>
+              {policy && policy.overallRisk !== 'low' ? (
+                <div className="mt-2">
+                  <Badge variant="outline" className="bg-transparent border-amber-500/30 text-amber-700 dark:text-amber-300">
+                    Policy risk: {policy.overallRisk.toUpperCase()}
+                  </Badge>
+                  {policy.issues?.length ? (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {policy.issues.slice(0, 4).join(' • ')}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
             <Button
               onClick={exportAllAsZip}

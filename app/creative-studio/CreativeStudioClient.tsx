@@ -23,6 +23,7 @@ import { BatchProgressIndicator } from '@/components/creative-studio-v3/BatchPro
 import { BatchResultsGrid } from '@/components/creative-studio-v3/BatchResultsGrid';
 import type { GeneratedCreativeV3 } from '@/types/creative-studio';
 import type { CreativePreset } from '@/services/creative-presets.service';
+import type { PolicyCheckResult } from '@/services/policy-compliance.service';
 import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
 import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
@@ -45,6 +46,7 @@ function CreativeStudioContent() {
   const [generatedAds, setGeneratedAds] = useState<GeneratedCreativeV3[]>([]);
   const [batchMetadata, setBatchMetadata] = useState<any>(null);
   const [qcMeta, setQcMeta] = useState<{ attempts: number; bestVariationId?: string | null } | null>(null);
+  const [policyMeta, setPolicyMeta] = useState<PolicyCheckResult | null>(null);
   
   // Discovery metadata (for smart routing)
   const [marginScore, setMarginScore] = useState<number | null>(null);
@@ -79,6 +81,7 @@ function CreativeStudioContent() {
     setIsGenerating(true);
     setGeneratedAds([]);
     setQcMeta(null);
+    setPolicyMeta(null);
 
     try {
       console.log('\n🎨 Generating 2 test ads...');
@@ -126,6 +129,7 @@ function CreativeStudioContent() {
 
       setGeneratedAds(data.creatives);
       setQcMeta(data?.metadata?.qc ? { attempts: data.metadata.qc.attempts, bestVariationId: data.metadata.qc.bestVariationId } : null);
+      setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
       
       toast.success(`Generated 2 test ads!`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
@@ -178,6 +182,7 @@ function CreativeStudioContent() {
     setIsGenerating(true);
     setGeneratedAds([]);
     setBatchSize(config.batchSize);
+    setPolicyMeta(null);
 
     try {
       console.log(`\n🚀 Generating batch of ${config.batchSize} ads...`);
@@ -245,7 +250,9 @@ function CreativeStudioContent() {
         totalTime: data.totalTime,
         abTestPairs: data.metadata.abTestPairs,
         aiAgentsUsed: data.metadata.aiAgentsUsed,
+        policy: data?.metadata?.policy || null,
       });
+      setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
       
       toast.success(`Generated ${config.batchSize} unique ads!`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
@@ -546,6 +553,7 @@ function CreativeStudioContent() {
                 <BatchResultsGrid
                   creatives={generatedAds}
                   batchMetadata={batchMetadata}
+                  policy={policyMeta}
                 />
               ) : (
                 <ResultsGrid
@@ -562,6 +570,7 @@ function CreativeStudioContent() {
                     targetAudience,
                   }}
                   qcMeta={qcMeta}
+                  policy={policyMeta}
                 />
               )}
             </>
