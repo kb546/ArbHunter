@@ -73,6 +73,17 @@ export default function Home() {
 
       const data = await response.json();
 
+      if (response.status === 429) {
+        toast.error('Usage limit reached', {
+          description: data.error || 'You have reached your monthly discovery limit. Upgrade to continue.',
+          action: {
+            label: 'View plans',
+            onClick: () => (window.location.href = '/account/billing'),
+          } as any,
+        });
+        return;
+      }
+
       if (data.success && data.data) {
         setDiscoveries((prev) => [data.data, ...prev]);
         toast.success(`Discovery complete! Margin Score: ${data.data.margin_score}`, {
@@ -115,6 +126,17 @@ export default function Home() {
           });
 
           const data = await response.json();
+
+          if (response.status === 429) {
+            toast.error('Usage limit reached', {
+              description: data.error || 'You have reached your monthly discovery limit. Upgrade to continue.',
+              action: {
+                label: 'View plans',
+                onClick: () => (window.location.href = '/account/billing'),
+              } as any,
+            });
+            break;
+          }
 
           if (data.success && data.data) {
             setDiscoveries((prev) => [data.data, ...prev]);

@@ -106,6 +106,16 @@ function CreativeStudioContent() {
           window.location.href = '/pricing';
           return;
         }
+        if (response.status === 429) {
+          toast.error('Usage limit reached', {
+            description: data.error || 'You have reached your monthly creative limit. Upgrade to continue.',
+            action: {
+              label: 'View plans',
+              onClick: () => (window.location.href = '/account/billing'),
+            } as any,
+          });
+          return;
+        }
         throw new Error(data.error || 'Generation failed');
       }
 
@@ -162,6 +172,16 @@ function CreativeStudioContent() {
             description: 'Your subscription is inactive. Redirecting to pricing…',
           });
           window.location.href = '/pricing';
+          return;
+        }
+        if (response.status === 429) {
+          toast.error('Usage limit reached', {
+            description: data.error || 'You have reached your monthly creative limit. Upgrade to continue.',
+            action: {
+              label: 'View plans',
+              onClick: () => (window.location.href = '/account/billing'),
+            } as any,
+          });
           return;
         }
         throw new Error(data.error || 'Batch generation failed');
