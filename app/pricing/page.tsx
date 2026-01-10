@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { openPaddleCheckout } from '@/lib/paddle-client';
+import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
 const plans = [
   {
@@ -37,25 +38,23 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-6 py-14">
-        <div className="text-center space-y-3">
-          <h1 className="text-4xl font-bold text-gray-900">Pricing</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            ArbHunter is a hard-gated platform. Create an account to access the Opportunity Sniffer and Creative Studio.
-            Upgrade anytime to unlock higher limits.
-          </p>
-          <div className="flex items-center justify-center gap-3 pt-2">
+    <PageShell>
+      <PageHeader
+        title="Pricing"
+        description="ArbHunter is a hard-gated platform. Create an account to access Discovery and Creative Studio. Upgrade anytime to unlock higher limits."
+        right={
+          <>
             <Button asChild variant="outline">
               <Link href="/auth/signup">Create account</Link>
             </Button>
             <Button asChild>
               <Link href="/auth/login">Log in</Link>
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((p) => (
             <Card key={p.key} className={`p-6 ${p.highlight ? 'ring-2 ring-indigo-600 shadow-lg' : 'shadow-sm'}`}>
               <div className="flex items-start justify-between">
@@ -87,13 +86,12 @@ export default function PricingPage() {
               </div>
             </Card>
           ))}
-        </div>
-
-        <div className="mt-10 text-center text-sm text-gray-500">
-          Need help? Email support after we wire billing portal (Day 4).
-        </div>
       </div>
-    </div>
+
+      <div className="text-center text-sm text-gray-500">
+        Need help? Email support after we wire billing portal (Day 4).
+      </div>
+    </PageShell>
   );
 }
 

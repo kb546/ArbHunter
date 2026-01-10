@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageHeader, PageShell, SectionTitle } from '@/components/layout/PageShell';
 
 type Plan = 'starter' | 'pro' | 'agency';
 
@@ -84,24 +86,29 @@ export default function BillingClient(props: BillingClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-6 py-12 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Billing</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your plan and subscription status{email ? ` for ${email}` : ''}.
-          </p>
-        </div>
+    <PageShell>
+      <PageHeader
+        title="Billing"
+        description={`Manage your plan and subscription status${email ? ` for ${email}` : ''}.`}
+      />
 
         <Card className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="text-sm text-gray-500">Current plan</div>
-              <div className="text-xl font-semibold text-gray-900 mt-1">{currentPlan.toUpperCase()}</div>
+              <div className="mt-1">
+                <Badge variant="outline" className="bg-white">
+                  {currentPlan.toUpperCase()}
+                </Badge>
+              </div>
             </div>
             <div>
               <div className="text-sm text-gray-500">Status</div>
-              <div className="text-xl font-semibold text-gray-900 mt-1">{status.toUpperCase()}</div>
+              <div className="mt-1">
+                <Badge className="bg-[color:var(--primary)] text-[color:var(--primary-foreground)]">
+                  {status.toUpperCase()}
+                </Badge>
+              </div>
             </div>
             <div>
               <div className="text-sm text-gray-500">
@@ -121,12 +128,7 @@ export default function BillingClient(props: BillingClientProps) {
         </Card>
 
         <Card className="p-6">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <div className="font-semibold text-gray-900">This month’s usage</div>
-              <div className="text-sm text-gray-600 mt-1">Plan: {usage.plan.toUpperCase()}</div>
-            </div>
-          </div>
+          <SectionTitle title="This month’s usage" description={`Plan: ${usage.plan.toUpperCase()}`} />
 
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg border p-4">
@@ -195,8 +197,7 @@ export default function BillingClient(props: BillingClientProps) {
             </Button>
           </div>
         </Card>
-      </div>
-    </div>
+    </PageShell>
   );
 }
 

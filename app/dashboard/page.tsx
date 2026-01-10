@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
+import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
 export default async function DashboardPage() {
   const session = await getAuthedSessionFromCookies();
@@ -11,13 +12,11 @@ export default async function DashboardPage() {
   const email = (session.user.email as string | undefined) || null;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Welcome back{email ? `, ${email}` : ''}. Pick where you want to work.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Dashboard"
+        description={`Welcome back${email ? `, ${email}` : ''}. Pick where you want to work.`}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6">
@@ -56,7 +55,7 @@ export default async function DashboardPage() {
           </div>
         </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }
 
