@@ -78,17 +78,74 @@ export async function POST(request: NextRequest) {
       const session = await getAuthedSessionFromCookies();
       if (session?.accessToken) {
         const supabase = createSupabaseAuthedServerClient(session.accessToken);
-        const toInsert = result.variations.map((v: any) => ({
-          campaign_id: campaignId,
-          image_url: v.imageUrl,
-          prompt: v.prompt || '',
-          model: v.model || null,
-          cost: v.cost || null,
-          orientation: 'square',
-          style: null,
-        }));
-        const { error } = await supabase.from('generated_creatives').insert(toInsert);
-        if (error) console.warn('Failed to save generated_creatives:', error);
+        try {
+          // 1) Insert creatives
+          const creativesToInsert = result.variations.map((v: any) => ({
+            campaign_id: campaignId,
+            image_url: v.imageUrl,
+            prompt: v.prompt || '',
+            model: v.model || null,
+            cost: v.cost || null,
+            orientation: 'square',
+            style: null,
+            predicted_score: v.visualScore || null,
+          }));
+
+          const { data: insertedCreatives, error: creativeErr } = await supabase
+            .from('generated_creatives')
+            .insert(creativesToInsert)
+            .select('id');
+          if (creativeErr) throw creativeErr;
+
+          // 2) Insert copies (derived from batch variations)
+          const copiesToInsert = result.variations.map((v: any) => ({
+            campaign_id: campaignId,
+            headline: v.headline || 'Untitled',
+            primary_text: v.subheadline || v.headline || '—',
+            description: null,
+            call_to_action: v.cta || null,
+            copy_formula: 'Custom',
+            tone_of_voice: 'professional',
+            estimated_ctr: v.predictedCTR || null,
+            engagement_score: v.textScore || null,
+            reasoning: (v.prompt ? `Generated from prompt: ${v.prompt}` : null),
+          }));
+
+          const { data: insertedCopies, error: copyErr } = await supabase
+            .from('generated_copies')
+            .insert(copiesToInsert)
+            .select('id');
+          if (copyErr) throw copyErr;
+
+          // 3) Link via campaign_variations (preserve order)
+          const rowsC = (insertedCreatives || []) as Array<{ id: string }>;
+          const rowsP = (insertedCopies || []) as Array<{ id: string }>;
+          const variationsToInsert = result.variations
+            .map((v: any, idx: number) => {
+              const creativeId = rowsC[idx]?.id;
+              const copyId = rowsP[idx]?.id;
+              if (!creativeId || !copyId) return null;
+              return {
+                campaign_id: campaignId,
+                creative_id: creativeId,
+                copy_id: copyId,
+                variation_name: `V${idx + 1}`,
+                is_control: idx === 0,
+                predicted_winner: idx === 0,
+                status: 'untested',
+              };
+            })
+            .filter(Boolean);
+
+          if (variationsToInsert.length > 0) {
+            const { error: varErr } = await supabase
+              .from('campaign_variations')
+              .upsert(variationsToInsert as any, { onConflict: 'campaign_id,creative_id,copy_id' });
+            if (varErr) throw varErr;
+          }
+        } catch (e) {
+          console.warn('Failed to persist campaign assets (batch):', e);
+        }
       }
     }
 

@@ -166,22 +166,79 @@ export async function POST(request: NextRequest) {
     // Sort by predicted CTR (highest first)
     creatives.sort((a, b) => b.predictedCTR - a.predictedCTR);
 
-    // If a campaign is provided, persist creatives into generated_creatives (RLS protected).
+    // If a campaign is provided, persist creatives + copies + variations (RLS protected).
     if (campaignId && isSupabaseConfigured()) {
       const session = await getAuthedSessionFromCookies();
       if (session?.accessToken) {
         const supabase = createSupabaseAuthedServerClient(session.accessToken);
-        const toInsert = generatedImages.map((img: any) => ({
-          campaign_id: campaignId,
-          image_url: img.imageUrl,
-          prompt,
-          model: img.model,
-          cost: img.cost,
-          orientation: 'square',
-          style: null,
-        }));
-        const { error } = await supabase.from('generated_creatives').insert(toInsert);
-        if (error) console.warn('Failed to save generated_creatives:', error);
+        try {
+          // 1) Insert creatives (keep ordering aligned to `creatives`)
+          const creativesToInsert = creatives.map((c) => ({
+            campaign_id: campaignId,
+            image_url: c.imageUrl,
+            prompt: c.prompt,
+            model: c.model,
+            cost: null,
+            orientation: 'square',
+            style: null,
+            predicted_score: c.visualScore,
+          }));
+
+          const { data: insertedCreatives, error: creativeErr } = await supabase
+            .from('generated_creatives')
+            .insert(creativesToInsert)
+            .select('id,image_url');
+          if (creativeErr) throw creativeErr;
+
+          // 2) Insert copies (one per creative)
+          const copiesToInsert = creatives.map((c) => ({
+            campaign_id: campaignId,
+            headline: c.headline,
+            primary_text: c.subheadline || c.headline,
+            description: null,
+            call_to_action: c.cta || null,
+            copy_formula: 'Custom',
+            tone_of_voice: 'professional',
+            estimated_ctr: c.predictedCTR,
+            engagement_score: c.textScore,
+            reasoning: `Generated from prompt: ${c.prompt}`.slice(0, 1000),
+          }));
+
+          const { data: insertedCopies, error: copyErr } = await supabase
+            .from('generated_copies')
+            .insert(copiesToInsert)
+            .select('id');
+          if (copyErr) throw copyErr;
+
+          // 3) Link as variations (A/B): best predicted CTR first
+          const rowsC = (insertedCreatives || []) as Array<{ id: string; image_url: string }>;
+          const rowsP = (insertedCopies || []) as Array<{ id: string }>;
+          const variationsToInsert = creatives
+            .map((c, idx) => {
+              const creativeId = rowsC[idx]?.id;
+              const copyId = rowsP[idx]?.id;
+              if (!creativeId || !copyId) return null;
+              return {
+                campaign_id: campaignId,
+                creative_id: creativeId,
+                copy_id: copyId,
+                variation_name: `V${idx + 1}`,
+                is_control: idx === 0,
+                predicted_winner: idx === 0,
+                status: 'untested',
+              };
+            })
+            .filter(Boolean);
+
+          if (variationsToInsert.length > 0) {
+            const { error: varErr } = await supabase
+              .from('campaign_variations')
+              .upsert(variationsToInsert as any, { onConflict: 'campaign_id,creative_id,copy_id' });
+            if (varErr) throw varErr;
+          }
+        } catch (e) {
+          console.warn('Failed to persist campaign assets:', e);
+        }
       }
     }
 
