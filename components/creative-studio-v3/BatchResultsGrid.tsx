@@ -198,7 +198,11 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
               const isBest = index === bestAdIndex;
               const abPairId = findABPair(creative.id);
               const isInPair = isInABPair(creative.id);
-              const overallScore = Math.round((creative.visualScore + creative.brandScore + creative.textScore) / 3);
+              const overallScore = Math.round(
+                typeof creative.qcOverallScore === 'number'
+                  ? creative.qcOverallScore
+                  : (creative.visualScore + creative.brandScore + creative.textScore) / 3
+              );
 
               return (
                 <motion.div
@@ -287,12 +291,19 @@ export function BatchResultsGrid({ creatives, batchMetadata }: BatchResultsGridP
                           CTR: {creative.predictedCTR.toFixed(1)}%
                         </Badge>
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 text-xs">
-                          Quality: {overallScore}/100
+                          QC: {overallScore}/100
                         </Badge>
                         <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-xs">
                           {creative.model === 'gemini-3-pro-image-preview' ? 'Pro' : 'Fast'}
                         </Badge>
                       </div>
+
+                      {/* QC Issues (minimal) */}
+                      {Array.isArray(creative.qcIssues) && creative.qcIssues.length > 0 ? (
+                        <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 line-clamp-2">
+                          {creative.qcIssues.join(' • ')}
+                        </div>
+                      ) : null}
 
                       {/* Detailed Scores */}
                       <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200">

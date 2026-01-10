@@ -69,6 +69,13 @@ export interface GeneratedCreativeV3 {
   visualScore: number;
   brandScore: number;
   textScore: number;
+  /**
+   * Optional QC info (when V3 QC loop runs).
+   * - `qcOverallScore`: 1-100 from QC agent
+   * - `qcIssues`: top 1-2 issues to fix
+   */
+  qcOverallScore?: number;
+  qcIssues?: string[];
   model: GeminiModel;
   prompt: string;
   generatedAt: string;

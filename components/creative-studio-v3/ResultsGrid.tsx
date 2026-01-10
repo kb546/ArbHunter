@@ -11,9 +11,10 @@ interface ResultsGridProps {
   creatives: GeneratedCreativeV3[];
   brandKit: BrandKit;
   campaignData: CampaignData;
+  qcMeta?: { attempts: number; bestVariationId?: string | null } | null;
 }
 
-export function ResultsGrid({ creatives, brandKit, campaignData }: ResultsGridProps) {
+export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta }: ResultsGridProps) {
   const [selectedCreative, setSelectedCreative] = useState<GeneratedCreativeV3 | null>(null);
 
   const handleDownload = (creative: GeneratedCreativeV3) => {
@@ -40,7 +41,14 @@ export function ResultsGrid({ creatives, brandKit, campaignData }: ResultsGridPr
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Generated Creatives</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900">Generated Creatives</h2>
+            {qcMeta?.attempts ? (
+              <Badge variant="outline" className="bg-white">
+                QC {qcMeta.attempts === 1 ? 'passed' : 'regenerated'} • {qcMeta.attempts} attempt{qcMeta.attempts === 1 ? '' : 's'}
+              </Badge>
+            ) : null}
+          </div>
           <p className="text-sm text-gray-600 mt-1">
             {sortedCreatives.length} ad{sortedCreatives.length !== 1 ? 's' : ''} ready for download
           </p>
@@ -158,6 +166,24 @@ export function ResultsGrid({ creatives, brandKit, campaignData }: ResultsGridPr
                   <div className="text-lg font-bold text-gray-900">{creative.textScore}</div>
                   <div className="text-xs text-gray-600">Text</div>
                 </div>
+              </div>
+
+              {/* QC Summary (minimal) */}
+              <div className="mb-4 flex items-start justify-between gap-2">
+                <div className="text-xs text-gray-600">
+                  QC Score:{' '}
+                  <span className="font-semibold text-gray-900">
+                    {typeof creative.qcOverallScore === 'number'
+                      ? Math.round(creative.qcOverallScore)
+                      : Math.round((creative.visualScore + creative.brandScore + creative.textScore) / 3)}
+                    /100
+                  </span>
+                </div>
+                {Array.isArray(creative.qcIssues) && creative.qcIssues.length > 0 ? (
+                  <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 max-w-[65%] line-clamp-2">
+                    {creative.qcIssues.join(' • ')}
+                  </div>
+                ) : null}
               </div>
 
               {/* Copy */}

@@ -219,6 +219,8 @@ export async function POST(request: NextRequest) {
           visualScore: Number(a.visualScore) || 0,
           brandScore: Number(a.brandScore) || 0,
           textScore: Number(a.textScore) || 0,
+          qcOverallScore: Number(a.overallScore) || undefined,
+          qcIssues: Array.isArray(a.weaknesses) ? a.weaknesses.slice(0, 2).map((x: any) => String(x)) : undefined,
         };
       }
       const base = c.model === 'gemini-3-pro-image-preview' ? 86 : 82;
@@ -229,6 +231,8 @@ export async function POST(request: NextRequest) {
         visualScore: base + brandBonus,
         brandScore: base + brandBonus - 2,
         textScore: base + brandBonus - 1,
+        qcOverallScore: undefined,
+        qcIssues: undefined,
       };
     });
 

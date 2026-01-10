@@ -45,6 +45,7 @@ function CreativeStudioContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAds, setGeneratedAds] = useState<GeneratedCreativeV3[]>([]);
   const [batchMetadata, setBatchMetadata] = useState<any>(null);
+  const [qcMeta, setQcMeta] = useState<{ attempts: number; bestVariationId?: string | null } | null>(null);
   
   // Discovery metadata (for smart routing)
   const [marginScore, setMarginScore] = useState<number | null>(null);
@@ -78,6 +79,7 @@ function CreativeStudioContent() {
 
     setIsGenerating(true);
     setGeneratedAds([]);
+    setQcMeta(null);
 
     try {
       console.log('\n🎨 Generating 2 test ads...');
@@ -124,6 +126,7 @@ function CreativeStudioContent() {
       }
 
       setGeneratedAds(data.creatives);
+      setQcMeta(data?.metadata?.qc ? { attempts: data.metadata.qc.attempts, bestVariationId: data.metadata.qc.bestVariationId } : null);
       
       toast.success(`Generated 2 test ads! Cost: $${data.totalCost.toFixed(4)}`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
@@ -547,6 +550,7 @@ function CreativeStudioContent() {
                     geo,
                     targetAudience,
                   }}
+                  qcMeta={qcMeta}
                 />
               )}
             </>
