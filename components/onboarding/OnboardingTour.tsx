@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import type { OnboardingState } from "@/app/api/onboarding/route";
+import { toast } from "sonner";
 
 type TourStep = {
   id: string;
@@ -56,7 +57,7 @@ const STEPS: TourStep[] = [
   {
     id: "cs_niche",
     path: "/creative-studio",
-    selector: "[data-tour='cs-niche']",
+    selector: "[data-tour='cs-form']",
     title: "Creative Studio inputs",
     body: "Set your niche and market. We auto-detect brand + style (no logo upload).",
   },
@@ -123,6 +124,10 @@ function getRect(selector?: string): DOMRect | null {
   return rect;
 }
 
+function inViewport(r: DOMRect) {
+  return r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+}
+
 export function OnboardingTour() {
   const pathname = usePathname() || "/";
   const router = useRouter();
@@ -133,6 +138,7 @@ export function OnboardingTour() {
   const [rect, setRect] = React.useState<DOMRect | null>(null);
   const [autoSkipNote, setAutoSkipNote] = React.useState<string | null>(null);
   const attemptsRef = React.useRef<Record<string, number>>({});
+  const rafRef = React.useRef<number | null>(null);
 
   // Load state
   React.useEffect(() => {
@@ -167,28 +173,50 @@ export function OnboardingTour() {
       if (r) {
         setAutoSkipNote(null);
         attemptsRef.current[step.id] = 0;
-        // Ensure element is visible.
-        const el = step.selector ? document.querySelector(step.selector) as HTMLElement | null : null;
-        el?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+        // Only scroll the target into view if it isn't already visible.
+        if (!inViewport(r)) {
+          const el = step.selector ? (document.querySelector(step.selector) as HTMLElement | null) : null;
+          el?.scrollIntoView?.({ block: "center", behavior: "auto" });
+        }
       } else if (step.selector) {
         // Step target isn't present (e.g. empty state / user hasn't created data yet).
         // Try a couple times, then skip to keep the tour flowing.
         const nextAttempts = (attemptsRef.current[step.id] || 0) + 1;
         attemptsRef.current[step.id] = nextAttempts;
         if (nextAttempts >= 2) {
-          setAutoSkipNote('Skipping this step — nothing to highlight yet.');
+          setAutoSkipNote("Skipping this step — nothing to highlight yet.");
           // Auto-advance after a short pause.
           window.setTimeout(() => {
-            // still active & same step?
-            if (attemptsRef.current[step.id] >= 2) {
-              go(stepIndex + 1);
-            }
+            if (attemptsRef.current[step.id] >= 2) go(stepIndex + 1);
           }, 900);
         }
       }
     }, 250);
     return () => window.clearTimeout(t);
   }, [active, pathname, stepIndex]);
+
+  // Keep spotlight aligned while user scrolls/resizes (prevents the “electric lime moving” issue).
+  React.useEffect(() => {
+    if (!active) return;
+    if (!step?.selector) return;
+
+    const update = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const r = getRect(step.selector);
+        setRect(r);
+      });
+    };
+
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [active, step?.id]);
 
   async function start() {
     setActive(true);
@@ -201,12 +229,34 @@ export function OnboardingTour() {
   async function stop(markCompleted: boolean) {
     setActive(false);
     setRect(null);
+    if (markCompleted) {
+      await patchState({
+        dismissed: true,
+        checklist: {
+          run_discovery: { done: true, doneAt: new Date().toISOString() },
+          generate_creatives: { done: true, doneAt: new Date().toISOString() },
+          save_campaign: { done: true, doneAt: new Date().toISOString() },
+          export_copy: { done: true, doneAt: new Date().toISOString() },
+          open_campaigns: { done: true, doneAt: new Date().toISOString() },
+        },
+        tour: {
+          active: false,
+          completed: true,
+          currentStepId: null,
+          completedAt: new Date().toISOString(),
+        },
+      });
+      toast.success("Onboarding complete", {
+        description: "You can restart the tour anytime from Settings.",
+      });
+      return;
+    }
+
     await patchState({
       tour: {
         active: false,
-        completed: markCompleted ? true : state?.tour?.completed,
+        completed: state?.tour?.completed,
         currentStepId: state?.tour?.currentStepId ?? null,
-        ...(markCompleted ? { completedAt: new Date().toISOString() } : {}),
       },
     });
   }
