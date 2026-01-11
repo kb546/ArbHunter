@@ -49,6 +49,14 @@ export function MarketingHeader({ active }: { active?: Key }) {
           <div className="flex items-center gap-2">
             <Button
               asChild
+              variant="outline"
+              size="sm"
+              className="border-white/15 bg-transparent text-white hover:bg-white/5"
+            >
+              <Link href="/contact">Contact</Link>
+            </Button>
+            <Button
+              asChild
               variant="ghost"
               size="sm"
               className="text-white/80 hover:text-white hover:bg-white/5"

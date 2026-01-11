@@ -10,6 +10,7 @@ import { UsageBanner } from '@/components/UsageBanner';
 import { CommandPalette } from '@/components/chrome/CommandPalette';
 import { BarChart3, CreditCard, FolderKanban, HelpCircle, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { FloatingHelpButton } from '@/components/support/FloatingHelpButton';
 
 type NavItem = {
   href: string;
@@ -59,6 +60,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/auth') ||
     pathname === '/' ||
     pathname.startsWith('/pricing') ||
+    pathname.startsWith('/contact') ||
     pathname.startsWith('/terms') ||
     pathname.startsWith('/privacy') ||
     pathname.startsWith('/refund-policy');
@@ -73,6 +75,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[color:var(--background)]">
       <CommandPalette />
       <OnboardingTour />
+      <FloatingHelpButton />
       {/* Mobile topbar */}
       <div className="lg:hidden sticky top-0 z-50 border-b bg-[color:var(--card)]/90 backdrop-blur">
         <div className="h-14 px-4 flex items-center justify-between">
