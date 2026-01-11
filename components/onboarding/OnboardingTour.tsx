@@ -274,10 +274,12 @@ export function OnboardingTour() {
   // Floating entry point
   const showFloating = pathname.startsWith("/dashboard") || pathname.startsWith("/discovery") || pathname.startsWith("/creative-studio") || pathname.startsWith("/campaigns");
 
+  const tourCompleted = Boolean(state?.tour?.completed);
+
   return (
     <>
-      {showFloating && !active ? (
-        <div className="fixed bottom-6 right-6 z-[60]">
+      {showFloating && !active && !tourCompleted ? (
+        <div className="fixed bottom-6 right-6 z-[60]" data-floating-tour-launcher="true">
           <Button onClick={start} className="shadow-lg">
             <Sparkles className="h-4 w-4 mr-2" />
             Guided tour
@@ -304,7 +306,10 @@ export function OnboardingTour() {
           ) : null}
 
           {/* Tour card */}
-          <div className="fixed bottom-6 right-6 z-[80] w-[min(420px,calc(100vw-1.5rem))]">
+          <div
+            className="fixed bottom-6 right-6 z-[80] w-[min(420px,calc(100vw-1.5rem))]"
+            data-floating-tour-card="true"
+          >
             <Card className="p-4 border border-border bg-card">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
