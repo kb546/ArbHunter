@@ -202,6 +202,15 @@ export function CampaignDetailClient(props: {
     a.download = `campaign-copies-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+
+    // onboarding: mark export done
+    fetch('/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        checklist: { export_copy: { done: true, doneAt: new Date().toISOString() } },
+      }),
+    }).catch(() => {});
   }
 
   return (
@@ -313,7 +322,7 @@ export function CampaignDetailClient(props: {
           {variations.length} variations • {copies.length} copies
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCopiesCsv} disabled={copies.length === 0}>
+          <Button variant="outline" onClick={exportCopiesCsv} disabled={copies.length === 0} data-tour="campaign-export-copy">
             Export copies CSV
           </Button>
         </div>

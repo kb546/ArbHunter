@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
 import { CommandPalette } from '@/components/chrome/CommandPalette';
 import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 type NavItem = {
   href: string;
@@ -70,6 +71,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[color:var(--background)]">
       <CommandPalette />
+      <OnboardingTour />
       {/* Mobile topbar */}
       <div className="lg:hidden sticky top-0 z-50 border-b bg-[color:var(--card)]/90 backdrop-blur">
         <div className="h-14 px-4 flex items-center justify-between">

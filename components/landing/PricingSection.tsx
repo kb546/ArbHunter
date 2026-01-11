@@ -17,7 +17,7 @@ export const LANDING_PLANS: PricingPlan[] = [
   {
     key: "starter",
     name: "Starter",
-    price: "$29",
+    price: "$39",
     cadence: "/mo",
     highlight: true,
     bullets: ["50 discoveries / month", "100 creatives / month", "Great for early testing"],
@@ -25,14 +25,14 @@ export const LANDING_PLANS: PricingPlan[] = [
   {
     key: "pro",
     name: "Pro",
-    price: "$79",
+    price: "$99",
     cadence: "/mo",
     bullets: ["200 discoveries / month", "500 creatives / month", "Best for consistent scaling"],
   },
   {
     key: "agency",
     name: "Agency",
-    price: "$199",
+    price: "$249",
     cadence: "/mo",
     bullets: ["Unlimited discoveries", "2,000 creatives / month", "Best value for volume"],
   },

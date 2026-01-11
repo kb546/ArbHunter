@@ -14,7 +14,7 @@ const plans = [
   {
     key: "starter",
     name: "Starter",
-    price: "$29",
+    price: "$39",
     cadence: "/mo",
     planKey: "starter",
     features: ["50 discoveries / month", "100 creatives / month", "Great for early testing"],
@@ -23,7 +23,7 @@ const plans = [
   {
     key: "pro",
     name: "Pro",
-    price: "$79",
+    price: "$99",
     cadence: "/mo",
     planKey: "pro",
     features: ["200 discoveries / month", "500 creatives / month", "Best for consistent scaling"],
@@ -32,7 +32,7 @@ const plans = [
   {
     key: "agency",
     name: "Agency",
-    price: "$199",
+    price: "$249",
     cadence: "/mo",
     planKey: "agency",
     features: ["Unlimited discoveries", "2,000 creatives / month", "Best value for volume"],
