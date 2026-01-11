@@ -51,6 +51,8 @@ function CreativeStudioContent() {
   // Discovery metadata (for smart routing)
   const [marginScore, setMarginScore] = useState<number | null>(null);
   const [campaignId, setCampaignId] = useState<string | null>(null);
+  const [discoveryId, setDiscoveryId] = useState<string | null>(null);
+  const [campaignAuto, setCampaignAuto] = useState(false);
 
   // Auto-fill from discovery deep link
   useEffect(() => {
@@ -62,15 +64,53 @@ function CreativeStudioContent() {
 
     if (discoveryNiche && discoveryGeo) {
       console.log('🔗 Deep link from discovery:', { discoveryId, discoveryNiche, discoveryGeo });
+      if (discoveryId) setDiscoveryId(discoveryId);
       setNiche(discoveryNiche);
       setGeo(discoveryGeo);
       if (discoveryMargin) {
         setMarginScore(parseFloat(discoveryMargin));
       }
-      if (campaign) setCampaignId(campaign);
+      if (campaign) {
+        setCampaignId(campaign);
+        setCampaignAuto(false);
+      }
       toast.success(campaign ? 'Campaign created! Generate creatives to save them.' : 'Pre-filled from discovery! Ready to generate.');
     }
   }, [searchParams]);
+
+  // If we auto-created a draft campaign and the user changes the niche/GEO, reset it to avoid mixing outputs.
+  useEffect(() => {
+    if (!campaignId) return;
+    if (!campaignAuto) return;
+    // If the user edits inputs after creating a draft, start a new draft on next generation.
+    setCampaignId(null);
+    setCampaignAuto(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [niche, geo]);
+
+  async function ensureDraftCampaign(): Promise<string> {
+    if (campaignId) return campaignId;
+    const name = `${niche} • ${geo}`;
+    toast.info('Creating a campaign draft…', { description: 'So your creatives are saved automatically.' });
+    const res = await fetch('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        niche,
+        geo,
+        target_audience: targetAudience || null,
+        discovery_id: discoveryId || null,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Failed to create campaign (HTTP ${res.status})`);
+    const newId = data?.campaign?.id as string | undefined;
+    if (!newId) throw new Error('Campaign created but missing id');
+    setCampaignId(newId);
+    setCampaignAuto(true);
+    return newId;
+  }
 
   const handleGenerate = async () => {
     if (!niche || !geo) {
@@ -84,6 +124,7 @@ function CreativeStudioContent() {
     setPolicyMeta(null);
 
     try {
+      const ensuredCampaignId = await ensureDraftCampaign();
       console.log('\n🎨 Generating 2 test ads...');
       console.log(`   Niche: ${niche}`);
       console.log(`   GEO: ${geo}`);
@@ -100,7 +141,7 @@ function CreativeStudioContent() {
           model,
           marginScore,
           variations: 2, // Always 2 for A/B testing
-          campaignId,
+          campaignId: ensuredCampaignId,
         }),
       });
 
@@ -128,11 +169,14 @@ function CreativeStudioContent() {
       }
 
       setGeneratedAds(data.creatives);
+      if (data?.campaignId && typeof data.campaignId === 'string') {
+        setCampaignId(data.campaignId);
+      }
       setQcMeta(data?.metadata?.qc ? { attempts: data.metadata.qc.attempts, bestVariationId: data.metadata.qc.bestVariationId } : null);
       setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
       
       toast.success(`Generated 2 test ads!`, {
-        description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
+        description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
       });
 
       console.log('✅ Generation complete:', data);
@@ -185,6 +229,7 @@ function CreativeStudioContent() {
     setPolicyMeta(null);
 
     try {
+      const ensuredCampaignId = await ensureDraftCampaign();
       console.log(`\n🚀 Generating batch of ${config.batchSize} ads...`);
       console.log(`   Niche: ${niche}`);
       console.log(`   GEO: ${geo}`);
@@ -201,7 +246,7 @@ function CreativeStudioContent() {
           model: config.model,
           marginScore,
           creativePreset,
-          campaignId,
+          campaignId: ensuredCampaignId,
         }),
       });
 
@@ -245,6 +290,9 @@ function CreativeStudioContent() {
       }));
 
       setGeneratedAds(convertedAds);
+      if (data?.campaignId && typeof data.campaignId === 'string') {
+        setCampaignId(data.campaignId);
+      }
       setBatchMetadata({
         totalCost: data.totalCost,
         totalTime: data.totalTime,
@@ -255,7 +303,7 @@ function CreativeStudioContent() {
       setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
       
       toast.success(`Generated ${config.batchSize} unique ads!`, {
-        description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
+        description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
       });
 
       console.log('✅ Batch generation complete:', data);
@@ -526,29 +574,16 @@ function CreativeStudioContent() {
                   <div>
                     <div className="font-semibold text-foreground">Next step</div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {campaignId
-                        ? 'Your ads were saved to this campaign. Continue to Campaigns to manage winners, tags, and exports.'
-                        : 'Create a campaign to save these results (recommended).'}
+                      {'Your ads were saved to a campaign draft. Continue to Campaigns to manage winners, tags, and exports.'}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {campaignId ? (
-                      <>
-                        <Button asChild>
-                          <Link href={`/campaigns/${campaignId}`}>View campaign</Link>
-                        </Button>
-                        <Button asChild variant="outline">
-                          <Link href="/campaigns">All campaigns</Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button onClick={createCampaignAndSave}>Create campaign & save</Button>
-                        <Button asChild variant="outline">
-                          <Link href="/campaigns">Go to campaigns</Link>
-                        </Button>
-                      </>
-                    )}
+                    <Button asChild disabled={!campaignId}>
+                      <Link href={campaignId ? `/campaigns/${campaignId}` : '/campaigns'}>View campaign</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/campaigns">All campaigns</Link>
+                    </Button>
                   </div>
                 </div>
               </Card>
