@@ -83,9 +83,40 @@ export function ResultsTable({ discoveries, onExport, onClear }: ResultsTablePro
             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground">
-              No discoveries yet. Run your first opportunity scan above!
-            </p>
+            <p className="text-muted-foreground">No discoveries yet.</p>
+
+            <div className="mt-6 w-full max-w-3xl text-left">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-semibold text-foreground">Demo example (clickable once you run your own)</div>
+                <Badge variant="outline" className="bg-transparent">Demo</Badge>
+              </div>
+
+              <div className="mt-3 rounded-lg border bg-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground truncate">DHL Jobs</div>
+                    <div className="text-xs text-muted-foreground mt-1">ZA • Discovered (demo)</div>
+                  </div>
+                  <div className="shrink-0">
+                    <ScoreIndicator score={86} size="sm" />
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-md bg-muted/40 p-2">
+                    <div className="text-muted-foreground">Search vol</div>
+                    <div className="font-medium text-foreground">—</div>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2">
+                    <div className="text-muted-foreground">Growth</div>
+                    <div className="font-medium text-foreground">+200%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 text-sm text-muted-foreground">
+              Run your first opportunity scan on the left to replace the demo with real results.
+            </div>
           </div>
         </CardContent>
       </Card>

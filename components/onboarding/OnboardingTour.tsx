@@ -131,6 +131,8 @@ export function OnboardingTour() {
   const [active, setActive] = React.useState(false);
   const [stepIndex, setStepIndex] = React.useState(0);
   const [rect, setRect] = React.useState<DOMRect | null>(null);
+  const [autoSkipNote, setAutoSkipNote] = React.useState<string | null>(null);
+  const attemptsRef = React.useRef<Record<string, number>>({});
 
   // Load state
   React.useEffect(() => {
@@ -163,9 +165,26 @@ export function OnboardingTour() {
       const r = getRect(step.selector);
       setRect(r);
       if (r) {
+        setAutoSkipNote(null);
+        attemptsRef.current[step.id] = 0;
         // Ensure element is visible.
         const el = step.selector ? document.querySelector(step.selector) as HTMLElement | null : null;
         el?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+      } else if (step.selector) {
+        // Step target isn't present (e.g. empty state / user hasn't created data yet).
+        // Try a couple times, then skip to keep the tour flowing.
+        const nextAttempts = (attemptsRef.current[step.id] || 0) + 1;
+        attemptsRef.current[step.id] = nextAttempts;
+        if (nextAttempts >= 2) {
+          setAutoSkipNote('Skipping this step — nothing to highlight yet.');
+          // Auto-advance after a short pause.
+          window.setTimeout(() => {
+            // still active & same step?
+            if (attemptsRef.current[step.id] >= 2) {
+              go(stepIndex + 1);
+            }
+          }, 900);
+        }
       }
     }, 250);
     return () => window.clearTimeout(t);
@@ -241,6 +260,9 @@ export function OnboardingTour() {
                 <div className="min-w-0">
                   <div className="font-semibold text-foreground">{step?.title}</div>
                   <div className="text-sm text-muted-foreground mt-1 leading-relaxed">{step?.body}</div>
+                  {autoSkipNote ? (
+                    <div className="text-xs text-muted-foreground mt-2">{autoSkipNote}</div>
+                  ) : null}
                 </div>
                 <button
                   type="button"
