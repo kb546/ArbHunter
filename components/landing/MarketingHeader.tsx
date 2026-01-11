@@ -5,11 +5,12 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Key = "home" | "pricing" | "terms" | "privacy" | "refund-policy";
+type Key = "home" | "pricing" | "contact" | "terms" | "privacy" | "refund-policy";
 
 const NAV: Array<{ key: Key; label: string; href: string }> = [
   { key: "home", label: "Home", href: "/" },
   { key: "pricing", label: "Pricing", href: "/pricing" },
+  { key: "contact", label: "Contact", href: "/contact" },
   { key: "terms", label: "Terms", href: "/terms" },
   { key: "privacy", label: "Privacy", href: "/privacy" },
   { key: "refund-policy", label: "Refunds", href: "/refund-policy" },

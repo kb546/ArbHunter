@@ -52,11 +52,17 @@ export function SiteFooter() {
             <p className="mt-3 text-sm text-white/60 max-w-sm leading-relaxed">
               Find opportunities by country, generate creatives faster, and keep your campaigns organized.
             </p>
-            <p className="mt-3 text-xs text-white/55">
-              Support:{" "}
-              <a className="underline underline-offset-4 hover:text-white" href={`mailto:${SUPPORT_EMAIL}`}>
-                {SUPPORT_EMAIL}
-              </a>
+            <p className="mt-3 text-xs text-white/55 space-x-2">
+              <span>
+                Support:{' '}
+                <a className="underline underline-offset-4 hover:text-white" href={`mailto:${SUPPORT_EMAIL}`}>
+                  {SUPPORT_EMAIL}
+                </a>
+              </span>
+              <span className="text-white/35">•</span>
+              <Link className="underline underline-offset-4 hover:text-white" href="/contact">
+                Contact us
+              </Link>
             </p>
           </div>
 
@@ -75,6 +81,7 @@ export function SiteFooter() {
               <FooterLink href="/auth/signup?next=/dashboard">Start the hunt</FooterLink>
               <FooterLink href="/account/billing">Billing</FooterLink>
               <FooterLink href="/account/settings">Settings</FooterLink>
+              <FooterLink href="/support">Support</FooterLink>
             </Col>
           </div>
 

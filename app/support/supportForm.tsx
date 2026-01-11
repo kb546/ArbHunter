@@ -60,7 +60,7 @@ export default function SupportForm({ email }: { email: string | null }) {
           <Label>Your email</Label>
           <Input value={email || '—'} disabled />
           <div className="text-xs text-muted-foreground">
-            Replies go to this email. If it’s wrong, update it in Supabase for now.
+            Replies go to this email. If it’s wrong, email us from the correct inbox at {SUPPORT_EMAIL}.
           </div>
         </div>
         <div className="space-y-2">
