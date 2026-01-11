@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { loginAction } from '@/app/auth/actions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,8 +45,8 @@ function LoginInner() {
           {/* Left: value prop */}
           <div className="hidden lg:block">
             <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <span className="h-9 w-9 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center text-primary font-semibold">
-                AH
+              <span className="h-9 w-9 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center overflow-hidden">
+                <Image src="/brand/logo.png" alt="ArbHunter" width={30} height={30} />
               </span>
               <span className="font-semibold text-foreground">ArbHunter</span>
               <span className="text-muted-foreground">/</span>
@@ -96,8 +97,8 @@ function LoginInner() {
           <div className="flex flex-col items-center">
             <div className="lg:hidden w-full max-w-md mb-6">
               <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <span className="h-9 w-9 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center text-primary font-semibold">
-                  AH
+                <span className="h-9 w-9 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center overflow-hidden">
+                  <Image src="/brand/logo.png" alt="ArbHunter" width={30} height={30} />
                 </span>
                 <span className="font-semibold text-foreground">ArbHunter</span>
               </Link>

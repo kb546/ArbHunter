@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +21,8 @@ export function MarketingHeader({ active }: { active?: Key }) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#2B2F36] border border-white/10">
-              <span className="h-2 w-2 rounded-full bg-[#DFFF00]" />
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#2B2F36] border border-white/10 overflow-hidden">
+              <Image src="/brand/logo.png" alt="ArbHunter" width={28} height={28} />
             </span>
             ArbHunter
           </Link>

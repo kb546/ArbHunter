@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -137,8 +138,8 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:block w-64 border-r bg-[color:var(--sidebar)]">
           <div className="h-16 px-5 flex items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-[color:var(--primary)]/10 flex items-center justify-center">
-                <BarChart3 className="h-4 w-4 text-[color:var(--primary)]" />
+              <div className="h-8 w-8 rounded-lg bg-[color:var(--primary)]/10 flex items-center justify-center overflow-hidden">
+                <Image src="/brand/logo.png" alt="ArbHunter" width={28} height={28} />
               </div>
               <div className="font-semibold tracking-tight">ArbHunter</div>
             </Link>

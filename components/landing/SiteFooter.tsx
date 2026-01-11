@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 function Col({
@@ -42,8 +43,8 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-12 gap-8">
           <div className="col-span-2 md:col-span-4">
             <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-white">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#2B2F36] border border-white/10">
-                <span className="h-2 w-2 rounded-full bg-[#DFFF00]" />
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#2B2F36] border border-white/10 overflow-hidden">
+                <Image src="/brand/logo.png" alt="ArbHunter" width={28} height={28} />
               </span>
               ArbHunter
             </Link>
