@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { PageHeader, PageShell } from '@/components/layout/PageShell';
+import { OnboardingChecklistCard } from '@/components/onboarding/OnboardingChecklistCard';
 
 export default async function DashboardPage() {
   const session = await getAuthedSessionFromCookies();
@@ -18,8 +19,10 @@ export default async function DashboardPage() {
         description={`Welcome back${email ? `, ${email}` : ''}. Pick where you want to work.`}
       />
 
+      <OnboardingChecklistCard />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
+        <Card className="p-6" data-tour="dash-card-discovery">
           <div className="font-semibold text-foreground">Discovery</div>
           <div className="text-sm text-muted-foreground mt-1">
             Find profitable GEO + niche combos.
@@ -31,7 +34,7 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6" data-tour="dash-card-creative">
           <div className="font-semibold text-foreground">Creative Studio</div>
           <div className="text-sm text-muted-foreground mt-1">
             Generate A/B creatives from a niche.
@@ -43,7 +46,7 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6" data-tour="dash-card-campaigns">
           <div className="font-semibold text-foreground">Campaigns</div>
           <div className="text-sm text-muted-foreground mt-1">
             Organize creatives, exports, and experiments.

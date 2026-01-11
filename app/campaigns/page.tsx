@@ -61,7 +61,7 @@ export default async function CampaignsPage() {
   return (
     <PageShell>
       <PageHeader
-        title="Campaigns"
+        title={<span data-tour="campaigns-header">Campaigns</span>}
         description="Your saved campaigns (creatives and exports live here)."
         right={
           <Button asChild variant="outline">

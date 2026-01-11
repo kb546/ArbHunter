@@ -57,7 +57,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
           <div className="space-y-2">
             <Label htmlFor="geo">Target GEO</Label>
             <Select value={geo} onValueChange={setGeo} disabled={isLoading}>
-              <SelectTrigger id="geo">
+              <SelectTrigger id="geo" data-tour="discovery-geo">
                 <SelectValue placeholder="Select a geographic market" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
@@ -97,6 +97,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
               onChange={(e) => setNiche(e.target.value)}
               disabled={isLoading}
               list="niche-suggestions"
+              data-tour="discovery-niche"
             />
             <datalist id="niche-suggestions">
               {SUGGESTED_NICHES.map((n) => (
@@ -108,7 +109,7 @@ export function DiscoveryForm({ onSubmit, isLoading = false }: DiscoveryFormProp
             </p>
           </div>
 
-          <Button type="submit" disabled={!geo || !niche || isLoading} className="w-full">
+          <Button type="submit" disabled={!geo || !niche || isLoading} className="w-full" data-tour="discovery-run">
             {isLoading ? (
               <>
                 Analyzing Opportunity...

@@ -6,6 +6,7 @@ import { getUserSubscription } from '@/lib/billing.server';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, Settings as SettingsIcon, ShieldCheck, User } from 'lucide-react';
 import { PageShell } from '@/components/layout/PageShell';
+import { OnboardingSettingsCard } from '@/components/onboarding/OnboardingSettingsCard';
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return '—';
@@ -82,6 +83,8 @@ export default async function SettingsPage() {
           </div>
         </div>
       </Card>
+
+      <OnboardingSettingsCard />
 
       <Card className="p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

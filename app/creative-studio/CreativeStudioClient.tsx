@@ -134,6 +134,14 @@ function CreativeStudioContent() {
       toast.success(`Generated 2 test ads!`, {
         description: `${campaignId ? 'Saved to campaign • ' : ''}Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
       });
+      // onboarding: mark creative generation done
+      fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checklist: { generate_creatives: { done: true, doneAt: new Date().toISOString() } },
+        }),
+      }).catch(() => {});
 
       console.log('✅ Generation complete:', data);
     } catch (error: any) {
@@ -167,6 +175,14 @@ function CreativeStudioContent() {
       if (!importRes.ok) throw new Error(importData?.error || `Failed to save into campaign (HTTP ${importRes.status})`);
 
       toast.success('Saved to campaign', { description: 'Opening your campaign…' });
+      // onboarding: mark campaign saving done
+      fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checklist: { save_campaign: { done: true, doneAt: new Date().toISOString() } },
+        }),
+      }).catch(() => {});
       window.location.href = `/campaigns/${newId}`;
     } catch (e: any) {
       toast.error('Could not save to campaign', { description: e?.message || String(e) });
@@ -281,7 +297,7 @@ function CreativeStudioContent() {
 
       <div className="space-y-6">
           {/* Campaign Form */}
-          <Card className="p-6 shadow-sm">
+          <Card className="p-6 shadow-sm" data-tour="cs-form">
             <div className="mb-5">
               <h2 className="text-lg sm:text-xl font-semibold text-foreground">Campaign details</h2>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
@@ -302,6 +318,7 @@ function CreativeStudioContent() {
                     onChange={(e) => setNiche(e.target.value)}
                     placeholder="e.g., KFC careers, Amazon delivery jobs"
                     className="h-11"
+                    data-tour="cs-niche"
                   />
                   <p className="text-xs text-muted-foreground mt-1.5">
                     Brand will be auto-detected (no upload needed)
@@ -313,7 +330,7 @@ function CreativeStudioContent() {
                     Geographic Market *
                   </Label>
                   <Select value={geo} onValueChange={setGeo}>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-11" data-tour="cs-geo">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -444,6 +461,7 @@ function CreativeStudioContent() {
                       onClick={handleGenerate}
                       disabled={isGenerating || !niche || !geo}
                       className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
+                      data-tour="cs-generate"
                     >
                       {isGenerating ? (
                         <>

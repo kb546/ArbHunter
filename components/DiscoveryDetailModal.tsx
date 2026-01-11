@@ -66,6 +66,14 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
         campaign: campaignId,
       });
       toast.success('Campaign created', { description: 'Redirecting to Creative Studio…' });
+      // onboarding: mark campaign saving done
+      fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checklist: { save_campaign: { done: true, doneAt: new Date().toISOString() } },
+        }),
+      }).catch(() => {});
       router.push(`/creative-studio?${params.toString()}`);
       onClose();
     } catch (e: any) {

@@ -74,6 +74,14 @@ export default function DiscoveryPage() {
       if (data.success && data.data) {
         setDiscoveries((prev) => [data.data, ...prev]);
         toast.success(`Discovery complete! Margin Score: ${data.data.margin_score}`);
+        // onboarding: mark first discovery done
+        fetch('/api/onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            checklist: { run_discovery: { done: true, doneAt: new Date().toISOString() } },
+          }),
+        }).catch(() => {});
       } else {
         toast.error('Discovery failed', { description: data.error || 'An unknown error occurred' });
       }
@@ -179,7 +187,9 @@ export default function DiscoveryPage() {
               <TabsTrigger value="batch">Batch Discovery</TabsTrigger>
             </TabsList>
             <TabsContent value="single" className="mt-4">
-              <DiscoveryForm onSubmit={handleDiscover} isLoading={isLoading} />
+              <div data-tour="discovery-form">
+                <DiscoveryForm onSubmit={handleDiscover} isLoading={isLoading} />
+              </div>
             </TabsContent>
             <TabsContent value="batch" className="mt-4">
               <BatchDiscovery onSubmit={handleBatchDiscover} isLoading={isLoading} />
