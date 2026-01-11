@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
 function Col({
   title,
@@ -50,6 +51,12 @@ export function SiteFooter() {
             </Link>
             <p className="mt-3 text-sm text-white/60 max-w-sm leading-relaxed">
               Find opportunities by country, generate creatives faster, and keep your campaigns organized.
+            </p>
+            <p className="mt-3 text-xs text-white/55">
+              Support:{" "}
+              <a className="underline underline-offset-4 hover:text-white" href={`mailto:${SUPPORT_EMAIL}`}>
+                {SUPPORT_EMAIL}
+              </a>
             </p>
           </div>
 

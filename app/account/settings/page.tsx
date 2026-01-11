@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, Settings as SettingsIcon, ShieldCheck, User } from 'lucide-react';
 import { PageShell } from '@/components/layout/PageShell';
 import { OnboardingSettingsCard } from '@/components/onboarding/OnboardingSettingsCard';
+import { SUPPORT_EMAIL } from '@/lib/support';
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return '—';
@@ -94,6 +95,12 @@ export default async function SettingsPage() {
               Log out
             </div>
             <div className="text-sm text-muted-foreground mt-1">Ends your session on this device.</div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Need help?{" "}
+              <a className="underline underline-offset-4 hover:text-foreground" href={`mailto:${SUPPORT_EMAIL}`}>
+                {SUPPORT_EMAIL}
+              </a>
+            </div>
           </div>
           <form action="/api/auth/logout" method="post">
             <Button variant="outline" type="submit">Log out</Button>
