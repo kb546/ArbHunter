@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
 import { CommandPalette } from '@/components/chrome/CommandPalette';
 import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
-import { ThemeToggle } from '@/components/chrome/ThemeToggle';
 
 type NavItem = {
   href: string;
@@ -122,7 +121,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
             </div>
             <div className="mt-6">
               <div className="flex items-center gap-2">
-                <ThemeToggle />
                 <Button asChild className="flex-1">
                   <Link href="/pricing">Upgrade</Link>
                 </Button>
@@ -202,7 +200,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                   <span className="flex-1 text-left">Search…</span>
                   <span className="text-xs text-[color:var(--muted-foreground)]">⌘K</span>
                 </button>
-                <ThemeToggle />
                 <Button asChild variant="outline" size="sm">
                   <Link href="/account/settings">Account</Link>
                 </Button>

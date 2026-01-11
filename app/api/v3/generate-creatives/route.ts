@@ -93,6 +93,13 @@ export async function POST(request: NextRequest) {
     const campaignType = campaignTypeResult.campaignType;
     console.log(`📋 Campaign type: ${campaignType} (${campaignTypeResult.confidence}% confidence)`);
 
+    // Quality override: free samples (and similar consumer product offers) are very sensitive to model quality.
+    // When user chooses AUTO, prefer Pro to reduce weird outputs (e.g., uniforms/hangers).
+    if (model === 'auto' && campaignType === 'free_sample') {
+      selectedModel = 'pro';
+      console.log('🎯 Auto-selected override: Gemini Pro (free sample offer quality)');
+    }
+
     const brandName = detectedBrand?.name || niche.split(' ')[0];
     const brandColors = detectedBrand?.colors || {
       primary: '#DFFF00',
@@ -116,8 +123,8 @@ export async function POST(request: NextRequest) {
       }
       if (t === 'free_sample') {
         return [
-          'Scene: premium product hero shot (packaging clear), clean background, trust-first.',
-          'Scene: lifestyle use-case (bathroom vanity / skincare routine / clean countertop), product present, no hiring cues.',
+          'Scene: premium product hero shot (packaging clear), clean background, trust-first. STRICT: no uniforms, no clothing, no hangers.',
+          'Scene: lifestyle use-case (bathroom vanity / skincare routine / clean countertop), product present. STRICT: no uniforms, no clothing, no hangers.',
         ];
       }
       if (t === 'discount_sale') {

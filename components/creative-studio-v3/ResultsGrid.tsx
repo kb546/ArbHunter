@@ -69,12 +69,32 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta, policy 
       </div>
 
       {/* Policy warnings (non-blocking) */}
-      {policy && policy.overallRisk !== 'low' ? (
-        <Card className="p-4 border border-amber-500/25 bg-amber-500/10">
+      {policy ? (
+        <Card
+          className={
+            policy.overallRisk === 'high'
+              ? 'p-4 border border-amber-500/25 bg-amber-500/10'
+              : policy.overallRisk === 'medium'
+              ? 'p-4 border border-amber-500/25 bg-amber-500/10'
+              : 'p-4 border border-border bg-card'
+          }
+        >
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+              <div
+                className={
+                  policy.overallRisk === 'low'
+                    ? 'h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center'
+                    : 'h-9 w-9 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center'
+                }
+              >
+                <AlertTriangle
+                  className={
+                    policy.overallRisk === 'low'
+                      ? 'h-4 w-4 text-[color:var(--primary)]'
+                      : 'h-4 w-4 text-amber-600 dark:text-amber-300'
+                  }
+                />
               </div>
               <div>
                 <div className="text-sm font-semibold text-foreground">
@@ -86,7 +106,7 @@ export function ResultsGrid({ creatives, brandKit, campaignData, qcMeta, policy 
                   </div>
                 ) : (
                   <div className="text-xs text-muted-foreground mt-1">
-                    Potential policy issues detected. Consider the “Platform Compliant” preset.
+                    No obvious policy risks detected.
                   </div>
                 )}
               </div>

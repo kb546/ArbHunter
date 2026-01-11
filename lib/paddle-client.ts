@@ -57,7 +57,7 @@ export async function ensurePaddleInitialized(): Promise<void> {
   return paddleInitPromise;
 }
 
-export async function openPaddleCheckout(transactionId: string) {
+export async function openPaddleCheckout(transactionId: string, opts?: { successUrl?: string }) {
   await ensurePaddleInitialized();
   const Paddle = window.Paddle;
   if (!Paddle?.Checkout?.open) throw new Error('Paddle.Checkout.open is not available');
@@ -68,6 +68,7 @@ export async function openPaddleCheckout(transactionId: string) {
     transactionId,
     settings: {
       displayMode: 'overlay',
+      ...(opts?.successUrl ? { successUrl: opts.successUrl } : {}),
     },
   });
 }

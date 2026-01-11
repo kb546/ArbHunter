@@ -210,7 +210,10 @@ export function detectCampaignTypeWithKeywords(niche: string): CampaignTypeDetec
   }
 
   // Free Sample
-  if (/\b(free sample|free trial sample|sample kit|try free|free product|complimentary sample)\b/i.test(nicheLower)) {
+  if (
+    /\b(free samples?|free trial samples?|trial samples?|sample kits?|complimentary samples?|complimentary sample|free product)\b/i.test(nicheLower) ||
+    (/\bsamples?\b/i.test(nicheLower) && /\bfree\b/i.test(nicheLower))
+  ) {
     return {
       campaignType: 'free_sample',
       confidence: 92,

@@ -23,39 +23,10 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
   const [batchSize, setBatchSize] = useState<5 | 10 | 20>(10);
   const [model, setModel] = useState<'auto' | 'fast' | 'pro'>('auto');
 
-  // Cost calculation
-  const calculateCost = (size: number, modelType: 'auto' | 'fast' | 'pro') => {
-    const agentCost = 0.07; // Fixed for all sizes
-    let imageCost = 0;
-    
-    if (modelType === 'fast') {
-      imageCost = size * 0.002; // Flash model
-    } else if (modelType === 'pro') {
-      imageCost = size * 0.01; // Pro model
-    } else {
-      // Auto: Pro for Tier 1, Fast for others
-      const tier1Countries = ['US', 'GB', 'CA', 'AU', 'DE', 'FR', 'JP', 'SG', 'AE', 'CH', 'NL', 'SE', 'NO'];
-      const isPro = tier1Countries.includes(geo);
-      imageCost = isPro ? size * 0.01 : size * 0.002;
-    }
-    
-    return (agentCost + imageCost).toFixed(4);
-  };
-
-  // Time estimation
-  const estimateTime = (size: number) => {
-    // ~6 seconds per ad average
-    return Math.round(size * 6);
-  };
-
   const handleGenerate = () => {
     if (isGenerating || !niche || !geo) return;
     onGenerate({ batchSize, model });
   };
-
-  const totalCost = calculateCost(batchSize, model);
-  const perAdCost = (parseFloat(totalCost) / batchSize).toFixed(4);
-  const estimatedTime = estimateTime(batchSize);
 
   return (
     <Card className="shadow-sm">
@@ -173,30 +144,6 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               <div className="text-xs text-muted-foreground mt-1">Best quality</div>
             </button>
           </div>
-        </div>
-
-        {/* Cost & Time Estimates */}
-        <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Estimated Cost:</span>
-            <span className="text-lg font-bold text-foreground">${totalCost}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Per Ad:</span>
-            <span className="text-md font-semibold text-foreground">${perAdCost}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Estimated Time:</span>
-            <span className="text-md font-semibold text-foreground">~{estimatedTime}s</span>
-          </div>
-          
-          {model === 'fast' && (
-            <div className="mt-3 pt-3 border-t">
-              <p className="text-xs text-muted-foreground">
-                Fast mode is cheaper and quicker than Pro.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Generate Button */}

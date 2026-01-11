@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { openPaddleCheckout } from "@/lib/paddle-client";
@@ -40,6 +41,24 @@ const plans = [
 ] as const;
 
 export default function PricingPage() {
+  // If Paddle redirects back with ?_ptxn=txn_..., open overlay checkout automatically.
+  // After close, route user to Billing to see updated status.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const txn = url.searchParams.get("_ptxn");
+    if (!txn) return;
+
+    (async () => {
+      try {
+        await openPaddleCheckout(txn);
+      } finally {
+        url.searchParams.delete("_ptxn");
+        window.history.replaceState({}, "", url.toString());
+        window.location.href = "/account/billing?checkout=success";
+      }
+    })();
+  }, []);
+
   const billingFaq: FAQItem[] = [
     {
       q: "Can I cancel anytime?",
@@ -184,7 +203,7 @@ function CheckoutButton({
           }
 
           if (data.transactionId) {
-            await openPaddleCheckout(data.transactionId);
+            await openPaddleCheckout(data.transactionId, { successUrl: `${window.location.origin}/account/billing?checkout=success` });
             return;
           }
 

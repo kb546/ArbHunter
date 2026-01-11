@@ -152,9 +152,16 @@ export function BatchResultsGrid({ creatives, batchMetadata, policy }: BatchResu
                 {creatives.length} unique ads generated
                 {batchMetadata?.aiAgentsUsed && ' • 5 AI Agents Used'}
               </p>
-              {policy && policy.overallRisk !== 'low' ? (
+              {policy ? (
                 <div className="mt-2">
-                  <Badge variant="outline" className="bg-transparent border-amber-500/30 text-amber-700 dark:text-amber-300">
+                  <Badge
+                    variant="outline"
+                    className={
+                      policy.overallRisk === 'low'
+                        ? 'bg-transparent border-primary/25 text-[color:var(--primary)]'
+                        : 'bg-transparent border-amber-500/30 text-amber-700 dark:text-amber-300'
+                    }
+                  >
                     Policy risk: {policy.overallRisk.toUpperCase()}
                   </Badge>
                   {policy.issues?.length ? (
@@ -185,20 +192,16 @@ export function BatchResultsGrid({ creatives, batchMetadata, policy }: BatchResu
           {batchMetadata && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-card rounded-lg p-3 border border-border">
-                <p className="text-xs text-muted-foreground">Total Cost</p>
-                <p className="text-lg font-bold text-foreground">${batchMetadata.totalCost.toFixed(4)}</p>
-              </div>
-              <div className="bg-card rounded-lg p-3 border border-border">
                 <p className="text-xs text-muted-foreground">Time Taken</p>
                 <p className="text-lg font-bold text-foreground">{(batchMetadata.totalTime / 1000).toFixed(1)}s</p>
               </div>
               <div className="bg-card rounded-lg p-3 border border-border">
-                <p className="text-xs text-muted-foreground">Per Ad Cost</p>
-                <p className="text-lg font-bold text-foreground">${(batchMetadata.totalCost / creatives.length).toFixed(4)}</p>
-              </div>
-              <div className="bg-card rounded-lg p-3 border border-border">
                 <p className="text-xs text-muted-foreground">A/B Pairs</p>
                 <p className="text-lg font-bold text-foreground">{batchMetadata.abTestPairs?.length || 0}</p>
+              </div>
+              <div className="bg-card rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground">Batch Size</p>
+                <p className="text-lg font-bold text-foreground">{creatives.length}</p>
               </div>
             </div>
           )}

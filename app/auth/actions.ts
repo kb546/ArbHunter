@@ -1,13 +1,21 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createSupabaseServerClient, setAuthCookies, clearAuthCookies, isAuthConfigured } from '@/lib/auth.server';
 
 function safeNextPath(raw: unknown) {
   const v = typeof raw === 'string' ? raw : '';
-  if (!v.startsWith('/')) return '/';
-  if (v.startsWith('//')) return '/';
+  if (!v.startsWith('/')) return '/dashboard';
+  if (v.startsWith('//')) return '/dashboard';
   return v;
+}
+
+async function getOriginFromHeaders(): Promise<string> {
+  const h = await headers();
+  const proto = h.get('x-forwarded-proto') || 'https';
+  const host = h.get('x-forwarded-host') || h.get('host') || '';
+  return host ? `${proto}://${host}` : '';
 }
 
 export async function loginAction(formData: FormData) {
@@ -45,8 +53,15 @@ export async function signupAction(formData: FormData) {
   }
   if (!email || !password) return { error: 'Email and password are required.' };
 
+  const origin = await getOriginFromHeaders();
+  const emailRedirectTo = origin ? `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}` : undefined;
+
   const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: emailRedirectTo ? { emailRedirectTo } : undefined,
+  } as any);
 
   if (error) {
     const msg = error.message || 'Signup failed';
@@ -76,6 +91,29 @@ export async function signupAction(formData: FormData) {
   });
 
   redirect(nextPath);
+}
+
+export async function resendSignupConfirmationAction(formData: FormData) {
+  const email = String(formData.get('email') || '').trim();
+  const nextPath = safeNextPath(formData.get('next'));
+
+  if (!isAuthConfigured()) {
+    return { error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.' };
+  }
+  if (!email) return { error: 'Email is required.' };
+
+  const origin = await getOriginFromHeaders();
+  const emailRedirectTo = origin ? `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}` : undefined;
+
+  const supabase = createSupabaseServerClient();
+  const { error } = await (supabase.auth as any).resend({
+    type: 'signup',
+    email,
+    options: emailRedirectTo ? { emailRedirectTo } : undefined,
+  });
+
+  if (error) return { error: error.message || 'Failed to resend confirmation email.' };
+  return { ok: true };
 }
 
 export async function logoutAction() {

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 interface BatchProgressIndicatorProps {
   isGenerating: boolean;
   batchSize: number;
+  isComplete?: boolean;
 }
 
 type Stage = {
@@ -26,18 +27,14 @@ const stages: Stage[] = [
   { id: 6, name: 'Quality Control', description: 'Assessing quality & A/B pairs', estimatedTime: 10 },
 ];
 
-export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgressIndicatorProps) {
+export function BatchProgressIndicator({ isGenerating, batchSize, isComplete }: BatchProgressIndicatorProps) {
   const [currentStage, setCurrentStage] = useState(1);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (!isGenerating) {
-      setCurrentStage(1);
-      setElapsedTime(0);
-      setProgress(0);
-      return;
-    }
+    // If we are not generating, we either show a "completed" state or nothing (handled by parent).
+    if (!isGenerating) return;
 
     // Simulate progress through stages
     const totalTime = stages.reduce((sum, stage) => sum + stage.estimatedTime, 0);
@@ -65,6 +62,51 @@ export function BatchProgressIndicator({ isGenerating, batchSize }: BatchProgres
 
     return () => clearInterval(interval);
   }, [isGenerating, elapsedTime]);
+
+  // Completed snapshot (keeps ticks visible after done)
+  if (!isGenerating && isComplete) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+        <Card className="shadow-lg border border-border bg-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-[color:var(--primary)]" />
+              Batch generation complete ({batchSize} ads)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {stages.map((stage) => (
+                <div
+                  key={stage.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20"
+                >
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-300" />
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">{stage.name}</span>
+                      <span className="ml-auto text-xs text-emerald-600 dark:text-emerald-300 font-medium">✓ Done</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{stage.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Overall Progress</span>
+                <span className="font-semibold">100%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-3 overflow-hidden shadow-inner">
+                <div className="h-full bg-[color:var(--primary)] rounded-full" style={{ width: '100%' }} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
 
   if (!isGenerating) return null;
 

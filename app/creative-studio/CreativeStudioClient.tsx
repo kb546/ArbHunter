@@ -508,9 +508,13 @@ function CreativeStudioContent() {
             </div>
           </Card>
 
-          {/* Batch Progress Indicator */}
-          {mode === 'batch' && isGenerating && (
-            <BatchProgressIndicator isGenerating={isGenerating} batchSize={batchSize} />
+          {/* Batch Progress Indicator (stays visible once completed) */}
+          {mode === 'batch' && (isGenerating || (generatedAds.length > 0 && batchMetadata)) && (
+            <BatchProgressIndicator
+              isGenerating={isGenerating}
+              batchSize={batchSize}
+              isComplete={!isGenerating && generatedAds.length > 0}
+            />
           )}
 
           {/* Results */}

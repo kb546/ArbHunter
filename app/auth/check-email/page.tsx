@@ -7,7 +7,7 @@ export default async function CheckEmailPage({
   searchParams: Promise<{ email?: string; next?: string }>;
 }) {
   const { email, next } = await searchParams;
-  const nextPath = next && next.startsWith('/') ? next : '/discovery';
+  const nextPath = next && next.startsWith('/') ? next : '/dashboard';
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
@@ -15,7 +15,10 @@ export default async function CheckEmailPage({
       <div className="w-full max-w-md bg-card border border-border rounded-lg p-6">
         <h1 className="text-2xl font-bold text-foreground">Check your email</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          We sent a confirmation link{email ? ` to ${email}` : ''}. Click it to finish creating your account.
+          We sent a confirmation link{email ? ` to ${email}` : ''}. Click it to finish creating your account, then you’ll be redirected automatically.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          If the link has expired, request a new one from the login page.
         </p>
         <div className="mt-6 flex gap-3">
           <Link
