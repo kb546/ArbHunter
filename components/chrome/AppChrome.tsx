@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UsageBanner } from '@/components/UsageBanner';
 import { CommandPalette } from '@/components/chrome/CommandPalette';
-import { BarChart3, CreditCard, FolderKanban, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
+import { BarChart3, CreditCard, FolderKanban, HelpCircle, Home, Menu, Search, Settings, Sparkles, X } from 'lucide-react';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 type NavItem = {
@@ -203,6 +203,12 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                   <span className="flex-1 text-left">Search…</span>
                   <span className="text-xs text-[color:var(--muted-foreground)]">⌘K</span>
                 </button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/support">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Support
+                  </Link>
+                </Button>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/account/settings">Account</Link>
                 </Button>
