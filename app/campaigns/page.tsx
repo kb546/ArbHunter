@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
@@ -7,15 +8,55 @@ import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader, PageShell } from '@/components/layout/PageShell';
 
+function getServiceSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey, { auth: { persistSession: false } });
+}
+
 export default async function CampaignsPage() {
   const session = await getAuthedSessionFromCookies();
   if (!session?.user) redirect('/auth/login?next=/campaigns');
 
   const supabase = createSupabaseAuthedServerClient(session.accessToken);
-  const { data: campaigns } = await supabase
+  let { data: campaigns } = await supabase
     .from('campaigns')
     .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
     .order('created_at', { ascending: false });
+
+  // Self-heal: if legacy campaigns were created with user_id NULL, RLS hides them.
+  // If we have a service role key, safely backfill campaigns.user_id from discoveries.user_id for this user.
+  if ((!campaigns || campaigns.length === 0) && session.user?.id) {
+    const svc = getServiceSupabase();
+    if (svc) {
+      try {
+        const { data: dRows } = await svc
+          .from('discoveries')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .limit(500);
+
+        const discoveryIds = (dRows || []).map((r: any) => r.id).filter(Boolean);
+        if (discoveryIds.length > 0) {
+          await svc
+            .from('campaigns')
+            .update({ user_id: session.user.id })
+            .is('user_id', null)
+            .in('discovery_id', discoveryIds as any);
+        }
+      } catch {
+        // ignore (best-effort)
+      }
+
+      // Re-fetch via authed client (RLS)
+      const refetch = await supabase
+        .from('campaigns')
+        .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
+        .order('created_at', { ascending: false });
+      campaigns = refetch.data as any;
+    }
+  }
 
   return (
     <PageShell>
