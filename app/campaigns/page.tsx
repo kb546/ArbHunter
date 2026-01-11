@@ -20,10 +20,26 @@ export default async function CampaignsPage() {
   if (!session?.user) redirect('/auth/login?next=/campaigns');
 
   const supabase = createSupabaseAuthedServerClient(session.accessToken);
-  let { data: campaigns } = await supabase
-    .from('campaigns')
-    .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
-    .order('created_at', { ascending: false });
+  // NOTE: Some prod DBs may not yet have winner_variation_id (migration 010).
+  // If we select it and it doesn't exist, Supabase returns an error and data is null.
+  // We fallback to a safe select so Campaigns still renders.
+  let campaigns: any[] | null = null;
+  {
+    const primary = await supabase
+      .from('campaigns')
+      .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
+      .order('created_at', { ascending: false });
+
+    if (primary.error && String(primary.error.message || '').toLowerCase().includes('winner_variation_id')) {
+      const fallback = await supabase
+        .from('campaigns')
+        .select('id,name,niche,geo,status,created_at,updated_at')
+        .order('created_at', { ascending: false });
+      campaigns = (fallback.data as any) || null;
+    } else {
+      campaigns = (primary.data as any) || null;
+    }
+  }
 
   // Self-heal: if legacy campaigns were created with user_id NULL, RLS hides them.
   // If we have a service role key, safely backfill campaigns.user_id from discoveries.user_id for this user.
@@ -50,11 +66,19 @@ export default async function CampaignsPage() {
       }
 
       // Re-fetch via authed client (RLS)
-      const refetch = await supabase
+      const refetchPrimary = await supabase
         .from('campaigns')
         .select('id,name,niche,geo,status,created_at,updated_at,winner_variation_id')
         .order('created_at', { ascending: false });
-      campaigns = refetch.data as any;
+      if (refetchPrimary.error && String(refetchPrimary.error.message || '').toLowerCase().includes('winner_variation_id')) {
+        const refetchFallback = await supabase
+          .from('campaigns')
+          .select('id,name,niche,geo,status,created_at,updated_at')
+          .order('created_at', { ascending: false });
+        campaigns = (refetchFallback.data as any) || null;
+      } else {
+        campaigns = (refetchPrimary.data as any) || null;
+      }
     }
   }
 
@@ -94,7 +118,7 @@ export default async function CampaignsPage() {
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-2">
                   <Badge variant="outline">{String(c.status || 'draft').toUpperCase()}</Badge>
-                  {c.winner_variation_id ? <Badge>Winner set</Badge> : null}
+                  {'winner_variation_id' in c && c.winner_variation_id ? <Badge>Winner set</Badge> : null}
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
