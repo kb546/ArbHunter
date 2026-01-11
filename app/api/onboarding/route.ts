@@ -65,6 +65,17 @@ async function getOrCreate(supabase: ReturnType<typeof createSupabaseAuthedServe
     checklist: initial.checklist,
     tour: initial.tour,
   });
+
+  // Best-effort activation analytics: treat first onboarding row creation as "signup completed / first app open".
+  try {
+    await supabase.from('activation_events').insert({
+      user_id: userId,
+      event_name: 'signup_completed',
+      meta: { source: 'onboarding_init' },
+    } as any);
+  } catch {
+    // ignore if table not created yet
+  }
   return initial;
 }
 

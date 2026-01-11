@@ -9,6 +9,7 @@ import { Discovery } from '@/types';
 import { toast } from 'sonner';
 import { openPaddleCheckout } from '@/lib/paddle-client';
 import { PageShell, PageHeader } from '@/components/layout/PageShell';
+import { track } from '@/lib/activation.client';
 
 export default function DiscoveryPage() {
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -74,6 +75,7 @@ export default function DiscoveryPage() {
       if (data.success && data.data) {
         setDiscoveries((prev) => [data.data, ...prev]);
         toast.success(`Discovery complete! Margin Score: ${data.data.margin_score}`);
+        track('discovery_completed', { geo, niche, margin_score: data.data.margin_score });
         // onboarding: mark first discovery done
         fetch('/api/onboarding', {
           method: 'POST',

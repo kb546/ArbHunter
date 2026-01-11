@@ -26,6 +26,7 @@ import type { CreativePreset } from '@/services/creative-presets.service';
 import type { PolicyCheckResult } from '@/services/policy-compliance.service';
 import { COUNTRIES, getCountryDisplayName } from '@/lib/countries';
 import { PageHeader, PageShell } from '@/components/layout/PageShell';
+import { track } from '@/lib/activation.client';
 
 function CreativeStudioContent() {
   const searchParams = useSearchParams();
@@ -109,6 +110,7 @@ function CreativeStudioContent() {
     if (!newId) throw new Error('Campaign created but missing id');
     setCampaignId(newId);
     setCampaignAuto(true);
+    track('campaign_created', { source: 'creative_studio_auto', campaignId: newId, niche, geo });
     return newId;
   }
 
@@ -178,6 +180,7 @@ function CreativeStudioContent() {
       toast.success(`Generated 2 test ads!`, {
         description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
       });
+      track('creatives_generated', { mode: 'quick', modelUsed: data?.metadata?.modelUsed || null, campaignId: ensuredCampaignId });
       // onboarding: mark creative generation done
       fetch('/api/onboarding', {
         method: 'POST',
@@ -321,6 +324,7 @@ function CreativeStudioContent() {
       toast.success(`Generated ${config.batchSize} unique ads!`, {
         description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
       });
+      track('creatives_generated', { mode: 'batch', batchSize: config.batchSize, modelMode: config.model, campaignId: ensuredCampaignId });
 
       console.log('✅ Batch generation complete:', data);
     } catch (error: any) {

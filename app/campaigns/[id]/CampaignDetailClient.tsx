@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Image as ImageIcon, Loader2, Star } from 'lucide-react';
+import { track } from '@/lib/activation.client';
 
 type CopyRow = {
   id: string;
@@ -211,6 +212,8 @@ export function CampaignDetailClient(props: {
         checklist: { export_copy: { done: true, doneAt: new Date().toISOString() } },
       }),
     }).catch(() => {});
+
+    track('export_copy_csv', { campaignId });
   }
 
   return (

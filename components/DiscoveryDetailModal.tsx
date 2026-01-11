@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Sparkles, Target } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { track } from '@/lib/activation.client';
 
 interface DiscoveryDetailModalProps {
   discovery: Discovery | null;
@@ -66,6 +67,7 @@ export function DiscoveryDetailModal({ discovery, open, onClose }: DiscoveryDeta
         campaign: campaignId,
       });
       toast.success('Campaign created', { description: 'Redirecting to Creative Studio…' });
+      track('campaign_created', { source: 'discovery', campaignId });
       // onboarding: mark campaign saving done
       fetch('/api/onboarding', {
         method: 'POST',
