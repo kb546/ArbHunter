@@ -20,7 +20,7 @@ export interface BatchGenerationRequest {
   niche: string;
   geo: string;
   targetAudience?: string;
-  batchSize: 5 | 10 | 20;
+  batchSize: 2 | 5 | 10 | 20;
   model?: 'auto' | 'fast' | 'pro';
   marginScore?: number;
   creativePreset?: CreativePreset; // NEW: Creative direction preset
@@ -62,6 +62,14 @@ export interface BatchGenerationResult {
     };
     batchSize: number;
     modelUsed: string;
+    batches?: Array<{
+      id: string;
+      label: string;
+      scene: string;
+      environment: string;
+      targetPersona: string;
+      strategyIds: string[];
+    }>;
     abTestPairs: Array<[string, string]>;
     aiAgentsUsed: boolean;
     costBreakdown: {
@@ -142,7 +150,7 @@ export async function orchestrateBatchGeneration(
   // STEP 2: AGENT 1 - VARIATION STRATEGIST 🎯
   // ==========================================================================
   console.log(`🎯 STEP 2: Agent 1 - Variation Strategist`);
-  const { strategies, cost: agent1Cost } = await generateVariationStrategies({
+  const { strategies, batches, cost: agent1Cost } = await generateVariationStrategies({
     niche,
     geo,
     campaignType,
@@ -160,41 +168,40 @@ export async function orchestrateBatchGeneration(
   // ==========================================================================
   // STEP 3: AGENT 2 - COPYWRITING BATCH ✍️
   // ==========================================================================
-  console.log(`✍️  STEP 3: Agent 2 - Copywriting Batch`);
-  const { copies, cost: agent2Cost } = await generateCopyBatch({
-    niche,
-    geo,
-    campaignType,
-    targetAudience,
-    brandName,
-    strategies,
-    preset: selectedPreset,
-    presetConfig,
-  });
+  console.log(`✍️  STEP 3/4: Copywriting + Visual Design (parallel)`);
+  const [copyRes, designRes] = await Promise.all([
+    generateCopyBatch({
+      niche,
+      geo,
+      campaignType,
+      targetAudience,
+      brandName,
+      strategies,
+      preset: selectedPreset,
+      presetConfig,
+    }),
+    generateVisualDesigns({
+      niche,
+      geo,
+      campaignType,
+      brandName,
+      brandColors,
+      brandHeroProduct: detectedBrand?.heroProduct,
+      strategies,
+      // NOTE: Visual design can run without copy (it uses strategy + batch context).
+      // Prompt engineering later merges final copy + design.
+      copies: [],
+      preset: selectedPreset,
+      presetConfig,
+    }),
+  ]);
+  const { copies, cost: agent2Cost } = copyRes;
+  const { designs, cost: agent3Cost } = designRes;
   totalAICost += agent2Cost;
   costBreakdown.agent2 = agent2Cost;
-  console.log(`✅ ${copies.length} unique copy variations written`);
-  console.log(``);
-
-  // ==========================================================================
-  // STEP 4: AGENT 3 - VISUAL DESIGNER 🎨
-  // ==========================================================================
-  console.log(`🎨 STEP 4: Agent 3 - Visual Designer`);
-  const { designs, cost: agent3Cost } = await generateVisualDesigns({
-    niche,
-    geo,
-    campaignType,
-    brandName,
-    brandColors,
-    brandHeroProduct: detectedBrand?.heroProduct,
-    strategies,
-    copies,
-    preset: selectedPreset,
-    presetConfig,
-  });
   totalAICost += agent3Cost;
   costBreakdown.agent3 = agent3Cost;
-  console.log(`✅ ${designs.length} unique visual designs created`);
+  console.log(`✅ ${copies.length} copy variations + ${designs.length} visual designs created`);
   console.log(``);
 
   // ==========================================================================
@@ -370,6 +377,7 @@ export async function orchestrateBatchGeneration(
       },
       batchSize,
       modelUsed: selectedModel,
+      batches,
       abTestPairs: abTestPairsIds,
       aiAgentsUsed: true,
       costBreakdown,

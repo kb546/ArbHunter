@@ -108,6 +108,10 @@ CAMPAIGN CONTEXT:
 VARIATION STRATEGIES (from Agent 1):
 ${strategies.map((s, idx) => `
 ${idx + 1}. ${s.id}
+   - Batch: ${s.batchLabel || s.batchId || 'N/A'}
+   - Scene: ${s.scene || 'N/A'}
+   - Environment: ${s.environment || 'N/A'}
+   - Target Persona: ${s.targetPersona || 'N/A'}
    - Visual Style: ${s.visualStyle}
    - Headline Approach: ${s.headlineApproach}
    - CTA Type: ${s.ctaType}

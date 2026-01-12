@@ -124,6 +124,10 @@ ${strategies.map((s, idx) => `
 VARIATION ${idx + 1}:
 
 STRATEGY (Agent 1):
+- Batch: ${s.batchLabel || s.batchId || 'N/A'}
+- Scene: ${s.scene || 'N/A'}
+- Environment: ${s.environment || 'N/A'}
+- Target Persona: ${s.targetPersona || 'N/A'}
 - Visual Style: ${s.visualStyle}
 - Headline Approach: ${s.headlineApproach}
 - CTA Type: ${s.ctaType}

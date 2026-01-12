@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (![5, 10, 20].includes(batchSize)) {
+    if (![2, 5, 10, 20].includes(batchSize)) {
       return NextResponse.json(
-        { error: 'Batch size must be 5, 10, or 20' },
+        { error: 'Batch size must be 2, 5, 10, or 20' },
         { status: 400 }
       );
     }

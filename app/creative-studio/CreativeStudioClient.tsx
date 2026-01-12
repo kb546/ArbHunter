@@ -12,12 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Sparkles, Loader2, Info, Zap, Layers } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { ResultsGrid } from '@/components/creative-studio-v3/ResultsGrid';
 import { BatchConfigCard, type BatchConfig } from '@/components/creative-studio-v3/BatchConfigCard';
 import { BatchProgressIndicator } from '@/components/creative-studio-v3/BatchProgressIndicator';
 import { BatchResultsGrid } from '@/components/creative-studio-v3/BatchResultsGrid';
@@ -35,18 +33,13 @@ function CreativeStudioContent() {
   const [niche, setNiche] = useState('');
   const [geo, setGeo] = useState('US');
   const [targetAudience, setTargetAudience] = useState('');
-  const [model, setModel] = useState<'auto' | 'fast' | 'pro'>('auto');
   const [creativePreset, setCreativePreset] = useState<CreativePreset>('premium-minimal');
-  
-  // Mode state (quick vs batch)
-  const [mode, setMode] = useState<'quick' | 'batch'>('quick');
-  const [batchSize, setBatchSize] = useState<5 | 10 | 20>(10);
+  const [batchSize, setBatchSize] = useState<2 | 5 | 10 | 20>(10);
   
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAds, setGeneratedAds] = useState<GeneratedCreativeV3[]>([]);
   const [batchMetadata, setBatchMetadata] = useState<any>(null);
-  const [qcMeta, setQcMeta] = useState<{ attempts: number; bestVariationId?: string | null } | null>(null);
   const [policyMeta, setPolicyMeta] = useState<PolicyCheckResult | null>(null);
   
   // Discovery metadata (for smart routing)
@@ -114,90 +107,8 @@ function CreativeStudioContent() {
     return newId;
   }
 
-  const handleGenerate = async () => {
-    if (!niche || !geo) {
-      toast.error('Please enter niche and select GEO');
-      return;
-    }
-
-    setIsGenerating(true);
-    setGeneratedAds([]);
-    setQcMeta(null);
-    setPolicyMeta(null);
-
-    try {
-      const ensuredCampaignId = await ensureDraftCampaign();
-      console.log('\n🎨 Generating 2 test ads...');
-      console.log(`   Niche: ${niche}`);
-      console.log(`   GEO: ${geo}`);
-      console.log(`   Margin Score: ${marginScore || 'unknown'}`);
-      console.log(`   Model: ${model}`);
-
-      const response = await fetch('/api/v3/generate-creatives', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          niche,
-          geo,
-          targetAudience,
-          model,
-          marginScore,
-          variations: 2, // Always 2 for A/B testing
-          campaignId: ensuredCampaignId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 402) {
-          toast.error('Upgrade required to generate creatives', {
-            description: 'Your subscription is inactive. Redirecting to pricing…',
-          });
-          window.location.href = '/pricing';
-          return;
-        }
-        if (response.status === 429) {
-          toast.error('Usage limit reached', {
-            description: data.error || 'You have reached your monthly creative limit. Upgrade to continue.',
-            action: {
-              label: 'View plans',
-              onClick: () => (window.location.href = '/account/billing'),
-            } as any,
-          });
-          return;
-        }
-        throw new Error(data.error || 'Generation failed');
-      }
-
-      setGeneratedAds(data.creatives);
-      if (data?.campaignId && typeof data.campaignId === 'string') {
-        setCampaignId(data.campaignId);
-      }
-      setQcMeta(data?.metadata?.qc ? { attempts: data.metadata.qc.attempts, bestVariationId: data.metadata.qc.bestVariationId } : null);
-      setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
-      
-      toast.success(`Generated 2 test ads!`, {
-        description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • Model: ${data.metadata.modelUsed}`,
-      });
-      track('creatives_generated', { mode: 'quick', modelUsed: data?.metadata?.modelUsed || null, campaignId: ensuredCampaignId });
-      // onboarding: mark creative generation done
-      fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          checklist: { generate_creatives: { done: true, doneAt: new Date().toISOString() } },
-        }),
-      }).catch(() => {});
-
-      console.log('✅ Generation complete:', data);
-    } catch (error: any) {
-      console.error('❌ Generation error:', error);
-      toast.error(error.message || 'Failed to generate ads');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  // NOTE: We intentionally route ALL generation through the batch pipeline (including 2 ads)
+  // to guarantee true variety (strategist → copy → visual → prompts → images → QC).
 
   const createCampaignAndSave = async () => {
     if (!generatedAds.length) return;
@@ -245,6 +156,7 @@ function CreativeStudioContent() {
     setIsGenerating(true);
     setGeneratedAds([]);
     setBatchSize(config.batchSize);
+    setBatchMetadata(null);
     setPolicyMeta(null);
 
     try {
@@ -321,7 +233,7 @@ function CreativeStudioContent() {
       });
       setPolicyMeta((data?.metadata?.policy as PolicyCheckResult) || null);
       
-      toast.success(`Generated ${config.batchSize} unique ads!`, {
+      toast.success(`Generated ${config.batchSize} ads!`, {
         description: `Saved to campaign • Time: ${(data.totalTime / 1000).toFixed(1)}s • ${data.metadata.aiAgentsUsed ? '5 AI Agents Used' : 'Templates Used'}`,
       });
       track('creatives_generated', { mode: 'batch', batchSize: config.batchSize, modelMode: config.model, campaignId: ensuredCampaignId });
@@ -339,7 +251,7 @@ function CreativeStudioContent() {
     <PageShell>
       <PageHeader
         title="Creative Studio"
-        description="Generate 2 test ads for your discovery."
+        description="Generate 2–20 ads via a multi-agent pipeline for real variety."
         right={
           <Button asChild variant="outline">
             <Link href="/discovery">Back to Discovery</Link>
@@ -469,117 +381,29 @@ function CreativeStudioContent() {
                 </p>
               </div>
 
-              {/* Mode Toggle */}
-              <div className="pt-4">
-                <div className="flex gap-2 p-1 bg-muted rounded-lg mb-6">
-                  <button
-                    onClick={() => setMode('quick')}
-                    disabled={isGenerating}
-                    className={`flex-1 px-4 py-3 rounded-md font-semibold text-sm transition-all ${
-                      mode === 'quick'
-                        ? 'bg-card shadow-sm text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <Zap className="w-4 h-4" />
-                      Quick (2 ads)
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('batch')}
-                    disabled={isGenerating}
-                    className={`flex-1 px-4 py-3 rounded-md font-semibold text-sm transition-all ${
-                      mode === 'batch'
-                        ? 'bg-card shadow-sm text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <Layers className="w-4 h-4" />
-                      Batch (5-20 ads)
-                      <Badge variant="outline" className="bg-primary/10 text-[color:var(--primary)] border-primary/25 text-xs">
-                        AI Agents
-                      </Badge>
-                    </div>
-                  </button>
-                </div>
-
-                {/* Quick Mode */}
-                {mode === 'quick' && (
-                  <>
-                    <Button
-                      size="lg"
-                      onClick={handleGenerate}
-                      disabled={isGenerating || !niche || !geo}
-                      className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
-                      data-tour="cs-generate"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Generating 2 test ads...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="mr-2 h-5 w-5" />
-                          Generate 2 Test Ads
-                        </>
-                      )}
-                    </Button>
-
-                    {/* Time Info */}
-                    {!isGenerating && (
-                      <div className="mt-3 text-center">
-                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                          <Info className="h-4 w-4" />
-                          <span>
-                            Time: ~20s • Always 2 variations for A/B testing
-                          </span>
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Batch Mode */}
-                {mode === 'batch' && (
-                  <BatchConfigCard
-                    niche={niche}
-                    geo={geo}
-                    targetAudience={targetAudience}
-                    onGenerate={handleBatchGenerate}
-                    isGenerating={isGenerating}
-                  />
-                )}
+              {/* Generation (single pipeline: 2–20 ads) */}
+              <div className="pt-4" data-tour="cs-generate">
+                <BatchConfigCard
+                  niche={niche}
+                  geo={geo}
+                  targetAudience={targetAudience}
+                  onGenerate={handleBatchGenerate}
+                  isGenerating={isGenerating}
+                />
+                {!isGenerating ? (
+                  <div className="mt-3 text-center">
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                      <Info className="h-4 w-4" />
+                      <span>Even 2 ads are 2 different strategies (visual + copy + prompts + images).</span>
+                    </p>
+                  </div>
+                ) : null}
               </div>
-
-              {/* Model selection (Quick only) */}
-              {mode === 'quick' ? (
-                <div className="pt-2">
-                  <Label className="text-sm font-medium mb-2 block">Model</Label>
-                  <Select value={model} onValueChange={(v: any) => setModel(v)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">Auto (recommended)</SelectItem>
-                      <SelectItem value="pro">Gemini Pro (best quality)</SelectItem>
-                      <SelectItem value="fast">Gemini Fast (quick testing)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {model === 'auto' && 'Auto-selects quality based on opportunity strength.'}
-                    {model === 'pro' && 'Highest quality output.'}
-                    {model === 'fast' && 'Fastest turnaround for testing.'}
-                  </p>
-                </div>
-              ) : null}
             </div>
           </Card>
 
           {/* Batch Progress Indicator (stays visible once completed) */}
-          {mode === 'batch' && (isGenerating || (generatedAds.length > 0 && batchMetadata)) && (
+          {(isGenerating || (generatedAds.length > 0 && batchMetadata)) && (
             <BatchProgressIndicator
               isGenerating={isGenerating}
               batchSize={batchSize}
@@ -610,30 +434,7 @@ function CreativeStudioContent() {
                 </div>
               </Card>
 
-              {mode === 'batch' && batchMetadata ? (
-                <BatchResultsGrid
-                  creatives={generatedAds}
-                  batchMetadata={batchMetadata}
-                  policy={policyMeta}
-                />
-              ) : (
-                <ResultsGrid
-                  creatives={generatedAds}
-                  brandKit={{
-                    name: niche.split(' ')[0], // Simple brand name extraction
-                    colors: { primary: '#DFFF00', secondary: '#2B2F36' }, // Theme default
-                  }}
-                  campaignData={{
-                    name: `${niche} - ${geo}`,
-                    type: 'recruitment',
-                    niche,
-                    geo,
-                    targetAudience,
-                  }}
-                  qcMeta={qcMeta}
-                  policy={policyMeta}
-                />
-              )}
+              {batchMetadata ? <BatchResultsGrid creatives={generatedAds} batchMetadata={batchMetadata} policy={policyMeta} /> : null}
             </>
           )}
 
@@ -645,20 +446,19 @@ function CreativeStudioContent() {
                   <Sparkles className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  Ready to Generate Test Ads
+                  Ready to Generate Ads
                 </h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Fill in the campaign details above and click "Generate 2 Test Ads" to create
-                  high-quality ad creatives for your discovery.
+                  Enter a keyword (e.g., &quot;KFC Careers&quot;) and generate 2–20 ads. Each ad is designed to be strategically different.
                 </p>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
-                    <p className="text-2xl font-bold text-[color:var(--primary)]">2</p>
-                    <p className="text-xs text-muted-foreground mt-1">Variations</p>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">2–20</p>
+                    <p className="text-xs text-muted-foreground mt-1">Ads</p>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
-                    <p className="text-2xl font-bold text-[color:var(--primary)]">~20s</p>
-                    <p className="text-xs text-muted-foreground mt-1">Generation</p>
+                    <p className="text-2xl font-bold text-[color:var(--primary)]">5</p>
+                    <p className="text-xs text-muted-foreground mt-1">AI agents</p>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
                     <p className="text-2xl font-bold text-[color:var(--primary)]">A/B</p>

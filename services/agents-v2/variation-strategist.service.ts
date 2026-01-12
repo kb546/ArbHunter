@@ -54,6 +54,12 @@ export interface VariationStrategy {
   layout: 'centered' | 'split' | 'asymmetric' | 'grid' | 'hero' | 'stacked';
   mood: 'professional' | 'energetic' | 'calm' | 'exciting' | 'trustworthy' | 'official' | 'friendly';
   reasoning: string;
+  // Batch grouping context (1–3 creatives per batch)
+  batchId?: string;
+  batchLabel?: string;
+  scene?: string;
+  environment?: string;
+  targetPersona?: string;
 }
 
 import type { CreativePreset, CreativePresetConfig } from '../creative-presets.service';
@@ -71,6 +77,14 @@ export interface VariationStrategyRequest {
 
 export interface VariationStrategyResult {
   strategies: VariationStrategy[];
+  batches: Array<{
+    id: string;
+    label: string;
+    scene: string;
+    environment: string;
+    targetPersona: string;
+    strategyIds: string[];
+  }>;
   cost: number;
 }
 
@@ -93,20 +107,31 @@ CRITICAL REQUIREMENTS:
 4. Consider cultural nuances for the target GEO
 5. Align with campaign objectives
 
-OUTPUT FORMAT (JSON array):
-[
-  {
-    "id": "strategy-1",
-    "visualStyle": "minimal",
-    "headlineApproach": "benefit",
-    "ctaType": "direct",
-    "colorScheme": "brand",
-    "layout": "centered",
-    "mood": "professional",
-    "reasoning": "Clean, professional approach emphasizing key benefit. Safe baseline variation."
-  },
-  // ... more strategies
-]`;
+OUTPUT FORMAT (JSON object):
+{
+  "batches": [
+    {
+      "id": "batch-1",
+      "label": "Batch 1: Workplace culture",
+      "scene": "What is happening in the ad (short)",
+      "environment": "Where the ad is set (short)",
+      "targetPersona": "Who this batch targets (short)",
+      "strategies": [
+        {
+          "id": "strategy-1",
+          "visualStyle": "minimal",
+          "visualCategory": "product",
+          "headlineApproach": "benefit",
+          "ctaType": "direct",
+          "colorScheme": "brand",
+          "layout": "centered",
+          "mood": "professional",
+          "reasoning": "Why this strategy should win and what it tests"
+        }
+      ]
+    }
+  ]
+}`;
 
 /**
  * Generate AI-powered variation strategies
@@ -134,12 +159,22 @@ CAMPAIGN CONTEXT:
 - Required Variations: ${batchSize}
 
 YOUR TASK:
-Plan ${batchSize} UNIQUE ad variation strategies. Each must:
+Plan ${batchSize} UNIQUE ad strategies, grouped into batches. Each batch must:
+1. Represent a distinct creative direction (scene + environment + target persona)
+2. Contain 1–3 strategies (creatives) that share that direction but still vary
+
+Each STRATEGY must:
 1. Test a different creative hypothesis
 2. Be distinctly different from others
 3. Cover diverse approaches (visual style, messaging, layout)
 4. Consider ${geo} market preferences
 5. Align with ${campaignType} campaign objectives
+
+HARD RULES:
+- Total strategies across all batches MUST equal ${batchSize}
+- Each batch must have 1–3 strategies (no more)
+- Each strategy MUST include a visualCategory
+- Include batch fields: label, scene, environment, targetPersona
 
 STRATEGY MIX GUIDELINES:
 - ${Math.ceil(batchSize * 0.4)} variations: Safe, proven approaches (baseline)
@@ -186,7 +221,7 @@ CREDIT CARD-SPECIFIC:
 - Clear CTA (apply now, check offers)
 ` : ''}
 
-OUTPUT: JSON array of ${batchSize} strategies with clear reasoning for each.
+OUTPUT: JSON object with "batches" array containing the grouped strategies.
 `;
 
   try {
@@ -204,13 +239,112 @@ OUTPUT: JSON array of ${batchSize} strategies with clear reasoning for each.
     const content = completion.choices[0].message.content?.trim() || '{}';
     const parsed = JSON.parse(content);
 
-    const strategies: VariationStrategy[] = Array.isArray(parsed.strategies)
-      ? parsed.strategies
-      : parsed.variations || [];
+    const batchesRaw = Array.isArray(parsed?.batches) ? parsed.batches : [];
+    const flattened: VariationStrategy[] = [];
+    const batches: VariationStrategyResult['batches'] = [];
 
-    if (strategies.length === 0) {
-      throw new Error('No strategies returned from AI');
+    if (batchesRaw.length > 0) {
+      for (const b of batchesRaw) {
+        const bid = String(b?.id || '');
+        const label = String(b?.label || `Batch ${batches.length + 1}`);
+        const scene = String(b?.scene || '');
+        const environment = String(b?.environment || '');
+        const targetPersona = String(b?.targetPersona || '');
+        const strategiesRaw = Array.isArray(b?.strategies) ? b.strategies : [];
+
+        const ids: string[] = [];
+        for (const s of strategiesRaw) {
+          const sid = String(s?.id || `strategy-${flattened.length + 1}`);
+          ids.push(sid);
+          flattened.push({
+            id: sid,
+            visualStyle: s.visualStyle,
+            visualCategory: s.visualCategory,
+            headlineApproach: s.headlineApproach,
+            ctaType: s.ctaType,
+            colorScheme: s.colorScheme,
+            layout: s.layout,
+            mood: s.mood,
+            reasoning: s.reasoning,
+            batchId: bid || `batch-${batches.length + 1}`,
+            batchLabel: label,
+            scene,
+            environment,
+            targetPersona,
+          } as VariationStrategy);
+        }
+
+        if (ids.length > 0) {
+          batches.push({
+            id: bid || `batch-${batches.length + 1}`,
+            label,
+            scene,
+            environment,
+            targetPersona,
+            strategyIds: ids,
+          });
+        }
+      }
+    } else {
+      // Back-compat: accept older strategist output that returns a flat strategies array.
+      const legacy: any[] = Array.isArray(parsed?.strategies)
+        ? parsed.strategies
+        : Array.isArray(parsed?.variations)
+          ? parsed.variations
+          : [];
+
+      if (legacy.length > 0) {
+        const chunkSizes = [2, 1, 3];
+        let cursor = 0;
+        let bIdx = 0;
+        while (cursor < legacy.length && flattened.length < batchSize) {
+          const size = Math.min(chunkSizes[bIdx % chunkSizes.length], legacy.length - cursor, batchSize - flattened.length);
+          const slice = legacy.slice(cursor, cursor + size);
+          const ctx = getFallbackBatchContext(campaignType, bIdx);
+          const batchId = `batch-${bIdx + 1}`;
+          const label = `Batch ${bIdx + 1}: ${ctx.label}`;
+          const ids: string[] = [];
+          for (const s of slice) {
+            const sid = String(s?.id || `strategy-${flattened.length + 1}`);
+            ids.push(sid);
+            flattened.push({
+              id: sid,
+              visualStyle: s.visualStyle,
+              visualCategory: s.visualCategory,
+              headlineApproach: s.headlineApproach,
+              ctaType: s.ctaType,
+              colorScheme: s.colorScheme,
+              layout: s.layout,
+              mood: s.mood,
+              reasoning: s.reasoning,
+              batchId,
+              batchLabel: label,
+              scene: ctx.scene,
+              environment: ctx.environment,
+              targetPersona: ctx.targetPersona,
+            } as VariationStrategy);
+          }
+          batches.push({
+            id: batchId,
+            label,
+            scene: ctx.scene,
+            environment: ctx.environment,
+            targetPersona: ctx.targetPersona,
+            strategyIds: ids,
+          });
+          cursor += size;
+          bIdx += 1;
+        }
+      }
     }
+
+    const strategies = flattened.slice(0, batchSize);
+    if (strategies.length === 0) throw new Error('No strategies returned from AI');
+    // If the model returned too many, trim batches accordingly.
+    const selectedIds = new Set(strategies.map(s => s.id));
+    const normalizedBatches = batches
+      .map(b => ({ ...b, strategyIds: b.strategyIds.filter(id => selectedIds.has(id)) }))
+      .filter(b => b.strategyIds.length > 0);
 
     const cost = calculateOpenAICost(
       completion.usage?.prompt_tokens || 0,
@@ -222,7 +356,8 @@ OUTPUT: JSON array of ${batchSize} strategies with clear reasoning for each.
     console.log(`💰 Cost: $${cost.toFixed(4)}`);
 
     return {
-      strategies: strategies.slice(0, batchSize), // Ensure exact count
+      strategies,
+      batches: normalizedBatches,
       cost,
     };
   } catch (error: any) {
@@ -263,10 +398,103 @@ function generateFallbackStrategies(request: VariationStrategyRequest): Variatio
     reasoning: `Template strategy ${idx + 1}: ${categoryDistribution[idx] || 'product'} visual with ${visualStyles[idx % visualStyles.length]} style`,
   }));
 
+  const batches: VariationStrategyResult['batches'] = [];
+  // Chunk into batches of 1–3 strategies
+  const chunkSizes = [2, 1, 3]; // slight variety
+  let cursor = 0;
+  let bIdx = 0;
+  while (cursor < strategies.length) {
+    const size = Math.min(chunkSizes[bIdx % chunkSizes.length], strategies.length - cursor);
+    const slice = strategies.slice(cursor, cursor + size);
+    const ctx = getFallbackBatchContext(campaignType, bIdx);
+    const batchId = `batch-${bIdx + 1}`;
+    const label = `Batch ${bIdx + 1}: ${ctx.label}`;
+    for (const s of slice) {
+      s.batchId = batchId;
+      s.batchLabel = label;
+      s.scene = ctx.scene;
+      s.environment = ctx.environment;
+      s.targetPersona = ctx.targetPersona;
+    }
+    batches.push({
+      id: batchId,
+      label,
+      scene: ctx.scene,
+      environment: ctx.environment,
+      targetPersona: ctx.targetPersona,
+      strategyIds: slice.map(s => s.id),
+    });
+    cursor += size;
+    bIdx += 1;
+  }
+
   return {
     strategies,
+    batches,
     cost: 0,
   };
+}
+
+function getFallbackBatchContext(campaignType: CampaignType, idx: number): { label: string; scene: string; environment: string; targetPersona: string } {
+  const contexts: Record<CampaignType, Array<{ label: string; scene: string; environment: string; targetPersona: string }>> = {
+    recruitment: [
+      { label: 'Benefits & pay', scene: 'Headline-driven benefits spotlight', environment: 'Clean branded background', targetPersona: 'Urgent job seeker' },
+      { label: 'Workplace culture', scene: 'Friendly team culture vibe (no faces required)', environment: 'On-brand workplace setting', targetPersona: 'Culture-first candidate' },
+      { label: 'Fast application', scene: 'Low-friction “apply in minutes” message', environment: 'Minimal UI/graphic layout', targetPersona: 'Busy applicant' },
+    ],
+    free_sample: [
+      { label: 'Product hero', scene: 'Free sample offer with product as hero', environment: 'Studio product setup', targetPersona: 'Freebie hunter' },
+      { label: 'Limited supply', scene: 'Urgency-driven claim message', environment: 'Clean high-contrast layout', targetPersona: 'Impulse clicker' },
+      { label: 'Value proof', scene: 'Benefit/value highlight', environment: 'Premium minimal aesthetic', targetPersona: 'Skeptical but curious' },
+    ],
+    government_program: [
+      { label: 'Eligibility check', scene: 'Simple eligibility CTA', environment: 'Official, calm layout', targetPersona: 'Unsure if eligible' },
+      { label: 'Benefits amount', scene: 'Clear benefit highlight', environment: 'Trust-first design', targetPersona: 'Value-driven applicant' },
+      { label: 'Trust & legitimacy', scene: 'Legit program reassurance', environment: 'Official document-inspired style', targetPersona: 'Scam-sensitive user' },
+    ],
+    credit_card: [
+      { label: 'Primary offer', scene: 'Core benefit lead (APR/cashback)', environment: 'Premium finance aesthetic', targetPersona: 'Value optimizer' },
+      { label: 'Trust & security', scene: 'Trust-building reassurance', environment: 'Minimal, clean design', targetPersona: 'Risk-averse applicant' },
+      { label: 'Comparison angle', scene: 'Before/after savings angle', environment: 'Data-led layout', targetPersona: 'Analytical shopper' },
+    ],
+    lead_gen: [
+      { label: 'Instant quote', scene: 'Low-friction CTA', environment: 'Clean CTA-focused layout', targetPersona: 'High-intent shopper' },
+      { label: 'Social proof', scene: 'Testimonial-led pitch', environment: 'Trustworthy layout', targetPersona: 'Skeptical prospect' },
+      { label: 'Value comparison', scene: 'Savings/benefit comparison', environment: 'Data-led visual', targetPersona: 'Price-sensitive user' },
+    ],
+    trial_offer: [
+      { label: 'Free trial', scene: 'Try-before-you-buy message', environment: 'SaaS/product aesthetic', targetPersona: 'Curious evaluator' },
+      { label: 'Feature highlight', scene: 'Single key feature spotlight', environment: 'Minimal product layout', targetPersona: 'Feature-driven shopper' },
+      { label: 'Urgency', scene: 'Limited-time trial hook', environment: 'Bold CTA layout', targetPersona: 'Impulse tester' },
+    ],
+    sweepstakes: [
+      { label: 'Prize hero', scene: 'Prize-focused headline', environment: 'Clean celebratory layout', targetPersona: 'Contest entrant' },
+      { label: 'Enter fast', scene: 'Low-friction entry CTA', environment: 'Minimal UI/graphic layout', targetPersona: 'Mobile scroller' },
+      { label: 'Urgency', scene: 'Limited-time entry hook', environment: 'High-contrast urgency style', targetPersona: 'Impulse clicker' },
+    ],
+    discount_sale: [
+      { label: 'Big discount', scene: 'Offer-first headline', environment: 'Bold sale layout', targetPersona: 'Deal seeker' },
+      { label: 'Limited time', scene: 'Urgency-first hook', environment: 'High-contrast layout', targetPersona: 'Impulse buyer' },
+      { label: 'Value proof', scene: 'Comparison/value pitch', environment: 'Clean product-led design', targetPersona: 'Value optimizer' },
+    ],
+    product_launch: [
+      { label: 'New arrival', scene: 'New product hook', environment: 'Premium minimal aesthetic', targetPersona: 'Early adopter' },
+      { label: 'Key benefit', scene: 'Single benefit spotlight', environment: 'Clean product-led design', targetPersona: 'Problem-aware buyer' },
+      { label: 'Brand story', scene: 'Brand-led trust', environment: 'Editorial lifestyle', targetPersona: 'Brand-first shopper' },
+    ],
+    education: [
+      { label: 'Career upgrade', scene: 'Outcome-focused promise', environment: 'Clean optimistic layout', targetPersona: 'Career switcher' },
+      { label: 'Scholarship/aid', scene: 'Affordability hook', environment: 'Trust-first design', targetPersona: 'Budget-conscious learner' },
+      { label: 'Fast start', scene: 'Start-now CTA', environment: 'Minimal CTA-focused layout', targetPersona: 'Busy learner' },
+    ],
+    delivery_gig: [
+      { label: 'Flexibility', scene: 'Set-your-own-hours hook', environment: 'Clean branded layout', targetPersona: 'Side-hustler' },
+      { label: 'Earnings', scene: 'Pay-focused hook', environment: 'Bold benefits layout', targetPersona: 'Income seeker' },
+      { label: 'Fast onboarding', scene: 'Start-today CTA', environment: 'Minimal CTA-focused layout', targetPersona: 'Urgent applicant' },
+    ],
+  };
+  const list = contexts[campaignType] || contexts.recruitment;
+  return list[idx % list.length];
 }
 
 /**

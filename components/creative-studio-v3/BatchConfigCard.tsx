@@ -15,12 +15,12 @@ interface BatchConfigCardProps {
 }
 
 export interface BatchConfig {
-  batchSize: 5 | 10 | 20;
+  batchSize: 2 | 5 | 10 | 20;
   model: 'auto' | 'fast' | 'pro';
 }
 
 export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGenerating }: BatchConfigCardProps) {
-  const [batchSize, setBatchSize] = useState<5 | 10 | 20>(10);
+  const [batchSize, setBatchSize] = useState<2 | 5 | 10 | 20>(10);
   const [model, setModel] = useState<'auto' | 'fast' | 'pro'>('auto');
 
   const handleGenerate = () => {
@@ -36,16 +36,31 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
           Batch generation
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Generate 5–20 unique variations using 5 AI agents.
+          Generate 2–20 unique ads using the full multi-agent pipeline (strategist → copy → visual → prompts → images → QC).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-6">
         {/* Batch Size Selector */}
         <div>
           <label className="text-sm font-semibold text-foreground mb-3 block">
-            Batch Size
+            Ad Count
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button
+              onClick={() => setBatchSize(2)}
+              disabled={isGenerating}
+              className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                batchSize === 2
+                  ? 'border-[color:var(--primary)] bg-primary/10 shadow-md'
+                  : 'border-border hover:border-[color:var(--primary)]/50 hover:bg-muted/30'
+              } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <div className="text-2xl font-bold text-foreground">2</div>
+              <div className="text-xs text-muted-foreground mt-1">ads</div>
+              <Badge variant="outline" className="mt-2 text-xs bg-primary/10 text-[color:var(--primary)] border-primary/25">
+                Quick test
+              </Badge>
+            </button>
             <button
               onClick={() => setBatchSize(5)}
               disabled={isGenerating}
@@ -58,7 +73,7 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
               <div className="text-2xl font-bold text-foreground">5</div>
               <div className="text-xs text-muted-foreground mt-1">ads</div>
               <Badge variant="outline" className="mt-2 text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20">
-                Quick
+                Fast
               </Badge>
             </button>
 
@@ -156,12 +171,12 @@ export function BatchConfigCard({ niche, geo, targetAudience, onGenerate, isGene
           {isGenerating ? (
             <>
               <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-              Generating {batchSize} Unique Ads...
+              Generating {batchSize} Ads...
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5 mr-3" />
-              Generate {batchSize} Unique Ads
+              Generate {batchSize} Ads
             </>
           )}
         </Button>
