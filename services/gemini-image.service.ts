@@ -215,7 +215,7 @@ export function buildGeminiPrompt(params: {
   const base = `IMPORTANT QUALITY RULES:
 - Make the creative highly relevant to: "${niche}" (${geo})
 - Do NOT include random/unrelated props or confusing objects.
-- Do NOT default to uniforms/aprons/hangers unless the campaign is explicitly about hiring/jobs.
+- Do NOT default to uniforms/hangers unless the campaign is explicitly about hiring/jobs.
 - Avoid purple/blue default branding when brand colors are unknown. Prefer clean neutral backgrounds and a single accent color.
 - Text must be readable and minimal (mobile-first). Keep it simple.`;
 
@@ -270,7 +270,7 @@ LAYOUT:
 - Make the product/sample the clear hero (packaging, bottle, box, kit)
 - Show "FREE SAMPLE" clearly (simple text, no spammy style)
 - Use clean background and a single accent
-- Avoid uniforms/aprons/hiring cues
+- Avoid uniforms/hiring cues
 
 STYLE:
 - Premium product photography or clean lifestyle shot
@@ -314,7 +314,7 @@ TOPIC:
 LAYOUT:
 - Informational, calm, trustworthy
 - Avoid sensational imagery
-- No uniforms/aprons/hiring visuals
+- No uniforms/hiring visuals
 
 AUDIENCE: ${targetAudience || 'Eligible applicants'}
 
@@ -350,7 +350,7 @@ TOPIC:
 
 LAYOUT:
 - Trust-first, simple, clear CTA
-- Avoid uniforms/aprons/hiring cues unless the niche is a job
+- Avoid uniforms/hiring cues unless the niche is a job
 
 AUDIENCE: ${targetAudience || 'Prospects'}
 
@@ -432,7 +432,7 @@ BRAND:
 
 LAYOUT:
 - Premium, clean, product-first
-- Avoid uniforms/aprons/hiring cues
+- Avoid uniforms/hiring cues
 
 AUDIENCE: ${targetAudience || 'Customers'}
 

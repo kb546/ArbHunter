@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       secondary: '#2B2F36',
     };
 
-    // Build 2 prompt variants to force diversity (prevents "uniform/apron everywhere")
+    // Build 2 prompt variants to force diversity (prevents repetitive uniform-centric visuals)
     function variationHintsFor(type: string): string[] {
       const t = String(type);
       if (t === 'recruitment') {

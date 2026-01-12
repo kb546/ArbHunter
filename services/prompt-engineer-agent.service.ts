@@ -118,7 +118,7 @@ BACKGROUND: Bright white (#FFFFFF) with soft studio lighting, clean and minimal.
 
 HEADLINE (Top Center): Bold, extra-large, all-caps text in brand red: '${brand ? `${brand.toUpperCase()} IS HIRING NOW` : 'NOW HIRING'}' - Make this the most prominent element.
 
-VISUAL CENTER: ${brand ? `${brand} branded uniform (shirt/apron) hanging on a natural wooden hanger, centered in frame, with official ${brand} logo clearly visible. Use authentic ${brand} brand colors.` : 'Professional workplace imagery relevant to the role.'}
+VISUAL CENTER: ${brand ? `${brand} branded uniform (shirt/polo + cap/hat + name tag) neatly displayed (folded or on a torso mannequin), centered in frame, with official ${brand} logo clearly visible. Use authentic ${brand} brand colors. Avoid restaurant-style accessories.` : 'Professional workplace imagery relevant to the role.'}
 
 SUBHEADLINE (Below visual): Medium gray text (#333333): 'Weekly Pay • Start This Week • No Experience Needed'
 

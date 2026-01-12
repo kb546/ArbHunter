@@ -106,9 +106,9 @@ const BRAND_DATABASE: Record<string, BrandData> = {
       visualDescription: 'Iconic red and white striped KFC bucket filled with golden, crispy fried chicken pieces, steam rising, appetizing close-up, studio lighting',
     },
     uniform: {
-      description: 'Red KFC-branded polo shirt or button-up with prominent KFC logo on chest, black or dark pants, red apron with KFC logo, name tag',
+      description: 'Red KFC-branded polo shirt or button-up with prominent KFC logo on chest, black or dark pants, name tag, optional red cap/visor with KFC mark.',
       colors: ['#E4002B', '#FFFFFF', '#000000'],
-      logoPlacement: 'Left chest, centered on apron',
+      logoPlacement: 'Left chest (shirt), optional cap front',
     },
     visualAssets: [
       'KFC bucket (red and white striped)',
@@ -268,13 +268,12 @@ const BRAND_DATABASE: Record<string, BrandData> = {
       visualDescription: 'Starbucks white cup with green siren logo, filled with coffee, steam rising, cozy atmosphere, studio lighting',
     },
     uniform: {
-      description: 'Green Starbucks apron with white Siren logo, black or white shirt underneath, name tag, visor optional',
+      description: 'Black or white shirt with Starbucks green accents, name tag, visor optional. Keep branding subtle and accurate.',
       colors: ['#00704A', '#FFFFFF', '#000000'],
-      logoPlacement: 'Center of apron',
+      logoPlacement: 'Left chest (shirt) or small logo pin',
     },
     visualAssets: [
       'Starbucks Siren logo',
-      'Green apron',
       'Coffee cup with logo',
       'Espresso machine',
       'Starbucks storefront',
@@ -652,7 +651,7 @@ Output: {
     "placement": "Top-left corner"
   },
   "uniform": {
-    "description": "Red KFC polo shirt with logo, black apron",
+    "description": "Red KFC polo shirt with logo, black pants, name tag",
     "colors": ["#E4002B", "#FFFFFF", "#000000"]
   },
   "competitors": ["McDonald's", "Popeyes", "Burger King"]

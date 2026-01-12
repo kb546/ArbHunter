@@ -127,7 +127,7 @@ function buildFluxPrompt(
   // Build product-focused creative brief
   let productElement = '';
   if (isRecruitmentAd && brand) {
-    productElement = `HERO ELEMENT: ${brand} branded uniform (shirt, polo, or apron) with official logo, hanging on natural wooden hanger, OR ${brand} branded products/packaging neatly arranged. NO FACES OR PEOPLE—focus on product and brand identity.`;
+    productElement = `HERO ELEMENT: ${brand} branded uniform (shirt/polo + cap/hat + name tag) with official logo, neatly displayed (folded or on a torso mannequin), OR ${brand} branded products/packaging neatly arranged. NO FACES OR PEOPLE—focus on product and brand identity. Avoid restaurant-style accessories.`;
   } else if (brand) {
     productElement = `HERO ELEMENT: ${brand} branded product or packaging, centered and clearly visible, official brand colors and logo prominent.`;
   } else {

@@ -252,7 +252,7 @@ export function generateFallbackDesigns(request: VisualDesignRequest): VisualDes
         visualCategory: 'uniform',
         mainElement: {
           type: 'uniform-apparel',
-          description: `${brandName} branded uniform (shirt, hat, apron) on wooden hanger, clean professional display`,
+          description: `${brandName} branded uniform (shirt/polo + cap/hat + name tag) neatly displayed (folded or on a torso mannequin), clean professional display. Avoid extra outer layers or restaurant-style accessories.`,
           position: 'center',
           size: 'medium',
         },
