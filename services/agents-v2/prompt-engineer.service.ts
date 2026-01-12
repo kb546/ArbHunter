@@ -165,7 +165,7 @@ Transform each variation into an optimized Gemini prompt. Each prompt must:
 
 CRITICAL REQUIREMENTS:
 - Format: 1080x1080 square canvas
-- NO PEOPLE, NO FACES (product/uniform only)
+- No identifiable faces. People are allowed only if faceless/cropped (hands/backs/over-shoulder).
 - All text MUST be legible and perfectly rendered
 - Brand colors MUST be prominent
 - Logo MUST be visible and correctly positioned
@@ -174,7 +174,7 @@ CRITICAL REQUIREMENTS:
 ${campaignType === 'recruitment' ? `
 RECRUITMENT PROMPT GUIDELINES:
 - "Professional recruitment advertisement for ${brandName}"
-- Main visual: Company uniform/product on hanger (NO PEOPLE)
+- Main visual MUST vary across the batch: storefront/exterior signage (daylight/golden hour/night), interior workplace environment, product/packaging/hero product, benefits graphic motif, application UI motif, or (rarely) a branded uniform display.
 - Emphasize brand logo prominently
 - Clean, trustworthy aesthetic
 - Colors: ${brandColors?.primary} and ${brandColors?.secondary}
@@ -274,10 +274,10 @@ COPY DIRECTION:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  CRITICAL - BRAND COLORS (MUST USE EXACTLY):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- BACKGROUND COLOR: MUST BE ${primaryColor} (${colorName})
-- ACCENT COLOR: MUST BE ${secondaryColor} (${secondaryColorName})
-- DO NOT USE: purple, blue, green, orange, or ANY other colors not listed above
-- VALIDATION: If the generated image uses ANY color other than ${primaryColor} and ${secondaryColor}, it will be REJECTED
+- Brand Primary: ${primaryColor} (${colorName})
+- Brand Secondary: ${secondaryColor} (${secondaryColorName})
+- REQUIREMENT: Brand colors must be clearly present (background blocks, signage, UI accents, typography, props).
+- Allowed supporting colors: neutrals (white/black/gray) and realistic scene colors for storefront/interior shots (do NOT over-saturate).
 
 Example: For McDonald's → Background MUST be #FFC72C (golden yellow) or #DA291C (red)
 Example: For KFC → Background MUST be #E4002B (red) with #FFFFFF (white) accents
@@ -286,14 +286,14 @@ Example: For KFC → Background MUST be #E4002B (red) with #FFFFFF (white) accen
 CANVAS LAYOUT:
 - Top 20%: Headline text "${copy.headline}" in large, bold sans-serif font, white color, centered
 - Top-left corner: ${logoDesc}, medium size, clearly visible
-- Center 50%: High-resolution image of a ${brand} branded uniform on a natural wooden hanger, perfectly centered, front-facing view, NO PEOPLE OR FACES
+- Center 50% (HERO VISUAL): ${design?.mainElement.description || `Brand-accurate hero visual for ${brand}: storefront/interior/product/packaging/benefits graphic — vary across the batch. No identifiable faces (faceless/cropped ok).`}
 - Bottom 30%: Subheadline "${copy.subheadline}" in medium font, white color
 - Bottom 10%: Prominent CTA button with text "${copy.cta}" in bold white text on a contrasting background
 
 BRAND ELEMENTS:
 - Logo: ${logoDesc}
 - Brand Colors (CRITICAL): ${primaryColor} (${colorName}) as dominant color, ${secondaryColor} (${secondaryColorName}) as accent
-- Color Palette: ONLY use ${primaryColor}, ${secondaryColor}, white, and black. NO OTHER COLORS.
+- Color Palette: prioritize ${primaryColor}, ${secondaryColor}, white, and black. For realistic environments, allow natural colors but keep brand colors prominent.
 
 VISUAL STYLE:
 - Background: ${design?.background.description || `Solid ${primaryColor} (${colorName}) background`}

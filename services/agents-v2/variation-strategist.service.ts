@@ -71,6 +71,10 @@ export interface VariationStrategyRequest {
   targetAudience?: string;
   batchSize: number;
   brandName?: string;
+  brandLogo?: { description: string; placement: string };
+  brandColors?: { primary: string; secondary: string; accent?: string };
+  brandColorNames?: { primary: string; secondary?: string };
+  brandHeroProduct?: { name: string; description: string; visualDescription: string };
   preset: CreativePreset;
   presetConfig: CreativePresetConfig;
 }
@@ -144,7 +148,7 @@ export async function generateVariationStrategies(
     return generateFallbackStrategies(request);
   }
 
-  const { niche, geo, campaignType, targetAudience, batchSize, brandName } = request;
+  const { niche, geo, campaignType, targetAudience, batchSize, brandName, brandColors, brandColorNames, brandLogo, brandHeroProduct } = request;
 
   console.log(`\n🎯 Agent 1: Variation Strategist`);
   console.log(`   Planning ${batchSize} unique strategies for ${niche} (${geo})`);
@@ -153,6 +157,9 @@ export async function generateVariationStrategies(
 CAMPAIGN CONTEXT:
 - Niche: ${niche}
 - Brand: ${brandName || 'Generic'}
+- Brand Colors: ${brandColors?.primary || 'unknown'} (${brandColorNames?.primary || 'primary'}), ${brandColors?.secondary || 'unknown'} (${brandColorNames?.secondary || 'secondary'})
+- Logo: ${brandLogo?.description || 'unknown'} (placement: ${brandLogo?.placement || 'unknown'})
+- Hero Product: ${brandHeroProduct?.name || 'unknown'} — ${brandHeroProduct?.visualDescription || brandHeroProduct?.description || ''}
 - Geographic Market: ${geo}
 - Campaign Type: ${campaignType}
 - Target Audience: ${targetAudience || 'General audience'}
@@ -175,6 +182,15 @@ HARD RULES:
 - Each batch must have 1–3 strategies (no more)
 - Each strategy MUST include a visualCategory
 - Include batch fields: label, scene, environment, targetPersona
+
+ANTI-UNIFORM COLLAPSE (CRITICAL):
+- Do NOT overuse "uniform" as the hero visual. At most 10–20% of strategies may use "uniform".
+- For recruitment especially, prefer varied hero visuals:
+  - storefront/exterior signage (golden hour / night / daylight variants)
+  - interior/workplace environment (no identifiable faces; faceless/cropped hands OK)
+  - product/packaging or brand hero product (if applicable)
+  - benefits graphic / application UI motif
+- If you use "uniform", it must be one of many, and it must not repeat across batches.
 
 STRATEGY MIX GUIDELINES:
 - ${Math.ceil(batchSize * 0.4)} variations: Safe, proven approaches (baseline)
@@ -506,11 +522,11 @@ function getCategoryDistribution(campaignType: CampaignType, batchSize: number):
   // Campaign-specific category preferences
   const categoryMixes: Record<CampaignType, { category: VisualCategory; weight: number }[]> = {
     recruitment: [
-      { category: 'product', weight: 0.30 },     // Hero product (30%)
-      { category: 'people', weight: 0.25 },      // Employees (25%)
-      { category: 'benefits', weight: 0.20 },    // Benefits graphic (20%)
-      { category: 'uniform', weight: 0.15 },     // Uniform (15%)
-      { category: 'cta-graphic', weight: 0.10 }, // CTA-focused (10%)
+      { category: 'product', weight: 0.35 },        // Product/packaging/storefront assets (35%)
+      { category: 'lifestyle-scene', weight: 0.25 },// Storefront/interior/environment scenes (25%)
+      { category: 'benefits', weight: 0.20 },       // Benefits graphic (20%)
+      { category: 'cta-graphic', weight: 0.15 },    // CTA-focused (15%)
+      { category: 'uniform', weight: 0.05 },        // Uniform (5%) — keep rare
     ],
     free_sample: [
       { category: 'sample-package', weight: 0.40 },  // Sample box (40%)

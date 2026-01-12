@@ -157,6 +157,14 @@ export async function orchestrateBatchGeneration(
     targetAudience,
     batchSize,
     brandName,
+    brandLogo: brandLogo ? { description: brandLogo.description, placement: brandLogo.placement } : undefined,
+    brandColors: brandColors ? { primary: brandColors.primary, secondary: brandColors.secondary, accent: (brandColors as any).accent } : undefined,
+    brandColorNames: brandColorNames ? { primary: brandColorNames.primary, secondary: brandColorNames.secondary } : undefined,
+    brandHeroProduct: detectedBrand?.heroProduct ? {
+      name: detectedBrand.heroProduct.name,
+      description: detectedBrand.heroProduct.description,
+      visualDescription: detectedBrand.heroProduct.visualDescription,
+    } : undefined,
     preset: selectedPreset,
     presetConfig,
   });

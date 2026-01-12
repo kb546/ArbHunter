@@ -25,7 +25,7 @@ if (OPENAI_API_KEY) {
 
 export interface VisualDesign {
   id: string;
-  visualCategory: 'product' | 'people' | 'benefits' | 'uniform' | 'cta-graphic';
+  visualCategory: 'product' | 'people' | 'benefits' | 'uniform' | 'cta-graphic' | 'lifestyle-scene';
   mainElement: {
     type: string;
     description: string;
@@ -106,7 +106,9 @@ export function generateFallbackDesigns(request: VisualDesignRequest): VisualDes
         visualCategory: 'product',
         mainElement: {
           type: 'hero-product',
-          description: brandHeroProduct?.visualDescription || `${brandName} signature product, professional studio shot, appetizing, high-quality`,
+          description:
+            brandHeroProduct?.visualDescription ||
+            `${brandName} signature product or branded packaging, professional studio shot, high-quality, brand-accurate`,
           position: 'center',
           size: 'large',
         },
@@ -149,13 +151,61 @@ export function generateFallbackDesigns(request: VisualDesignRequest): VisualDes
       };
     }
     
+    else if (category === 'lifestyle-scene') {
+      return {
+        id: `visual-${idx + 1}`,
+        visualCategory: 'lifestyle-scene',
+        mainElement: {
+          type: 'storefront-or-interior',
+          description: `${brandName} storefront/exterior signage or interior workplace environment, no identifiable faces (faceless/cropped OK), authentic brand vibe. Vary time of day: daylight, golden hour, evening/night.`,
+          position: 'center',
+          size: 'large',
+        },
+        background: {
+          type: 'lifestyle',
+          primaryColor: primaryColor,
+          description: `Realistic on-brand environment (storefront/interior), clean composition, not cluttered`,
+        },
+        logoPlacement: {
+          position: 'top-left',
+          size: 'small',
+          description: 'Logo subtle; let the environment carry brand recognition',
+        },
+        textLayout: {
+          headlinePosition: 'top',
+          headlineStyle: 'bold',
+          alignment: 'center',
+          description: 'Headline readable over an area with good contrast',
+        },
+        composition: {
+          rule: 'rule-of-thirds',
+          whitespace: 'balanced',
+          hierarchy: 'Headline → Environment hero → CTA',
+        },
+        colorGrading: {
+          brightness: 'medium',
+          contrast: 'medium',
+          saturation: 'normal',
+          temperature: 'warm',
+        },
+        lighting: {
+          type: 'natural',
+          direction: 'side',
+          description: 'Natural light; vary time-of-day cues for diversity',
+        },
+        mood: 'Authentic, trustworthy, location-based, brand-accurate',
+        technicalSpecs: 'Lifestyle photography feel, commercial-ready, clean and sharp',
+        reasoning: 'Environment-focused visual to avoid uniform repetition and improve variety',
+      };
+    }
+
     else if (category === 'people') {
       return {
         id: `visual-${idx + 1}`,
         visualCategory: 'people',
         mainElement: {
           type: 'employees',
-          description: `Diverse team of 2-3 ${brandName} employees in uniform, smiling, welcoming pose, natural candid feel, workplace setting`,
+          description: `2-3 ${brandName} employees in a workplace context, NO identifiable faces (faceless/cropped hands OK), authentic candid feel, brand-accurate setting`,
           position: 'center',
           size: 'large',
         },
