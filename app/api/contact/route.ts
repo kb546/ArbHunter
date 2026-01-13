@@ -10,8 +10,15 @@ function clean(input: unknown, max: number) {
 function getServiceSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) return null;
   return createClient(url, serviceKey, { auth: { persistSession: false } });
+}
+
+function getAnonSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return null;
+  return createClient(url, anonKey, { auth: { persistSession: false } });
 }
 
 export async function POST(req: NextRequest) {
@@ -35,32 +42,51 @@ export async function POST(req: NextRequest) {
   }
 
   let data: any = null;
-  try {
-    // Use service role to avoid any RLS drift/misconfiguration breaking public contact.
-    const supabase = getServiceSupabase();
-    const res = await supabase
-      .from('support_tickets')
-      .insert({
-        user_id: null,
-        email,
-        subject,
-        message,
-        page_url: page_url || null,
-        user_agent: req.headers.get('user-agent') || null,
-        status: 'open',
-        source: 'contact',
-        meta: { name, company },
-      })
-      .select('id,created_at')
-      .single();
-    if (res.error) throw res.error;
-    data = res.data;
-  } catch (e: any) {
-    const msg = String(e?.message || e);
+  const ticketRow = {
+    user_id: null,
+    email,
+    subject,
+    message,
+    page_url: page_url || null,
+    user_agent: req.headers.get('user-agent') || null,
+    status: 'open',
+    source: 'contact',
+    meta: { name, company },
+  };
+
+  // Prefer service role (most reliable for public contact), but gracefully fall back if not configured.
+  const serviceSupabase = getServiceSupabase();
+  if (serviceSupabase) {
+    const res = await serviceSupabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
+    if (!res.error) {
+      data = res.data;
+    } else {
+      console.error('Contact insert (service role) failed:', res.error);
+    }
+  } else {
+    console.warn('Contact insert: missing SUPABASE_SERVICE_ROLE_KEY; falling back to anon insert.');
+  }
+
+  // Fallback: anon insert (requires RLS policy to allow user_id is null).
+  if (!data) {
+    const anonSupabase = getAnonSupabase();
+    if (anonSupabase) {
+      const res = await anonSupabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
+      if (!res.error) {
+        data = res.data;
+      } else {
+        console.error('Contact insert (anon) failed:', res.error);
+      }
+    }
+  }
+
+  if (!data) {
     // Friendly message for end users; keep detail in logs only.
-    console.error('Contact submission failed:', msg);
     return NextResponse.json(
-      { error: 'Could not send your message right now. Please try again in a few minutes.' },
+      {
+        error:
+          'Could not send your message right now. Please try again, or email us directly at support@arbhunter.dev.',
+      },
       { status: 500 }
     );
   }

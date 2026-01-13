@@ -47,7 +47,7 @@ export default function ContactForm() {
       setCompanyWebsite('');
     } catch (e: any) {
       toast.error('Could not send message', {
-        description: 'Please try again. If this keeps happening, email us directly.',
+        description: e?.message || 'Please try again. If this keeps happening, email us directly.',
         action: hasSupportEmail()
           ? ({ label: 'Email us', onClick: () => (window.location.href = `mailto:${SUPPORT_EMAIL}`) } as any)
           : undefined,
