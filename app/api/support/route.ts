@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     page_url: page_url || null,
     user_agent: req.headers.get('user-agent') || null,
     status: 'open',
-    source: 'in_app',
+    source: 'support',
   };
 
   // Prefer service role (bypasses RLS/session edge cases), but fall back to authed insert.
