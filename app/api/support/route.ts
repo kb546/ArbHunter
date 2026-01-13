@@ -3,6 +3,14 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { getAuthedSessionFromCookies } from '@/lib/auth.server';
 import { createSupabaseAuthedServerClient } from '@/lib/supabase.authed.server';
 import { sendEmail } from '@/lib/email.server';
+import { createClient } from '@supabase/supabase-js';
+
+function getServiceSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  return createClient(url, serviceKey, { auth: { persistSession: false } });
+}
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
@@ -19,25 +27,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Subject and message are required.' }, { status: 400 });
   }
 
-  const supabase = createSupabaseAuthedServerClient(session.accessToken);
-  const { data, error } = await supabase
-    .from('support_tickets')
-    .insert({
-      user_id: session.user.id,
-      email: (session.user.email as string | undefined) || null,
-      subject,
-      message,
-      page_url: page_url || null,
-      user_agent: req.headers.get('user-agent') || null,
-      status: 'open',
-      source: 'in_app',
-    })
-    .select('id,created_at')
-    .single();
+  const ticketRow = {
+    user_id: session.user.id,
+    email: (session.user.email as string | undefined) || null,
+    subject,
+    message,
+    page_url: page_url || null,
+    user_agent: req.headers.get('user-agent') || null,
+    status: 'open',
+    source: 'in_app',
+  };
 
-  if (error) {
-    console.error('Support submission failed:', error);
-    return NextResponse.json({ error: 'Could not send your message right now. Please try again.' }, { status: 500 });
+  // Prefer service role (bypasses RLS/session edge cases), but fall back to authed insert.
+  let data: any = null;
+  const serviceSupabase = getServiceSupabase();
+  if (serviceSupabase) {
+    const res = await serviceSupabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
+    if (!res.error) {
+      data = res.data;
+    } else {
+      console.error('Support insert (service role) failed:', res.error);
+    }
+  } else {
+    console.warn('Support insert: missing SUPABASE_SERVICE_ROLE_KEY; falling back to authed insert.');
+  }
+
+  if (!data) {
+    const supabase = createSupabaseAuthedServerClient(session.accessToken);
+    const res = await supabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
+    if (!res.error) data = res.data;
+    else console.error('Support insert (authed) failed:', res.error);
+  }
+
+  if (!data) {
+    // End-user friendly message; details are logged server-side.
+    return NextResponse.json(
+      { error: 'Could not send your message right now. Please try again.' },
+      { status: 500 }
+    );
   }
 
   // Best-effort notification email to ops inbox (if configured)
