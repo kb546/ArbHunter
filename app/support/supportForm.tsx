@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { SUPPORT_EMAIL } from '@/lib/support';
+import { SUPPORT_EMAIL, hasSupportEmail } from '@/lib/support';
 
 export default function SupportForm({ email }: { email: string | null }) {
   const [subject, setSubject] = React.useState('');
@@ -37,7 +37,7 @@ export default function SupportForm({ email }: { email: string | null }) {
     } catch (e: any) {
       toast.error('Could not send message', {
         description: e?.message || String(e),
-        action: email
+        action: email && hasSupportEmail()
           ? ({ label: 'Email us', onClick: () => (window.location.href = `mailto:${SUPPORT_EMAIL}`) } as any)
           : undefined,
       });
@@ -60,7 +60,7 @@ export default function SupportForm({ email }: { email: string | null }) {
           <Label>Your email</Label>
           <Input value={email || '—'} disabled />
           <div className="text-xs text-muted-foreground">
-            Replies go to this email. If it’s wrong, email us from the correct inbox at {SUPPORT_EMAIL}.
+            We’ll reply to this email.
           </div>
         </div>
         <div className="space-y-2">
@@ -92,9 +92,11 @@ export default function SupportForm({ email }: { email: string | null }) {
         <Button onClick={submit} disabled={pending || !subject.trim() || !message.trim()}>
           {pending ? 'Sending…' : 'Send to support'}
         </Button>
-        <Button variant="outline" onClick={() => (window.location.href = `mailto:${SUPPORT_EMAIL}`)}>
-          Email us instead
-        </Button>
+        {hasSupportEmail() ? (
+          <Button variant="outline" onClick={() => (window.location.href = `mailto:${SUPPORT_EMAIL}`)}>
+            Email us instead
+          </Button>
+        ) : null}
       </div>
     </div>
   );

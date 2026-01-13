@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { SUPPORT_EMAIL, hasSupportEmail } from '@/lib/support';
 
 export default function ContactForm() {
   const [name, setName] = React.useState('');
@@ -45,7 +46,12 @@ export default function ContactForm() {
       setMessage('');
       setCompanyWebsite('');
     } catch (e: any) {
-      toast.error('Could not send message', { description: e?.message || String(e) });
+      toast.error('Could not send message', {
+        description: 'Please try again. If this keeps happening, email us directly.',
+        action: hasSupportEmail()
+          ? ({ label: 'Email us', onClick: () => (window.location.href = `mailto:${SUPPORT_EMAIL}`) } as any)
+          : undefined,
+      });
     } finally {
       setPending(false);
     }

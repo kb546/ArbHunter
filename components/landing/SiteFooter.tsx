@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { SUPPORT_EMAIL } from "@/lib/support";
+import { SUPPORT_EMAIL, hasSupportEmail } from "@/lib/support";
 
 function Col({
   title,
@@ -55,9 +55,13 @@ export function SiteFooter() {
             <p className="mt-3 text-xs text-white/55 space-x-2">
               <span>
                 Support:{' '}
-                <a className="underline underline-offset-4 hover:text-white" href={`mailto:${SUPPORT_EMAIL}`}>
-                  {SUPPORT_EMAIL}
-                </a>
+                {hasSupportEmail() ? (
+                  <a className="underline underline-offset-4 hover:text-white" href={`mailto:${SUPPORT_EMAIL}`}>
+                    {SUPPORT_EMAIL}
+                  </a>
+                ) : (
+                  <span className="text-white/60">Contact us</span>
+                )}
               </span>
               <span className="text-white/35">•</span>
               <Link className="underline underline-offset-4 hover:text-white" href="/contact">
