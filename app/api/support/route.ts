@@ -12,6 +12,16 @@ function getServiceSupabase() {
   return createClient(url, serviceKey, { auth: { persistSession: false } });
 }
 
+function sanitizeSupabaseError(e: any) {
+  if (!e) return null;
+  return {
+    message: String(e?.message || ''),
+    code: e?.code ? String(e.code) : null,
+    details: e?.details ? String(e.details) : null,
+    hint: e?.hint ? String(e.hint) : null,
+  };
+}
+
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
 
@@ -40,12 +50,15 @@ export async function POST(req: NextRequest) {
 
   // Prefer service role (bypasses RLS/session edge cases), but fall back to authed insert.
   let data: any = null;
+  let serviceErr: any = null;
+  let authedErr: any = null;
   const serviceSupabase = getServiceSupabase();
   if (serviceSupabase) {
     const res = await serviceSupabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
     if (!res.error) {
       data = res.data;
     } else {
+      serviceErr = res.error;
       console.error('Support insert (service role) failed:', res.error);
     }
   } else {
@@ -56,13 +69,23 @@ export async function POST(req: NextRequest) {
     const supabase = createSupabaseAuthedServerClient(session.accessToken);
     const res = await supabase.from('support_tickets').insert(ticketRow).select('id,created_at').single();
     if (!res.error) data = res.data;
-    else console.error('Support insert (authed) failed:', res.error);
+    else {
+      authedErr = res.error;
+      console.error('Support insert (authed) failed:', res.error);
+    }
   }
 
   if (!data) {
     // End-user friendly message; details are logged server-side.
     return NextResponse.json(
-      { error: 'Could not send your message right now. Please try again.' },
+      {
+        error: 'Could not send your message right now. Please try again.',
+        code: 'SUPPORT_SUBMIT_FAILED',
+        debug: {
+          service: sanitizeSupabaseError(serviceErr),
+          authed: sanitizeSupabaseError(authedErr),
+        },
+      },
       { status: 500 }
     );
   }

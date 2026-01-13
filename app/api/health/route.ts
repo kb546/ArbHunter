@@ -38,6 +38,13 @@ export async function GET() {
         process.env.PADDLE_PRODUCT_AGENCY
       ),
     },
+
+    // Email
+    email: {
+      resend_api_key_present: !!process.env.RESEND_API_KEY,
+      resend_from_present: !!process.env.RESEND_FROM,
+      support_email_present: !!(process.env.SUPPORT_EMAIL || process.env.NEXT_PUBLIC_SUPPORT_EMAIL),
+    },
   };
 
   // Determine overall status
@@ -48,6 +55,10 @@ export async function GET() {
   return NextResponse.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
+    deployment: {
+      vercel_git_commit_sha: process.env.VERCEL_GIT_COMMIT_SHA || null,
+      vercel_env: process.env.VERCEL_ENV || null,
+    },
     services,
     summary: {
       database: hasDatabase ? '✅ Connected' : '⚠️  Using in-memory storage',
