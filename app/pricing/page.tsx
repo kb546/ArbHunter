@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { openPaddleCheckout } from "@/lib/paddle-client";
+import { redirectToDodoCheckout } from "@/lib/dodo-client";
 import { ForceDark } from "@/components/ForceDark";
 import { MarketingHeader } from "@/components/landing/MarketingHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
@@ -41,23 +41,8 @@ const plans = [
 ] as const;
 
 export default function PricingPage() {
-  // If Paddle redirects back with ?_ptxn=txn_..., open overlay checkout automatically.
-  // After close, route user to Billing to see updated status.
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const txn = url.searchParams.get("_ptxn");
-    if (!txn) return;
-
-    (async () => {
-      try {
-        await openPaddleCheckout(txn);
-      } finally {
-        url.searchParams.delete("_ptxn");
-        window.history.replaceState({}, "", url.toString());
-        window.location.href = "/account/billing?checkout=success";
-      }
-    })();
-  }, []);
+  // Dodo Payments uses direct redirect, no need for post-redirect handling
+  // User is redirected to success_url automatically after successful payment
 
   const billingFaq: FAQItem[] = [
     {
@@ -66,7 +51,7 @@ export default function PricingPage() {
     },
     {
       q: "Do you handle taxes/VAT?",
-      a: "Yes. Paddle is the Merchant of Record and handles taxes/VAT when applicable.",
+      a: "Yes. Dodo Payments handles all payment processing and compliance.",
     },
     {
       q: "Where can I find your refund policy?",
@@ -129,7 +114,7 @@ export default function PricingPage() {
 
               <div className="mt-7 space-y-2">
                 <CheckoutButton plan={p.planKey} planName={p.name} highlight={p.highlight} />
-                <p className="text-xs text-white/50">Billing powered by Paddle (MoR). Taxes/VAT handled automatically.</p>
+                <p className="text-xs text-white/50">Billing powered by Dodo Payments. Secure checkout.</p>
               </div>
             </div>
           ))}
@@ -187,7 +172,7 @@ function CheckoutButton({
       )}
       onClick={async () => {
         try {
-          const res = await fetch("/api/paddle/checkout", {
+          const res = await fetch("/api/dodo/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ plan }),
@@ -202,12 +187,12 @@ function CheckoutButton({
             throw new Error(data.error || `Checkout failed (HTTP ${res.status})`);
           }
 
-          if (data.transactionId) {
-            await openPaddleCheckout(data.transactionId, { successUrl: `${window.location.origin}/account/billing?checkout=success` });
+          if (data.checkoutUrl) {
+            redirectToDodoCheckout(data.checkoutUrl);
             return;
           }
 
-          throw new Error(`Checkout response missing transactionId.`);
+          throw new Error(`Checkout response missing checkoutUrl.`);
         } catch (err: any) {
           alert(`Upgrade failed: ${err?.message || String(err)}`);
         }

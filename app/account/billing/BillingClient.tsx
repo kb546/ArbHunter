@@ -16,7 +16,7 @@ export type BillingClientProps = {
   subscription:
     | null
     | {
-        provider: 'stripe' | 'paddle';
+        provider: 'stripe' | 'paddle' | 'dodo';
         plan: 'free' | 'starter' | 'pro' | 'agency';
         status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'inactive';
         current_period_end: string | null;
@@ -117,10 +117,20 @@ export default function BillingClient(props: BillingClientProps) {
   async function changePlan(plan: Plan) {
     setIsWorking(true);
     try {
-      const res = await fetch('/api/paddle/subscription/change-plan', {
+      // Use the appropriate API endpoint based on current provider
+      const provider = subscription?.provider || 'dodo';
+      const endpoint = provider === 'dodo'
+        ? '/api/dodo/subscription/change-plan'
+        : '/api/paddle/subscription/change-plan';
+
+      const body = provider === 'dodo'
+        ? { newPlan: plan }
+        : { plan, prorationBillingMode: 'prorated_immediately' };
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, prorationBillingMode: 'prorated_immediately' }),
+        body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Change plan failed (HTTP ${res.status})`);
@@ -137,7 +147,13 @@ export default function BillingClient(props: BillingClientProps) {
     if (!confirm('Cancel your subscription? You may keep access until the end of the billing period/trial.')) return;
     setIsWorking(true);
     try {
-      const res = await fetch('/api/paddle/subscription/cancel', { method: 'POST' });
+      // Use the appropriate API endpoint based on current provider
+      const provider = subscription?.provider || 'dodo';
+      const endpoint = provider === 'dodo'
+        ? '/api/dodo/subscription/cancel'
+        : '/api/paddle/subscription/cancel';
+
+      const res = await fetch(endpoint, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Cancel failed (HTTP ${res.status})`);
       toast.success('Cancellation requested', { description: 'It can take a few seconds to reflect. Refreshing…' });
