@@ -6,7 +6,7 @@ export type BillingAccess =
   | { ok: false; reason: 'unauthenticated' | 'not_subscribed' | 'inactive'; status?: string | null; plan?: string | null };
 
 export type SubscriptionRow = {
-  provider: 'stripe' | 'paddle';
+  provider: 'stripe' | 'paddle' | 'dodo';
   plan: 'free' | 'starter' | 'pro' | 'agency';
   status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'inactive';
   current_period_start: string | null;
@@ -16,6 +16,10 @@ export type SubscriptionRow = {
   paddle_subscription_id: string | null;
   paddle_price_id: string | null;
   paddle_transaction_id: string | null;
+  dodo_customer_id?: string | null;
+  dodo_subscription_id?: string | null;
+  dodo_price_id?: string | null;
+  dodo_transaction_id?: string | null;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -32,7 +36,7 @@ export async function getUserSubscription(): Promise<SubscriptionRow | null> {
   const { data, error } = await supabase
     .from('subscriptions')
     .select(
-      'provider,plan,status,current_period_start,current_period_end,cancel_at_period_end,paddle_customer_id,paddle_subscription_id,paddle_price_id,paddle_transaction_id,created_at,updated_at'
+      'provider,plan,status,current_period_start,current_period_end,cancel_at_period_end,paddle_customer_id,paddle_subscription_id,paddle_price_id,paddle_transaction_id,dodo_customer_id,dodo_subscription_id,dodo_price_id,dodo_transaction_id,created_at,updated_at'
     )
     .eq('user_id', session.user.id)
     .order('updated_at', { ascending: false })
