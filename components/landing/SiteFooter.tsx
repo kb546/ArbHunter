@@ -95,7 +95,7 @@ export function SiteFooter() {
               <FooterLink href="/privacy">Privacy</FooterLink>
               <FooterLink href="/refund-policy">Refund policy</FooterLink>
               <div className="pt-2 text-xs text-white/50 leading-relaxed">
-                Billing is handled by Paddle (MoR). Taxes/VAT are handled automatically when applicable.
+                Billing is handled by Dodo Payments (Merchant of Record). Taxes/VAT are handled automatically when applicable.
               </div>
             </Col>
           </div>

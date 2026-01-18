@@ -39,11 +39,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Prevent "downgrading" to same plan
+    // 4. Prevent changing to same plan
     if (subscription.plan === newPlan) {
       return NextResponse.json(
-        { error: 'Already on this plan' },
-        { status: 400 }
+        { error: `You are already on the ${newPlan.toUpperCase()} plan. Please choose a different plan.` },
+        { status: 409 } // Use 409 Conflict for better semantics
       );
     }
 

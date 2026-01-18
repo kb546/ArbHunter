@@ -133,8 +133,36 @@ export default function BillingClient(props: BillingClientProps) {
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `Change plan failed (HTTP ${res.status})`);
-      toast.success('Plan change requested', { description: 'It can take a few seconds to reflect. Refreshing…' });
+
+      if (!res.ok) {
+        const errorMsg = data.error || `Unable to change plan (HTTP ${res.status})`;
+
+        // Provide specific, helpful error messages
+        if (res.status === 409) {
+          throw new Error('You are already on this plan. Please select a different plan.');
+        } else if (res.status === 402) {
+          throw new Error('Payment method issue. Please update your billing details or contact support@arbhunter.dev');
+        } else if (res.status >= 500) {
+          throw new Error('Our system is experiencing issues. Please try again in a few minutes or contact support@arbhunter.dev');
+        } else {
+          throw new Error(`${errorMsg}. If this persists, please contact support@arbhunter.dev`);
+        }
+      }
+
+      // Determine if upgrading or downgrading
+      const planOrder = { starter: 1, pro: 2, agency: 3 };
+      const currentPlanRank = planOrder[currentPlan as keyof typeof planOrder] || 0;
+      const newPlanRank = planOrder[plan as keyof typeof planOrder] || 0;
+      const upgrading = newPlanRank > currentPlanRank;
+
+      toast.success(
+        upgrading ? 'Upgrading your plan' : 'Changing your plan',
+        {
+          description: upgrading
+            ? 'Activated immediately. Your next invoice will be prorated.'
+            : 'Takes effect now. You\'ll receive a prorated credit on your next invoice.'
+        }
+      );
       window.location.reload();
     } catch (e: any) {
       toast.error('Failed to change plan', { description: e?.message || String(e) });
@@ -155,11 +183,23 @@ export default function BillingClient(props: BillingClientProps) {
 
       const res = await fetch(endpoint, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `Cancel failed (HTTP ${res.status})`);
+
+      if (!res.ok) {
+        const errorMsg = data.error || `Cancel failed (HTTP ${res.status})`;
+
+        if (res.status >= 500) {
+          throw new Error('Our system is experiencing issues. Please contact support@arbhunter.dev to cancel your subscription.');
+        } else {
+          throw new Error(`${errorMsg}. Please contact support@arbhunter.dev if you need assistance.`);
+        }
+      }
+
       toast.success('Cancellation requested', { description: 'It can take a few seconds to reflect. Refreshing…' });
       window.location.reload();
     } catch (e: any) {
-      toast.error('Failed to cancel', { description: e?.message || String(e) });
+      toast.error('Unable to cancel subscription', {
+        description: `${e?.message || String(e)}`
+      });
     } finally {
       setIsWorking(false);
     }
@@ -268,8 +308,13 @@ export default function BillingClient(props: BillingClientProps) {
             <div className="font-semibold text-foreground">Starter</div>
             <div className="text-sm text-muted-foreground mt-1">For early testing</div>
             <div className="mt-4">
-              <Button className="w-full" disabled={isWorking} onClick={() => changePlan('starter')}>
-                Switch to Starter
+              <Button
+                className="w-full"
+                disabled={isWorking || currentPlan === 'starter'}
+                onClick={() => changePlan('starter')}
+                variant={currentPlan === 'starter' ? 'outline' : 'default'}
+              >
+                {currentPlan === 'starter' ? 'Current Plan' : 'Switch to Starter'}
               </Button>
             </div>
           </Card>
@@ -277,8 +322,13 @@ export default function BillingClient(props: BillingClientProps) {
             <div className="font-semibold text-foreground">Pro</div>
             <div className="text-sm text-muted-foreground mt-1">For consistent scaling</div>
             <div className="mt-4">
-              <Button className="w-full" disabled={isWorking} onClick={() => changePlan('pro')}>
-                Switch to Pro
+              <Button
+                className="w-full"
+                disabled={isWorking || currentPlan === 'pro'}
+                onClick={() => changePlan('pro')}
+                variant={currentPlan === 'pro' ? 'outline' : 'default'}
+              >
+                {currentPlan === 'pro' ? 'Current Plan' : 'Switch to Pro'}
               </Button>
             </div>
           </Card>
@@ -286,8 +336,13 @@ export default function BillingClient(props: BillingClientProps) {
             <div className="font-semibold text-foreground">Agency</div>
             <div className="text-sm text-muted-foreground mt-1">For teams & volume</div>
             <div className="mt-4">
-              <Button className="w-full" disabled={isWorking} onClick={() => changePlan('agency')}>
-                Switch to Agency
+              <Button
+                className="w-full"
+                disabled={isWorking || currentPlan === 'agency'}
+                onClick={() => changePlan('agency')}
+                variant={currentPlan === 'agency' ? 'outline' : 'default'}
+              >
+                {currentPlan === 'agency' ? 'Current Plan' : 'Switch to Agency'}
               </Button>
             </div>
           </Card>

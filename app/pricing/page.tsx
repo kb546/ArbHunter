@@ -194,7 +194,20 @@ function CheckoutButton({
 
           throw new Error(`Checkout response missing checkoutUrl.`);
         } catch (err: any) {
-          alert(`Upgrade failed: ${err?.message || String(err)}`);
+          let errorMessage = 'Unable to start checkout';
+          const errMsg = err?.message || String(err);
+
+          if (errMsg.includes('401') || errMsg.includes('Unauthorized')) {
+            errorMessage = 'Please log in first to upgrade your plan.';
+          } else if (errMsg.includes('500') || errMsg.includes('experiencing issues')) {
+            errorMessage = 'Our payment system is temporarily unavailable. Please try again in a few minutes or contact support@arbhunter.dev';
+          } else if (errMsg.includes('network') || errMsg.includes('fetch')) {
+            errorMessage = 'Connection issue. Please check your internet and try again.';
+          } else {
+            errorMessage = `${errMsg}. Need help? Contact support@arbhunter.dev`;
+          }
+
+          alert(errorMessage);
         }
       }}
     >

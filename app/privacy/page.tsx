@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-white">Payments</h2>
             <p>
-              Payments are processed by Paddle (Merchant of Record). We do not store your full payment details.
+              Payments are processed by Dodo Payments (Merchant of Record). We do not store your full payment details.
             </p>
           </section>
 

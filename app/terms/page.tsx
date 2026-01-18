@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-semibold text-white">3) Billing</h2>
             <p>
-              Paid plans unlock higher monthly limits. Billing is handled by Paddle (Merchant of Record), which may
+              Paid plans unlock higher monthly limits. Billing is handled by Dodo Payments (Merchant of Record), which may
               collect taxes/VAT where required.
             </p>
           </section>
