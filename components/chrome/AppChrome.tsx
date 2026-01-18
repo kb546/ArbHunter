@@ -63,7 +63,12 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/contact') ||
     pathname.startsWith('/terms') ||
     pathname.startsWith('/privacy') ||
-    pathname.startsWith('/refund-policy');
+    pathname.startsWith('/refund-policy') ||
+    pathname.startsWith('/opportunity-sniffer') ||
+    pathname.startsWith('/creative-studio-landing') || // Feature page, not the app
+    pathname.startsWith('/campaign-manager-landing') ||
+    pathname.startsWith('/roi-calculator') ||
+    pathname.startsWith('/for/'); // Use case pages
   const title = useMemo(() => pageTitle(pathname), [pathname]);
   const crumbs = useMemo(() => breadcrumbs(pathname), [pathname]);
 
